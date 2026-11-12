@@ -3,6 +3,7 @@ import type { StudentSubmission } from '@/types';
 import { INITIAL_SUBMISSIONS, STUDENT_DIRECTORY } from '@/data/mockData';
 import { AboutView } from '@/components/views/AboutView';
 import { TeacherProfileView } from '@/components/views/TeacherProfileView';
+import { TeacherSettingsView } from '@/components/views/TeacherSettingsView';
 import {
   RiVideoChatLine,
   RiCheckLine,
@@ -102,11 +103,6 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
 
-  // Settings state
-  const [currentPass, setCurrentPass] = useState('');
-  const [newPass, setNewPass] = useState('');
-  const [confirmPass, setConfirmPass] = useState('');
-  const [passUpdated, setPassUpdated] = useState(false);
 
   const pendingSubmissions = submissions.filter((s) => s.status === 'pending');
 
@@ -1178,74 +1174,7 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
       {/* 10. SETTINGS (teachers/settings.php)                          */}
       {/* ============================================================ */}
       {activeTab === 'settings' && (
-        <div className="max-w-2xl p-6 rounded-xl bg-bg2 border border-border shadow-xs space-y-4">
-          <h3 className="text-xl font-bold font-serif text-text">Faculty Account Settings</h3>
-          <p className="text-xs text-text2">Update account password and security credentials.</p>
-
-          {passUpdated && (
-            <div className="p-3 rounded-lg bg-green-bg border border-green/30 text-xs text-green flex items-center gap-2">
-              <RiCheckLine className="size-4" aria-hidden="true" />
-              <span>Password successfully updated!</span>
-            </div>
-          )}
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (newPass !== confirmPass) return;
-              setPassUpdated(true);
-              setCurrentPass('');
-              setNewPass('');
-              setConfirmPass('');
-              setTimeout(() => setPassUpdated(false), 2500);
-            }}
-            className="space-y-3"
-          >
-            <div>
-              <label className="block text-xs font-semibold text-text2 mb-1">Current Password *</label>
-              <input
-                type="password"
-                placeholder="Enter current password"
-                value={currentPass}
-                onChange={(e) => setCurrentPass(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">New Password *</label>
-                <input
-                  type="password"
-                  placeholder="Min 8 characters"
-                  value={newPass}
-                  onChange={(e) => setNewPass(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">Confirm New Password *</label>
-                <input
-                  type="password"
-                  placeholder="Confirm new password"
-                  value={confirmPass}
-                  onChange={(e) => setConfirmPass(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                  required
-                />
-              </div>
-            </div>
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-xl bg-accent text-white text-xs font-semibold hover:bg-accent2 cursor-pointer shadow-xs"
-              >
-                Update Password
-              </button>
-            </div>
-          </form>
-        </div>
+        <TeacherSettingsView onTabChange={onTabChange} />
       )}
 
       {/* Screen: About (about.php) */}
