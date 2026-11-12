@@ -5,17 +5,31 @@ import {
   SHS_STRANDS,
   STUDENT_DIRECTORY,
 } from '@/data/mockData';
+import { AboutView } from '@/components/views/AboutView';
 import {
-  RiGroupLine,
-  RiShieldCheckLine,
-  RiBarChartLine,
   RiCheckLine,
   RiCloseLine,
   RiSearchLine,
   RiFileExcel2Line,
-  RiUserFollowLine,
   RiAddLine,
   RiUpload2Line,
+  RiFileChartLine,
+  RiDownload2Line,
+  RiPrinterLine,
+  RiGroupLine,
+  RiUserStarLine,
+  RiGraduationCapLine,
+  RiBookOpenLine,
+  RiBuilding4Line,
+  RiDatabase2Line,
+  RiNotification3Line,
+  RiShieldCheckLine,
+  RiFileList3Line,
+  RiBarChartLine,
+  RiEditLine,
+  RiDeleteBinLine,
+  RiHardDriveLine,
+  RiArrowRightLine,
 } from '@remixicon/react';
 
 interface AdminDashboardProps {
@@ -34,6 +48,8 @@ export function AdminDashboard({ activeTab, onTabChange }: AdminDashboardProps) 
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [isAddTeacherOpen, setIsAddTeacherOpen] = useState(false);
   const [isAddSubjectOpen, setIsAddSubjectOpen] = useState(false);
+  const [isPostAnnounceOpen, setIsPostAnnounceOpen] = useState(false);
+  const [adminAnnSearch, setAdminAnnSearch] = useState('');
 
   // Add Student form state (admin_students.php lines 1130-1235)
   const [newFirst, setNewFirst] = useState('');
@@ -61,8 +77,6 @@ export function AdminDashboard({ activeTab, onTabChange }: AdminDashboardProps) 
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [passUpdated, setPassUpdated] = useState(false);
-
-  const pendingApprovals = approvals.filter((a) => a.status === 'pending');
 
   const handleApproveFaculty = (id: string) => {
     setApprovals((prev) =>
@@ -111,134 +125,535 @@ export function AdminDashboard({ activeTab, onTabChange }: AdminDashboardProps) 
   return (
     <div className="space-y-6">
       {/* ============================================================ */}
-      {/* 1. EXECUTIVE DASHBOARD (admin/index.php)                     */}
+      {/* 1. EXECUTIVE DASHBOARD (admin/index.php lines 430-718)       */}
       {/* ============================================================ */}
       {activeTab === 'dashboard' && (
-        <>
-          {/* 4 KPI Stat Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Total Students</span>
-                <div className="p-2 rounded-lg bg-accent/10 text-accent">
-                  <RiGroupLine className="size-4" aria-hidden="true" />
-                </div>
+        <div className="space-y-6">
+          {/* Section Header (admin/index.php lines 430-435) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-text">
+                  Good morning, Admin!
+                </h1>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                  ● Systems Operational
+                </span>
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">{students.length + 479}</div>
-              <span className="text-xs text-accent mt-1 inline-block font-medium">100% LRN Registered</span>
+              <p className="text-xs sm:text-sm text-text2 mt-1">
+                Institutional Control Panel · Senior High School Management & Analytics
+              </p>
             </div>
-
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Verified Faculty</span>
-                <div className="p-2 rounded-lg bg-green/10 text-green">
-                  <RiUserFollowLine className="size-4" aria-hidden="true" />
-                </div>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">24</div>
-              <span className="text-xs text-green mt-1 inline-block font-medium">DepEd PRC Licensed</span>
-            </div>
-
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Pending Approvals</span>
-                <div className="p-2 rounded-lg bg-amber/10 text-amber">
-                  <RiShieldCheckLine className="size-4" aria-hidden="true" />
-                </div>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">
-                {pendingApprovals.length}
-              </div>
-              <span className="text-xs text-amber mt-1 inline-block font-medium">Teacher Onboarding</span>
-            </div>
-
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Active Strands</span>
-                <div className="p-2 rounded-lg bg-purple/10 text-purple">
-                  <RiBarChartLine className="size-4" aria-hidden="true" />
-                </div>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">5</div>
-              <span className="text-xs text-purple mt-1 inline-block font-medium">13 Total Sections</span>
-            </div>
-          </div>
-
-          {/* Quick Actions Toolbar */}
-          <div className="p-4 rounded-xl bg-bg2 border border-border flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs font-bold text-text3 uppercase tracking-wider">Administrator Operations:</span>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setIsAddStudentOpen(true)}
-                className="px-3 py-1.5 rounded-lg bg-bg3 hover:bg-bg4 text-text text-xs font-semibold border border-border flex items-center gap-1.5 cursor-pointer"
+                onClick={() => setIsPostAnnounceOpen(true)}
+                className="btn btn-primary btn-sm text-xs cursor-pointer shadow-sm hover:shadow-md inline-flex items-center gap-1.5"
               >
-                <RiAddLine className="size-3.5 text-accent" />
-                <span>+ Add Student</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCsvModalOpen(true)}
-                className="px-3 py-1.5 rounded-lg bg-bg3 hover:bg-bg4 text-text text-xs font-semibold border border-border flex items-center gap-1.5 cursor-pointer"
-              >
-                <RiFileExcel2Line className="size-3.5 text-green" />
-                <span>Import CSV / Excel</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onTabChange('teachers')}
-                className="px-3 py-1.5 rounded-lg bg-purple text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:bg-purple/90 shadow-xs"
-              >
-                <RiShieldCheckLine className="size-3.5" />
-                <span>Review Approvals ({pendingApprovals.length})</span>
+                <RiAddLine size={15} />
+                <span>Post System Notice</span>
               </button>
             </div>
           </div>
 
-          {/* Pending Faculty Approvals Quick Feed */}
-          <div className="p-5 rounded-xl bg-bg2 border border-border space-y-4">
-            <div className="flex items-center justify-between">
+          {/* Stats Grid - 6 Stat Cards (admin/index.php lines 437-474) */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="stat-card blue group">
+              <div className="stat-icon">
+                <RiGroupLine size={22} />
+              </div>
+              <div className="stat-value">510</div>
+              <div className="stat-label">Total Users</div>
+              <div className="stat-change up">
+                <span>↑ Active accounts</span>
+              </div>
+            </div>
+            <div className="stat-card green group">
+              <div className="stat-icon">
+                <RiUserStarLine size={22} />
+              </div>
+              <div className="stat-value">24</div>
+              <div className="stat-label">Active Faculty</div>
+              <div className="stat-change up">
+                <span>Verified staff</span>
+              </div>
+            </div>
+            <div className="stat-card cyan group">
+              <div className="stat-icon">
+                <RiGraduationCapLine size={22} />
+              </div>
+              <div className="stat-value">486</div>
+              <div className="stat-label">Students</div>
+              <div className="stat-change up">
+                <span>Enrolled learners</span>
+              </div>
+            </div>
+            <div className="stat-card purple group">
+              <div className="stat-icon">
+                <RiBookOpenLine size={22} />
+              </div>
+              <div className="stat-value">5</div>
+              <div className="stat-label">Total Strands</div>
+              <div className="stat-change up">
+                <span>SHS tracks</span>
+              </div>
+            </div>
+            <div className="stat-card teal group">
+              <div className="stat-icon">
+                <RiBuilding4Line size={22} />
+              </div>
+              <div className="stat-value">12</div>
+              <div className="stat-label">Sections</div>
+              <div className="stat-change neutral">
+                <span>Class blocks</span>
+              </div>
+            </div>
+            <div className="stat-card amber group">
+              <div className="stat-icon">
+                <RiDatabase2Line size={22} />
+              </div>
+              <div className="stat-value">1,420</div>
+              <div className="stat-label">Total Records</div>
+              <div className="stat-change up">
+                <span>System data</span>
+              </div>
+            </div>
+          </div>
+
+          {/* System Announcements Card (admin/index.php lines 476-566) */}
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">
+                <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
+                  <RiNotification3Line size={18} />
+                </div>
+                <span>System Announcements</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPostAnnounceOpen(true)}
+                className="btn btn-primary btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
+              >
+                <RiAddLine size={14} />
+                <span>Post Notice</span>
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative mb-4">
+              <RiSearchLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text3 pointer-events-none" />
+              <input
+                type="text"
+                value={adminAnnSearch}
+                onChange={(e) => setAdminAnnSearch(e.target.value)}
+                placeholder="Search institutional announcements by title or target audience..."
+                className="w-full pl-9 pr-8 py-2 rounded-xl border border-border bg-bg3 text-xs text-text placeholder:text-text3 outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 transition-all"
+              />
+              {adminAnnSearch && (
+                <button
+                  type="button"
+                  onClick={() => setAdminAnnSearch('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text3 hover:text-text p-0.5 cursor-pointer"
+                >
+                  <RiCloseLine size={14} />
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {[
+                {
+                  id: 1,
+                  type: 'important',
+                  posterRole: 'admin',
+                  posterName: 'ExceLearn Admin',
+                  category: 'both',
+                  catLabel: 'Everyone',
+                  catColor: 'var(--green)',
+                  date: 'May 14, 09:00 AM',
+                  title: 'Academic Year 2026–2027 Portal Upgrades & Matatag Sync',
+                  message:
+                    'All teachers and students are advised that the DepEd K-12 MATATAG competencies sync is now operational across all learning sections.',
+                },
+                {
+                  id: 2,
+                  type: 'system',
+                  posterRole: 'admin',
+                  posterName: 'ExceLearn Admin',
+                  category: 'for_teacher',
+                  catLabel: 'Teachers Only',
+                  catColor: 'var(--purple)',
+                  date: 'May 12, 03:30 PM',
+                  title: 'Faculty Quarterly Grading Deadline & LIS Encoding',
+                  message:
+                    'Quarterly exams must be scheduled and periodic grade components finalized in the teacher gradebook by Friday next week.',
+                },
+                {
+                  id: 3,
+                  type: 'info',
+                  posterRole: 'admin',
+                  posterName: 'ExceLearn Admin',
+                  category: 'for_student',
+                  catLabel: 'Students Only',
+                  catColor: 'var(--cyan)',
+                  date: 'May 10, 11:15 AM',
+                  title: 'Virtual Class Attendance Standards & Room Links',
+                  message:
+                    'Virtual classes are monitored for official DepEd SF2 attendance. Ensure audio/video devices are pre-tested before sessions.',
+                },
+              ]
+                .filter(
+                  (a) =>
+                    !adminAnnSearch ||
+                    a.title.toLowerCase().includes(adminAnnSearch.toLowerCase()) ||
+                    a.message.toLowerCase().includes(adminAnnSearch.toLowerCase())
+                )
+                .map((a) => (
+                  <div key={a.id} className={`announce-item ${a.type} space-y-1.5`}>
+                    <div className="announce-header flex flex-wrap items-center gap-2">
+                      <span className={`announce-tag ${a.type}`}>{a.type}</span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-500/10 text-red border border-red-500/20">
+                        <RiShieldCheckLine size={12} />
+                        Admin: {a.posterName}
+                      </span>
+                      <span
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{
+                          background: `${a.catColor}18`,
+                          color: a.catColor,
+                        }}
+                      >
+                        Target: {a.catLabel}
+                      </span>
+                      <span className="announce-time text-[11px] text-text3 ml-auto font-medium">{a.date}</span>
+                    </div>
+                    <div className="text-sm font-bold text-text pt-0.5">{a.title}</div>
+                    <div className="text-xs text-text2 leading-relaxed">{a.message}</div>
+                    <div className="flex gap-2 pt-2 border-t border-border/50">
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-border hover:bg-bg4 text-text2 hover:text-text cursor-pointer transition-colors"
+                      >
+                        <RiEditLine size={13} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-red-500/10 text-red border border-red-500/20 hover:bg-red-500/20 cursor-pointer transition-colors"
+                      >
+                        <RiDeleteBinLine size={13} />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* Dash Grid 1: Quick Actions & Recent Registrations (admin/index.php lines 568-635) */}
+          <div className="dash-grid dash-grid-2-1">
+            {/* Quick Actions Card */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-amber/10 text-amber">
+                    <RiFileList3Line size={18} />
+                  </div>
+                  <span>Quick Actions</span>
+                </div>
+              </div>
+              <div className="quick-actions">
+                <div
+                  className="quick-action group"
+                  onClick={() => onTabChange('teachers')}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiUserStarLine size={22} />
+                  </span>
+                  <span className="qa-label">Add Faculty</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => setIsAddStudentOpen(true)}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiGraduationCapLine size={22} />
+                  </span>
+                  <span className="qa-label">Add Student</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => onTabChange('subjects')}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiBookOpenLine size={22} />
+                  </span>
+                  <span className="qa-label">New Subject</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => onTabChange('sections')}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiBuilding4Line size={22} />
+                  </span>
+                  <span className="qa-label">New Section</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => onTabChange('reports')}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiFileList3Line size={22} />
+                  </span>
+                  <span className="qa-label">Reports</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => onTabChange('analytics')}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiBarChartLine size={22} />
+                  </span>
+                  <span className="qa-label">Analytics</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Registrations Card */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
+                    <RiGroupLine size={18} />
+                  </div>
+                  <span>Recent Registrations</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onTabChange('students')}
+                  className="btn btn-ghost btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
+                >
+                  <span>Directory</span>
+                  <RiArrowRightLine size={13} />
+                </button>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { name: 'Ms. Juna Velarde', role: 'Teacher', date: 'May 14', verified: true, bg: 'linear-gradient(135deg, var(--cyan), var(--accent))', initials: 'JV' },
+                  { name: 'Bryan Donceras', role: 'Student', date: 'May 12', verified: true, bg: 'linear-gradient(135deg, var(--green), #1aaa6e)', initials: 'BD' },
+                  { name: 'Janloyd Lotino', role: 'Student', date: 'May 11', verified: true, bg: 'linear-gradient(135deg, var(--purple), #8b3fbf)', initials: 'JL' },
+                  { name: 'Katrina Diaz', role: 'Student', date: 'May 10', verified: true, bg: 'linear-gradient(135deg, #f5a623, #e08c0c)', initials: 'KD' },
+                  { name: 'Mr. Ryan Alcantara', role: 'Teacher', date: 'May 08', verified: false, bg: 'linear-gradient(135deg, var(--red), #e04040)', initials: 'RA' },
+                ].map((u, idx) => (
+                  <div key={idx} className="user-row hover:border-border2 transition-colors">
+                    <div className="user-row-avatar shadow-xs" style={{ background: u.bg }}>
+                      {u.initials}
+                    </div>
+                    <div className="user-row-info">
+                      <div className="user-row-name text-xs font-semibold text-text">{u.name}</div>
+                      <div className="user-row-detail text-[11px] text-text3">{u.role} · Reg {u.date}</div>
+                    </div>
+                    <div className="user-row-role">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        u.role === 'Teacher' ? 'bg-purple-500/10 text-purple' : 'bg-accent/10 text-accent'
+                      }`}>
+                        {u.role}
+                      </span>
+                    </div>
+                    <div className="user-row-status">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        u.verified
+                          ? 'bg-green-500/10 text-green border border-green-500/20'
+                          : 'bg-amber-500/10 text-amber border border-amber-500/20'
+                      }`}>
+                        {u.verified ? 'Active' : 'Pending'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Dash Grid 2: Available Strands & Storage Usage (admin/index.php lines 636-718) */}
+          <div className="dash-grid dash-grid-1-1">
+            {/* Available Strands */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-teal/10 text-teal">
+                    <RiBuilding4Line size={18} />
+                  </div>
+                  <span>Available Strands</span>
+                </div>
+                <span className="badge badge-cyan">5 tracks active</span>
+              </div>
+              <div className="space-y-3.5">
+                {[
+                  { name: 'STEM', track: 'Science, Technology, Engineering & Math', students: 168, color: 'var(--accent)' },
+                  { name: 'ABM', track: 'Accountancy, Business & Management', students: 112, color: 'var(--green)' },
+                  { name: 'HUMSS', track: 'Humanities & Social Sciences', students: 96, color: 'var(--amber)' },
+                  { name: 'TVL-ICT', track: 'Technical-Vocational Livelihood - ICT', students: 74, color: 'var(--purple)' },
+                  { name: 'GAS', track: 'General Academic Strand', students: 36, color: 'var(--cyan)' },
+                ].map((s, idx) => (
+                  <div key={idx} className="p-2 -mx-2 rounded-xl hover:bg-bg3/60 transition-colors">
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <div className="font-semibold text-text">
+                        <span>{s.name}</span>
+                        <span className="text-text3 font-normal ml-2 text-[11px] hidden sm:inline">({s.track})</span>
+                      </div>
+                      <span className="text-text2 font-bold tabular-nums text-[11px]">{s.students} learners</span>
+                    </div>
+                    <div className="progress-bar">
+                      <div
+                        className="progress-fill"
+                        style={{
+                          width: `${(s.students / 200) * 100}%`,
+                          background: s.color,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Storage Usage */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-purple/10 text-purple">
+                    <RiHardDriveLine size={18} />
+                  </div>
+                  <span>Storage Usage</span>
+                </div>
+                <span className="badge badge-purple">20.0 GB / 50.0 GB (40%)</span>
+              </div>
               <div>
-                <h4 className="text-base font-bold text-text font-serif">Pending Faculty Verification Queue</h4>
-                <p className="text-xs text-text2">PRC Licensed teachers awaiting portal access approval.</p>
+                <div className="storage-wrap mb-4">
+                  <div className="storage-header flex justify-between text-xs mb-2 font-medium">
+                    <span className="text-text2">Cloud Filesystem Allocation</span>
+                    <span className="text-accent font-semibold">20.0 GB Used · 30.0 GB Free</span>
+                  </div>
+                  <div className="h-3 w-full bg-bg3 border border-border rounded-full overflow-hidden flex shadow-xs">
+                    <div style={{ width: '8.4%', background: 'var(--accent)' }} title="Course Materials: 4.2 GB" />
+                    <div style={{ width: '17%', background: 'var(--green)' }} title="Videos: 8.5 GB" />
+                    <div style={{ width: '4.2%', background: 'var(--purple)' }} title="PDF: 2.1 GB" />
+                    <div style={{ width: '2.8%', background: 'var(--amber)' }} title="PPTX: 1.4 GB" />
+                    <div style={{ width: '7.6%', background: 'var(--red)' }} title="Backups: 3.8 GB" />
+                  </div>
+                </div>
+
+                <div className="space-y-2.5">
+                  {[
+                    { label: 'Course Materials', gb: '4.2 GB', pct: 21, color: 'var(--accent)' },
+                    { label: 'Recorded Virtual Classes', gb: '8.5 GB', pct: 42.5, color: 'var(--green)' },
+                    { label: 'Student PDF Submissions', gb: '2.1 GB', pct: 10.5, color: 'var(--purple)' },
+                    { label: 'Presentation Slides (PPTX)', gb: '1.4 GB', pct: 7.0, color: 'var(--amber)' },
+                    { label: 'Database Backups', gb: '3.8 GB', pct: 19.0, color: 'var(--red)' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 text-xs">
+                      <div className="w-36 text-xs text-text2 font-medium truncate">{item.label}</div>
+                      <div className="flex-1">
+                        <div className="progress-bar">
+                          <div
+                            className="progress-fill"
+                            style={{
+                              width: `${item.pct}%`,
+                              background: item.color,
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="w-16 text-right text-xs font-bold tabular-nums" style={{ color: item.color }}>
+                        {item.gb}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POST ANNOUNCEMENT MODAL FOR ADMIN (admin/index.php lines 720-770) */}
+      {isPostAnnounceOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-md bg-bg2 rounded-2xl border border-border shadow-2xl overflow-hidden p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h4 className="text-base font-bold text-text">📢 Post System Announcement</h4>
               <button
                 type="button"
-                onClick={() => onTabChange('teachers')}
-                className="text-xs text-accent hover:underline font-semibold"
+                onClick={() => setIsPostAnnounceOpen(false)}
+                className="p-1 rounded-lg text-text3 hover:text-text cursor-pointer"
               >
-                View Directory &rarr;
+                <RiCloseLine className="size-5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-2.5">
-              {pendingApprovals.map((fac) => (
-                <div key={fac.id} className="p-3.5 rounded-xl bg-bg3 border border-border flex items-center justify-between">
-                  <div>
-                    <div className="text-xs font-bold text-text">{fac.name}</div>
-                    <div className="text-[11px] text-text3">{fac.department} · {fac.prcLicense}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleRejectFaculty(fac.id)}
-                      className="px-2.5 py-1 rounded-lg border border-red/40 text-red text-xs hover:bg-red/10 cursor-pointer"
-                    >
-                      Reject
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleApproveFaculty(fac.id)}
-                      className="px-3 py-1 rounded-lg bg-green text-[#0e0f14] text-xs font-semibold hover:brightness-105 cursor-pointer shadow-xs"
-                    >
-                      Approve
-                    </button>
-                  </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setIsPostAnnounceOpen(false);
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block font-semibold text-text2 mb-1">Title *</label>
+                <input
+                  type="text"
+                  placeholder="Announcement title..."
+                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text outline-none focus:border-accent"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-text2 mb-1">Type</label>
+                  <select className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text outline-none focus:border-accent">
+                    <option value="important">Important</option>
+                    <option value="system">System</option>
+                    <option value="info">Info</option>
+                  </select>
                 </div>
-              ))}
-            </div>
+                <div>
+                  <label className="block font-semibold text-text2 mb-1">Audience</label>
+                  <select className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text outline-none focus:border-accent">
+                    <option value="both">👥 Everyone</option>
+                    <option value="for_teacher">👨‍🏫 Teachers Only</option>
+                    <option value="for_student">👨‍🎓 Students Only</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block font-semibold text-text2 mb-1">Message *</label>
+                <textarea
+                  rows={4}
+                  placeholder="Write your announcement here..."
+                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text outline-none focus:border-accent resize-vertical"
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setIsPostAnnounceOpen(false)}
+                  className="px-3 py-1.5 rounded-lg border border-border text-text2 hover:bg-bg3 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-lg bg-accent text-white font-semibold hover:bg-accent2 cursor-pointer shadow-xs"
+                >
+                  Post Announcement
+                </button>
+              </div>
+            </form>
           </div>
-        </>
+        </div>
       )}
 
       {/* ============================================================ */}
@@ -529,6 +944,156 @@ export function AdminDashboard({ activeTab, onTabChange }: AdminDashboardProps) 
             })}
           </div>
         </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 5b. GRADE & SECTIONS (admin_sections.php)                     */}
+      {/* ============================================================ */}
+      {activeTab === 'sections' && (
+        <div className="p-5 rounded-xl bg-bg2 border border-border space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-text">Grade Levels & Sections</h3>
+              <p className="text-xs text-text2">Class section assignments, advisers, and room allocations.</p>
+            </div>
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent text-white text-xs font-semibold hover:bg-accent2 shadow-xs cursor-pointer"
+            >
+              <RiAddLine className="size-4" />
+              <span>Create Section</span>
+            </button>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-border">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-bg3 border-b border-border text-text3 uppercase font-semibold text-[10px] tracking-wider">
+                <tr>
+                  <th className="px-4 py-3">Section Name</th>
+                  <th className="px-4 py-3">Grade Level</th>
+                  <th className="px-4 py-3">Strand</th>
+                  <th className="px-4 py-3">Assigned Adviser</th>
+                  <th className="px-4 py-3">Classroom</th>
+                  <th className="px-4 py-3 text-right">Students</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {[
+                  { section: 'STEM 11-A', grade: 'Grade 11', strand: 'STEM', adviser: 'Ms. Juna Velarde', room: 'Bldg 2 · Rm 204', count: 42, cap: 45 },
+                  { section: 'STEM 11-B', grade: 'Grade 11', strand: 'STEM', adviser: 'Mr. Ryan Alcantara', room: 'Bldg 2 · Rm 205', count: 40, cap: 45 },
+                  { section: 'ABM 11-A', grade: 'Grade 11', strand: 'ABM', adviser: 'Mrs. Cynthia Roxas', room: 'Bldg 1 · Rm 102', count: 38, cap: 45 },
+                  { section: 'HUMSS 11-A', grade: 'Grade 11', strand: 'HUMSS', adviser: 'Mr. Dennis Santos', room: 'Bldg 1 · Rm 105', count: 45, cap: 45 },
+                  { section: 'TVL-ICT 11-A', grade: 'Grade 11', strand: 'TVL-ICT', adviser: 'Engr. Ronald Cruz', room: 'ICT Lab 1', count: 35, cap: 40 },
+                  { section: 'GAS 11-A', grade: 'Grade 11', strand: 'GAS', adviser: 'Ms. Elena Torres', room: 'Bldg 3 · Rm 301', count: 28, cap: 40 },
+                ].map((sec) => (
+                  <tr key={sec.section} className="hover:bg-bg3/50 transition-colors">
+                    <td className="px-4 py-3 font-semibold text-text">{sec.section}</td>
+                    <td className="px-4 py-3 text-text2">{sec.grade}</td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-accent/15 text-accent">
+                        {sec.strand}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-text font-medium">{sec.adviser}</td>
+                    <td className="px-4 py-3 text-text3">{sec.room}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-text font-semibold">
+                      {sec.count} / {sec.cap}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 5c. INSTITUTIONAL REPORTS (admin_reports.php)                 */}
+      {/* ============================================================ */}
+      {activeTab === 'reports' && (
+        <div className="space-y-4">
+          <div className="p-5 rounded-xl bg-bg2 border border-border">
+            <h3 className="text-base font-bold text-text mb-1">Institutional Reports & DepEd LIS</h3>
+            <p className="text-xs text-text2 mb-4">Official reports and enrollment records for Excelsior Polytechnic Academy.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { title: 'DepEd School Form 1 (SF1 - School Register)', desc: 'Official master list of enrolled Senior High students with LRN & demographic records.' },
+                { title: 'DepEd School Form 2 (SF2 - Daily Attendance)', desc: 'Monthly summary of learner attendance and absenteeism logs.' },
+                { title: 'DepEd School Form 5 (SF5 - Report on Promotion)', desc: 'End-of-term promotional status, general averages, and academic honors.' },
+                { title: 'DepEd School Form 10 (SF10 - Permanent Record)', desc: 'Learner individual permanent academic achievement record (formerly Form 137).' },
+              ].map((rep, idx) => (
+                <div key={idx} className="p-4 rounded-xl bg-bg3 border border-border flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <RiFileChartLine className="size-4 text-accent shrink-0" />
+                      <h4 className="text-xs font-bold text-text">{rep.title}</h4>
+                    </div>
+                    <p className="text-[11px] text-text3 leading-relaxed">{rep.desc}</p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-bg2 border border-border text-[11px] font-medium text-text hover:bg-bg4 cursor-pointer"
+                    >
+                      <RiDownload2Line className="size-3.5 text-accent" />
+                      <span>Export (.xlsx)</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-bg2 border border-border text-[11px] font-medium text-text hover:bg-bg4 cursor-pointer"
+                    >
+                      <RiPrinterLine className="size-3.5 text-amber" />
+                      <span>Print PDF</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 5d. ANALYTICS & METRICS (admin_analytics.php)                 */}
+      {/* ============================================================ */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-4">
+          <div className="p-5 rounded-xl bg-bg2 border border-border space-y-4">
+            <div>
+              <h3 className="text-base font-bold text-text">Academy Analytics & Performance</h3>
+              <p className="text-xs text-text2">Academic year 2026–2027 cross-departmental KPIs.</p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-4 rounded-xl bg-bg3 border border-border">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text3">Learner Pass Rate</span>
+                <div className="text-2xl font-bold font-serif text-green mt-1">94.8%</div>
+                <div className="text-[10px] text-text3 mt-0.5">+2.4% vs last semester</div>
+              </div>
+              <div className="p-4 rounded-xl bg-bg3 border border-border">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text3">Completion Rate</span>
+                <div className="text-2xl font-bold font-serif text-accent mt-1">98.2%</div>
+                <div className="text-[10px] text-text3 mt-0.5">Senior High cohorts</div>
+              </div>
+              <div className="p-4 rounded-xl bg-bg3 border border-border">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text3">Daily Attendance</span>
+                <div className="text-2xl font-bold font-serif text-amber mt-1">92.6%</div>
+                <div className="text-[10px] text-text3 mt-0.5">Blended & virtual</div>
+              </div>
+              <div className="p-4 rounded-xl bg-bg3 border border-border">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text3">Faculty Utilization</span>
+                <div className="text-2xl font-bold font-serif text-purple mt-1">87.5%</div>
+                <div className="text-[10px] text-text3 mt-0.5">24 active teaching faculty</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Screen: About (about.php) */}
+      {activeTab === 'about' && (
+        <AboutView role="admin" onTabChange={onTabChange} />
       )}
 
       {/* ============================================================ */}

@@ -1,49 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Role, UserProfile } from '@/types';
-import { Avatar } from '@/components/base/avatar/avatar';
 import { PrototypeSwitcher } from '@/components/layout/PrototypeSwitcher';
 import {
   RiDashboardLine,
   RiDashboardFill,
-  RiBookOpenLine,
-  RiBookOpenFill,
-  RiQuestionnaireLine,
-  RiQuestionnaireFill,
-  RiFileList3Line,
-  RiFileList3Fill,
-  RiVideoChatLine,
-  RiVideoChatFill,
-  RiAwardLine,
-  RiAwardFill,
-  RiShieldCheckLine,
-  RiShieldCheckFill,
+  RiStackLine,
+  RiStackFill,
+  RiFilmLine,
+  RiFilmFill,
+  RiVideoLine,
+  RiVideoFill,
   RiGroupLine,
   RiGroupFill,
-  RiBarChartLine,
-  RiBarChartFill,
-  RiNotification3Line,
-  RiNotification3Fill,
-  RiLogoutBoxRLine,
-  RiMenuLine,
-  RiCloseLine,
-  RiGraduationCapLine,
-  RiSearchLine,
-  RiUser3Line,
-  RiUser3Fill,
+  RiCheckboxCircleLine,
+  RiCheckboxCircleFill,
+  RiUserLine,
+  RiUserFill,
   RiSettings3Line,
   RiSettings3Fill,
-  RiTableLine,
-  RiTableFill,
+  RiInformationLine,
+  RiInformationFill,
+  RiLogoutBoxRLine,
+  RiListCheck2,
+  RiBarChartLine,
+  RiBarChartFill,
+  RiFileChartLine,
+  RiFileChartFill,
+  RiLineChartLine,
+  RiLineChartFill,
+  RiMenuLine,
+  RiCloseLine,
+  RiNotification3Line,
+  RiMenuFoldLine,
+  RiMenuUnfoldLine,
 } from '@remixicon/react';
 
 export interface NavItemConfig {
   id: string;
   label: string;
   section: string;
-  lineIcon: typeof RiDashboardLine;
-  fillIcon: typeof RiDashboardFill;
+  lineIcon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
+  fillIcon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
   badge?: string | number;
-  badgeVariant?: 'accent' | 'amber' | 'green' | 'neutral';
+  badgeVariant?: 'accent' | 'amber' | 'green' | 'purple' | 'cyan' | 'red' | 'neutral';
+  isLogout?: boolean;
 }
 
 interface ShellProps {
@@ -66,43 +66,90 @@ export function Shell({
   children,
 }: ShellProps) {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('excelearn_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
-  // Define nav items based on the actual PHP LMS subsystems
+  const toggleSidebarCollapse = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('excelearn_sidebar_collapsed', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileDrawerOpen) {
+        setMobileDrawerOpen(false);
+        return;
+      }
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable)
+      ) {
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebarCollapse();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileDrawerOpen]);
+
+  // Exact navigation groups & sub-groups from the PHP codebase
   const getNavItems = (): NavItemConfig[] => {
     switch (currentRole) {
-      case 'student':
-        return [
-          { id: 'dashboard', label: 'Dashboard', section: 'Learning', lineIcon: RiDashboardLine, fillIcon: RiDashboardFill },
-          { id: 'courses', label: 'My Courses', section: 'Learning', lineIcon: RiBookOpenLine, fillIcon: RiBookOpenFill, badge: 6, badgeVariant: 'accent' },
-          { id: 'quizzes', label: 'Quizzes', section: 'Learning', lineIcon: RiQuestionnaireLine, fillIcon: RiQuestionnaireFill, badge: 2, badgeVariant: 'amber' },
-          { id: 'tasks', label: 'Performance Tasks', section: 'Learning', lineIcon: RiFileList3Line, fillIcon: RiFileList3Fill, badge: 3, badgeVariant: 'amber' },
-          { id: 'live', label: 'Virtual Class', section: 'Learning', lineIcon: RiVideoChatLine, fillIcon: RiVideoChatFill, badge: 'Live', badgeVariant: 'green' },
-          { id: 'grades', label: 'Grades & Report Card', section: 'Learning', lineIcon: RiAwardLine, fillIcon: RiAwardFill },
-          { id: 'profile', label: 'My Profile', section: 'Account', lineIcon: RiUser3Line, fillIcon: RiUser3Fill },
-          { id: 'settings', label: 'Settings', section: 'Account', lineIcon: RiSettings3Line, fillIcon: RiSettings3Fill },
-        ];
       case 'teacher':
         return [
-          { id: 'dashboard', label: 'Dashboard', section: 'Teaching', lineIcon: RiDashboardLine, fillIcon: RiDashboardFill },
-          { id: 'courses', label: 'Courses & Modules', section: 'Teaching', lineIcon: RiBookOpenLine, fillIcon: RiBookOpenFill, badge: 4, badgeVariant: 'accent' },
-          { id: 'quizzes', label: 'Quizzes & Builder', section: 'Teaching', lineIcon: RiQuestionnaireLine, fillIcon: RiQuestionnaireFill, badge: 3, badgeVariant: 'neutral' },
-          { id: 'tasks', label: 'Tasks & Grading', section: 'Teaching', lineIcon: RiFileList3Line, fillIcon: RiFileList3Fill, badge: 3, badgeVariant: 'amber' },
-          { id: 'grades', label: 'Gradebook', section: 'Teaching', lineIcon: RiTableLine, fillIcon: RiTableFill },
-          { id: 'students', label: 'Student Roster', section: 'Teaching', lineIcon: RiGroupLine, fillIcon: RiGroupFill, badge: 142, badgeVariant: 'neutral' },
-          { id: 'live', label: 'Virtual Classroom', section: 'Teaching', lineIcon: RiVideoChatLine, fillIcon: RiVideoChatFill, badge: '1 Live', badgeVariant: 'green' },
-          { id: 'announcements', label: 'Announcements', section: 'Teaching', lineIcon: RiNotification3Line, fillIcon: RiNotification3Fill },
-          { id: 'profile', label: 'Faculty Profile', section: 'Account', lineIcon: RiUser3Line, fillIcon: RiUser3Fill },
-          { id: 'settings', label: 'Settings', section: 'Account', lineIcon: RiSettings3Line, fillIcon: RiSettings3Fill },
+          { id: 'dashboard', label: 'Dashboard', section: 'OVERVIEW', lineIcon: RiDashboardLine, fillIcon: RiDashboardFill },
+          { id: 'courses', label: 'Subjects', section: 'TEACHING', lineIcon: RiStackLine, fillIcon: RiStackFill, badge: 0, badgeVariant: 'accent' },
+          { id: 'tasks', label: 'Performance Tasks', section: 'TEACHING', lineIcon: RiFilmLine, fillIcon: RiFilmFill, badge: 0, badgeVariant: 'accent' },
+          { id: 'live', label: 'Virtual Class', section: 'TEACHING', lineIcon: RiVideoLine, fillIcon: RiVideoFill },
+          { id: 'students', label: 'Students', section: 'STUDENTS & GRADES', lineIcon: RiGroupLine, fillIcon: RiGroupFill },
+          { id: 'grades', label: 'Gradebook', section: 'STUDENTS & GRADES', lineIcon: RiCheckboxCircleLine, fillIcon: RiCheckboxCircleFill },
+          { id: 'profile', label: 'My Profile', section: 'ACCOUNT', lineIcon: RiUserLine, fillIcon: RiUserFill },
+          { id: 'settings', label: 'Settings', section: 'ACCOUNT', lineIcon: RiSettings3Line, fillIcon: RiSettings3Fill },
+          { id: 'about', label: 'About', section: 'ACCOUNT', lineIcon: RiInformationLine, fillIcon: RiInformationFill },
+          { id: 'logout', label: 'Logout', section: 'ACCOUNT', lineIcon: RiLogoutBoxRLine, fillIcon: RiLogoutBoxRLine, isLogout: true },
+        ];
+      case 'student':
+        return [
+          { id: 'dashboard', label: 'Dashboard', section: 'OVERVIEW', lineIcon: RiDashboardLine, fillIcon: RiDashboardFill },
+          { id: 'courses', label: 'My Subjects', section: 'LEARNING', lineIcon: RiStackLine, fillIcon: RiStackFill, badge: 6, badgeVariant: 'accent' },
+          { id: 'tasks', label: 'Performance Tasks', section: 'LEARNING', lineIcon: RiFilmLine, fillIcon: RiFilmFill, badge: 3, badgeVariant: 'accent' },
+          { id: 'live', label: 'Virtual Class', section: 'LEARNING', lineIcon: RiVideoLine, fillIcon: RiVideoFill },
+          { id: 'grades', label: 'Grades', section: 'PROGRESS', lineIcon: RiCheckboxCircleLine, fillIcon: RiCheckboxCircleFill },
+          { id: 'profile', label: 'My Profile', section: 'ACCOUNT', lineIcon: RiUserLine, fillIcon: RiUserFill },
+          { id: 'settings', label: 'Settings', section: 'ACCOUNT', lineIcon: RiSettings3Line, fillIcon: RiSettings3Fill },
+          { id: 'about', label: 'About', section: 'ACCOUNT', lineIcon: RiInformationLine, fillIcon: RiInformationFill },
+          { id: 'logout', label: 'Logout', section: 'ACCOUNT', lineIcon: RiLogoutBoxRLine, fillIcon: RiLogoutBoxRLine, isLogout: true },
         ];
       case 'admin':
         return [
-          { id: 'dashboard', label: 'Executive Dashboard', section: 'Institutional Control', lineIcon: RiDashboardLine, fillIcon: RiDashboardFill },
-          { id: 'teachers', label: 'Faculty Management', section: 'Institutional Control', lineIcon: RiShieldCheckLine, fillIcon: RiShieldCheckFill, badge: 3, badgeVariant: 'amber' },
-          { id: 'students', label: 'Students Directory', section: 'Institutional Control', lineIcon: RiGroupLine, fillIcon: RiGroupFill, badge: 486, badgeVariant: 'neutral' },
-          { id: 'subjects', label: 'Subjects Catalog', section: 'Institutional Control', lineIcon: RiBookOpenLine, fillIcon: RiBookOpenFill, badge: 18, badgeVariant: 'neutral' },
-          { id: 'strands', label: 'Strands & Sections', section: 'Institutional Control', lineIcon: RiBarChartLine, fillIcon: RiBarChartFill, badge: 5, badgeVariant: 'accent' },
-          { id: 'profile', label: 'Admin Profile', section: 'Account', lineIcon: RiUser3Line, fillIcon: RiUser3Fill },
-          { id: 'settings', label: 'Settings', section: 'Account', lineIcon: RiSettings3Line, fillIcon: RiSettings3Fill },
+          { id: 'dashboard', label: 'Dashboard', section: 'OVERVIEW', lineIcon: RiDashboardLine, fillIcon: RiDashboardFill },
+          { id: 'teachers', label: 'Teachers', section: 'USER MANAGEMENT', lineIcon: RiGroupLine, fillIcon: RiGroupFill, badge: 24, badgeVariant: 'accent' },
+          { id: 'students', label: 'Students', section: 'USER MANAGEMENT', lineIcon: RiUserLine, fillIcon: RiUserFill, badge: 486, badgeVariant: 'accent' },
+          { id: 'sections', label: 'Grade & Sections', section: 'ACADEMIC', lineIcon: RiListCheck2, fillIcon: RiListCheck2, badge: 12, badgeVariant: 'accent' },
+          { id: 'strands', label: 'Strands', section: 'ACADEMIC', lineIcon: RiBarChartLine, fillIcon: RiBarChartFill, badge: 5, badgeVariant: 'accent' },
+          { id: 'subjects', label: 'Subjects', section: 'ACADEMIC', lineIcon: RiStackLine, fillIcon: RiStackFill, badge: 18, badgeVariant: 'accent' },
+          { id: 'reports', label: 'Reports', section: 'REPORTS AND ANALYTICS', lineIcon: RiFileChartLine, fillIcon: RiFileChartFill },
+          { id: 'analytics', label: 'Analytics', section: 'REPORTS AND ANALYTICS', lineIcon: RiLineChartLine, fillIcon: RiLineChartFill },
+          { id: 'profile', label: 'My Profile', section: 'ACCOUNT', lineIcon: RiUserLine, fillIcon: RiUserFill },
+          { id: 'settings', label: 'Settings', section: 'ACCOUNT', lineIcon: RiSettings3Line, fillIcon: RiSettings3Fill },
+          { id: 'about', label: 'About', section: 'ACCOUNT', lineIcon: RiInformationLine, fillIcon: RiInformationFill },
+          { id: 'logout', label: 'Logout', section: 'ACCOUNT', lineIcon: RiLogoutBoxRLine, fillIcon: RiLogoutBoxRLine, isLogout: true },
         ];
       default:
         return [];
@@ -110,88 +157,132 @@ export function Shell({
   };
 
   const navItems = getNavItems();
+  const sections = Array.from(new Set(navItems.map((item) => item.section)));
 
-  const getBadgeClass = (variant?: 'accent' | 'amber' | 'green' | 'neutral') => {
-    switch (variant) {
-      case 'accent':
-        return 'bg-accent/15 text-accent';
-      case 'amber':
-        return 'bg-amber/15 text-amber';
-      case 'green':
-        return 'bg-green/15 text-green';
-      default:
-        return 'bg-bg4 text-text2';
+  const handleNavClick = (item: NavItemConfig) => {
+    if (item.isLogout) {
+      onLogout();
+    } else {
+      onTabChange(item.id);
     }
   };
-
-  // Group items by section
-  const sections = Array.from(new Set(navItems.map((item) => item.section)));
 
   return (
     <div className="min-h-screen w-full bg-bg text-text flex flex-col lg:flex-row">
       {/* ============================================================ */}
-      {/* Desktop Fixed Sidebar (w-[264px])                            */}
+      {/* Desktop Collapsible Sidebar (w-[260px] -> w-[72px])           */}
       {/* ============================================================ */}
-      <aside className="hidden lg:flex flex-col w-[264px] h-screen sticky top-0 shrink-0 bg-bg2 border-r border-border select-none z-30">
-        {/* Brand Header */}
-        <div className="p-4 flex items-center gap-3 border-b border-border">
-          <img
-            src="/img/Excelsior_Seal_Logo.png"
-            alt="Excelsior Polytechnic Academy"
-            className="size-10 rounded-full shadow-xs object-contain"
-          />
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-lg font-bold tracking-tight text-text">
-                Exce<span className="text-green">Learn</span>
-              </span>
-              <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-school-orange/15 text-school-orange uppercase tracking-wider">
-                SHS
-              </span>
+      <aside
+        className={`hidden lg:flex flex-col h-screen sticky top-0 shrink-0 bg-bg2 border-r border-border select-none z-30 transition-[width] duration-300 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] will-change-[width] overflow-x-hidden ${
+          isCollapsed ? 'w-[72px] sidebar-collapsed' : 'w-[260px]'
+        }`}
+      >
+        {/* Sidebar Logo Header - Fixed 74px height prevents CLS on collapse/expand */}
+        <div className={`h-[74px] shrink-0 border-b border-border flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'}`}>
+          {!isCollapsed ? (
+            <div className="flex items-center justify-between w-full min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <img
+                  src="/img/Excelsior_Seal_Logo.png"
+                  alt="ExceLearn Logo"
+                  className="h-[38px] w-auto object-contain shrink-0"
+                />
+                <div className="min-w-0">
+                  <div className="logo-name whitespace-nowrap">
+                    Exce<span style={{ color: '#22c55e' }}>Learn</span>
+                  </div>
+                  <div className="logo-sub whitespace-nowrap">
+                    Learn Better. Anytime, Anywhere.
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={toggleSidebarCollapse}
+                title="Collapse sidebar (Ctrl+B)"
+                aria-label="Collapse sidebar"
+                className="p-1.5 rounded-lg text-text3 hover:text-text hover:bg-bg3 cursor-pointer shrink-0 ml-1 press-scale"
+              >
+                <RiMenuFoldLine className="size-4" aria-hidden="true" />
+              </button>
             </div>
-            <p className="text-[11px] text-text3 truncate max-w-[170px]">
-              Excelsior Polytechnic Academy
-            </p>
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={toggleSidebarCollapse}
+              title="Expand sidebar (Ctrl+B)"
+              aria-label="Expand sidebar"
+              className="p-1.5 rounded-xl hover:bg-bg3 cursor-pointer flex items-center justify-center group press-scale"
+            >
+              <img
+                src="/img/Excelsior_Seal_Logo.png"
+                alt="ExceLearn Logo"
+                className="size-9 object-contain group-hover:scale-105 transition-transform"
+              />
+              <span className="sr-only">Expand sidebar</span>
+            </button>
+          )}
         </div>
 
         {/* Navigation Sections */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+        <nav className={`sidebar-nav flex-1 overflow-y-auto ${isCollapsed ? 'px-2 py-3 space-y-3' : 'px-3 py-3 space-y-4'}`}>
           {sections.map((secName) => {
             const sectionItems = navItems.filter((item) => item.section === secName);
             return (
-              <div key={secName} className="space-y-1">
-                <div className="px-3 pb-1 text-[10px] font-bold tracking-wider uppercase text-text3">
-                  {secName}
-                </div>
+              <div key={secName} className="space-y-0.5">
+                {!isCollapsed ? (
+                  <div className="nav-section-label">
+                    {secName}
+                  </div>
+                ) : (
+                  <div className="my-2 mx-auto w-8 h-px bg-border/60" aria-hidden="true" />
+                )}
                 {sectionItems.map((item) => {
                   const isActive = currentTab === item.id;
                   const Icon = isActive ? item.fillIcon : item.lineIcon;
+
+                  if (item.isLogout) {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={onLogout}
+                        title={isCollapsed ? item.label : undefined}
+                        aria-label={item.label}
+                        className={`nav-item text-red hover:bg-red/10 cursor-pointer mt-1 ${
+                          isCollapsed ? '!justify-center !px-0 !border-l-0 h-10 w-10 mx-auto' : ''
+                        }`}
+                      >
+                        <RiLogoutBoxRLine className="w-[18px] h-[18px] shrink-0 text-red opacity-90" aria-hidden="true" />
+                        {!isCollapsed && <span className="font-medium text-[13.5px] text-red">{item.label}</span>}
+                      </button>
+                    );
+                  }
 
                   return (
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => onTabChange(item.id)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm font-medium excelearn-nav-pill cursor-pointer active:scale-[0.98] ${
-                        isActive
-                          ? 'active shadow-sm font-semibold'
-                          : 'text-text2 hover:text-text hover:bg-bg3'
-                      }`}
+                      onClick={() => handleNavClick(item)}
+                      title={isCollapsed ? item.label : undefined}
+                      aria-label={item.label}
+                      className={`nav-item excelearn-nav-pill cursor-pointer ${
+                        isCollapsed ? '!justify-center !px-0 !border-l-0 relative h-10 w-10 mx-auto' : ''
+                      } ${isActive ? 'active' : ''}`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className="size-[18px] shrink-0" aria-hidden="true" />
-                        <span className="truncate">{item.label}</span>
-                      </div>
+                      <Icon className="w-[18px] h-[18px] shrink-0 opacity-85" aria-hidden="true" />
+                      {!isCollapsed && <span className="truncate">{item.label}</span>}
 
                       {item.badge !== undefined && (
-                        <span
-                          className={`nav-badge px-1.5 py-0.5 text-[11px] font-semibold rounded-full tabular-nums ${getBadgeClass(
-                            item.badgeVariant
-                          )}`}
-                        >
-                          {item.badge}
-                        </span>
+                        !isCollapsed ? (
+                          <span className="nav-badge size-5 rounded-full bg-accent text-white font-bold text-[11px] flex items-center justify-center shrink-0 ml-auto">
+                            {item.badge}
+                          </span>
+                        ) : (
+                          <span className="absolute -top-1 -right-1 size-4 rounded-full bg-accent text-white font-bold text-[9px] flex items-center justify-center shadow-xs">
+                            {typeof item.badge === 'number' && item.badge > 99 ? '99+' : item.badge}
+                          </span>
+                        )
                       )}
                     </button>
                   );
@@ -199,38 +290,32 @@ export function Shell({
               </div>
             );
           })}
-        </div>
+        </nav>
 
-        {/* DepEd K to 12 MATATAG Mini Card */}
-        <div className="mx-3 my-2 p-2.5 rounded-xl bg-bg3 border border-border">
-          <div className="flex items-center gap-2 mb-0.5">
-            <RiGraduationCapLine className="size-4 text-accent shrink-0" aria-hidden="true" />
-            <span className="text-xs font-semibold text-text">DepEd MATATAG</span>
-          </div>
-          <p className="text-[10px] text-text3 leading-snug">
-            Senior High School Standard Curriculum
-          </p>
-        </div>
-
-        {/* Bottom User Card */}
-        <div className="p-3 border-t border-border bg-bg2/90 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <Avatar size="md" initials={user.initials} color="blue" />
-            <div className="min-w-0">
-              <div className="text-xs font-semibold text-text truncate">{user.name}</div>
-              <div className="text-[10px] text-text3 truncate">{user.subLabel}</div>
+        {/* Sidebar Footer - Fixed 68px height */}
+        <div className={`h-[68px] shrink-0 border-t border-border flex items-center ${isCollapsed ? 'justify-center p-2' : 'p-3.5'}`}>
+          {!isCollapsed ? (
+            <div className="user-card w-full">
+              <div
+                className="user-avatar text-white font-semibold text-xs"
+                style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
+              >
+                {user.initials}
+              </div>
+              <div className="user-info min-w-0">
+                <p className="truncate">{user.name}</p>
+                <span className="truncate">{user.subLabel}</span>
+              </div>
             </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onLogout}
-            title="Log Out / Switch Role"
-            className="p-1.5 text-text3 hover:text-red hover:bg-red/10 rounded-lg transition-colors cursor-pointer"
-            aria-label="Log Out"
-          >
-            <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
-          </button>
+          ) : (
+            <div
+              className="user-avatar text-white font-semibold text-xs cursor-pointer hover:ring-2 hover:ring-accent transition-all shrink-0 press-scale"
+              style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
+              title={`${user.name} (${user.subLabel})`}
+            >
+              {user.initials}
+            </div>
+          )}
         </div>
       </aside>
 
@@ -238,50 +323,53 @@ export function Shell({
       {/* Main Content Area                                            */}
       {/* ============================================================ */}
       <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-8">
-        {/* Sticky Topbar */}
-        <header className="sticky top-0 z-20 h-14 bg-bg2/85 border-b border-border backdrop-blur-md px-4 sm:px-6 flex items-center justify-between">
+        {/* Topbar matching PHP .topbar */}
+        <header className="sticky top-0 z-20 h-14 topbar-material px-4 sm:px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Mobile Drawer Trigger */}
             <button
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
-              className="lg:hidden p-1.5 text-text2 hover:text-text hover:bg-bg3 rounded-lg cursor-pointer"
+              className="lg:hidden p-1.5 text-text2 hover:text-text hover:bg-bg3 rounded-lg cursor-pointer press-scale"
               aria-label="Open Navigation Drawer"
             >
               <RiMenuLine className="size-5" aria-hidden="true" />
             </button>
 
-            {/* Breadcrumb / Title */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-text3 uppercase tracking-wider hidden sm:inline">
-                {currentRole}
-              </span>
-              <span className="text-text3 hidden sm:inline">/</span>
-              <span className="text-sm font-semibold text-text capitalize">
-                {navItems.find((n) => n.id === currentTab)?.label || currentTab}
-              </span>
-            </div>
+            {/* Desktop Sidebar Expand Trigger (shown when sidebar is collapsed) */}
+            {isCollapsed && (
+              <button
+                type="button"
+                onClick={toggleSidebarCollapse}
+                className="hidden lg:flex p-1.5 text-text2 hover:text-text hover:bg-bg3 rounded-lg cursor-pointer press-scale"
+                aria-label="Expand sidebar (Ctrl+B)"
+                title="Expand sidebar (Ctrl+B)"
+              >
+                <RiMenuUnfoldLine className="size-5" aria-hidden="true" />
+              </button>
+            )}
+
+            {/* School Long Logo matching PHP */}
+            <img
+              src="/img/Excelsior_Logo_long.png"
+              alt="Excelsior"
+              className="h-8 w-auto hidden sm:block object-contain"
+            />
           </div>
 
           {/* Right Action Widgets */}
           <div className="flex items-center gap-2.5">
-            {/* Search Pill */}
-            <div className="hidden xl:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-bg3 border border-border text-xs text-text3">
-              <RiSearchLine className="size-3.5" aria-hidden="true" />
-              <span>Search modules, tasks, or records...</span>
-            </div>
-
             {/* Notification Bell */}
             <button
               type="button"
-              className="relative p-2 text-text2 hover:text-text hover:bg-bg3 rounded-lg transition-colors cursor-pointer"
+              className="relative p-2 text-text2 hover:text-text hover:bg-bg3 rounded-lg cursor-pointer press-scale"
               aria-label="Notifications"
             >
               <RiNotification3Line className="size-4" aria-hidden="true" />
               <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-accent animate-pulse" />
             </button>
 
-            {/* Docked Role & Theme Switcher */}
+            {/* Role & Theme Switcher */}
             <PrototypeSwitcher
               currentRole={currentRole}
               onSelectRole={onSelectRole}
@@ -291,7 +379,7 @@ export function Shell({
         </header>
 
         {/* Content Body */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1460px] mx-auto w-full transition-all duration-200">
           {children}
         </main>
       </div>
@@ -301,130 +389,158 @@ export function Shell({
       {/* ============================================================ */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-bg2/95 border-t border-border backdrop-blur-lg z-40 flex items-center justify-around px-2"
+        className="lg:hidden fixed bottom-0 left-0 right-0 h-16 mobile-dock-material z-40 flex items-center justify-around px-2"
       >
-        {navItems.slice(0, 5).map((item) => {
-          const isActive = currentTab === item.id;
-          const Icon = isActive ? item.fillIcon : item.lineIcon;
+        {navItems
+          .filter((i) => !i.isLogout && i.id !== 'settings' && i.id !== 'about')
+          .slice(0, 5)
+          .map((item) => {
+            const isActive = currentTab === item.id;
+            const Icon = isActive ? item.fillIcon : item.lineIcon;
 
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onTabChange(item.id)}
-              className={`relative flex flex-col items-center justify-center min-w-[54px] h-12 rounded-xl transition-all duration-150 cursor-pointer active:scale-95 ${
-                isActive ? 'text-accent font-semibold' : 'text-text3 hover:text-text'
-              }`}
-            >
-              <Icon className="size-5 shrink-0" aria-hidden="true" />
-              <span className="text-[10px] mt-0.5 truncate max-w-[60px]">{item.label}</span>
-              {isActive && (
-                <span className="absolute bottom-1 size-1 rounded-full bg-accent" />
-              )}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onTabChange(item.id)}
+                className={`relative flex flex-col items-center justify-center min-w-[54px] h-12 rounded-xl cursor-pointer press-scale ${
+                  isActive ? 'text-accent font-semibold' : 'text-text3 hover:text-text'
+                }`}
+              >
+                <Icon className="size-5 shrink-0" aria-hidden="true" />
+                <span className="text-[10px] mt-0.5 truncate max-w-[60px]">{item.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-1 size-1 rounded-full bg-accent" />
+                )}
+              </button>
+            );
+          })}
       </nav>
 
       {/* ============================================================ */}
-      {/* Mobile Slide-Over Drawer                                     */}
+      {/* Mobile Slide-Over Drawer (§3, §4, §7, §12)                   */}
       {/* ============================================================ */}
-      {mobileDrawerOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-            onClick={() => setMobileDrawerOpen(false)}
-          />
+      <div
+        className={`fixed inset-0 z-50 lg:hidden flex ${
+          mobileDrawerOpen ? 'pointer-events-auto' : 'pointer-events-none'
+        }`}
+        aria-hidden={!mobileDrawerOpen}
+        inert={!mobileDrawerOpen ? true : undefined}
+      >
+        {/* Backdrop */}
+        <div
+          className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${
+            mobileDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setMobileDrawerOpen(false)}
+        />
 
-          {/* Drawer Pane */}
-          <div className="relative w-72 max-w-[80vw] h-full bg-bg2 border-r border-border p-5 flex flex-col justify-between shadow-2xl z-10 overflow-y-auto">
-            <div>
-              <div className="flex items-center justify-between pb-4 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <img
-                    src="/img/Excelsior_Seal_Logo.png"
-                    alt="Logo"
-                    className="size-8 rounded-full"
-                  />
-                  <span className="font-bold text-text">Exce<span className="text-green">Learn</span></span>
+        {/* Drawer Pane */}
+        <div
+          className={`relative w-72 max-w-[80vw] h-full drawer-material border-r border-border p-5 flex flex-col justify-between shadow-2xl z-10 overflow-y-auto transform transition-transform duration-300 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${
+            mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div>
+            <div className="sidebar-logo !p-0 !border-b pb-4 mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/img/Excelsior_Seal_Logo.png"
+                  alt="Logo"
+                  className="size-8 rounded-full"
+                />
+                <div>
+                  <div className="logo-name !text-base">
+                    Exce<span style={{ color: '#22c55e' }}>Learn</span>
+                  </div>
+                  <div className="logo-sub !text-[9px]">
+                    Learn Better. Anytime, Anywhere.
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="p-1 rounded-lg text-text3 hover:text-text hover:bg-bg3"
-                  aria-label="Close Drawer"
-                >
-                  <RiCloseLine className="size-5" aria-hidden="true" />
-                </button>
               </div>
+              <button
+                type="button"
+                onClick={() => setMobileDrawerOpen(false)}
+                className="p-1 rounded-lg text-text3 hover:text-text hover:bg-bg3 cursor-pointer press-scale"
+                aria-label="Close Drawer"
+              >
+                <RiCloseLine className="size-5" aria-hidden="true" />
+              </button>
+            </div>
 
-              <div className="py-4 space-y-4">
-                {sections.map((secName) => {
-                  const sectionItems = navItems.filter((item) => item.section === secName);
-                  return (
-                    <div key={secName} className="space-y-1">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-text3 px-2">
-                        {secName}
-                      </div>
-                      {sectionItems.map((item) => {
-                        const isActive = currentTab === item.id;
-                        const Icon = isActive ? item.fillIcon : item.lineIcon;
+            <div className="py-2 space-y-4">
+              {sections.map((secName) => {
+                const sectionItems = navItems.filter((item) => item.section === secName);
+                return (
+                  <div key={secName} className="space-y-0.5">
+                    <div className="nav-section-label">
+                      {secName}
+                    </div>
+                    {sectionItems.map((item) => {
+                      const isActive = currentTab === item.id;
+                      const Icon = isActive ? item.fillIcon : item.lineIcon;
+
+                      if (item.isLogout) {
                         return (
                           <button
                             key={item.id}
                             type="button"
                             onClick={() => {
-                              onTabChange(item.id);
                               setMobileDrawerOpen(false);
+                              onLogout();
                             }}
-                            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium ${
-                              isActive
-                                ? 'bg-accent/15 text-accent font-semibold'
-                                : 'text-text2 hover:text-text hover:bg-bg3'
-                            }`}
+                            className="nav-item text-red hover:bg-red/10 cursor-pointer mt-1"
                           >
-                            <div className="flex items-center gap-3">
-                              <Icon className="size-5" aria-hidden="true" />
-                              <span>{item.label}</span>
-                            </div>
-                            {item.badge !== undefined && (
-                              <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-bg3 text-text">
-                                {item.badge}
-                              </span>
-                            )}
+                            <RiLogoutBoxRLine className="w-[18px] h-[18px] text-red" aria-hidden="true" />
+                            <span className="text-red font-medium">{item.label}</span>
                           </button>
                         );
-                      })}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                      }
 
-            <div className="pt-4 border-t border-border">
-              <div className="flex items-center gap-2 mb-3">
-                <Avatar size="sm" initials={user.initials} color="blue" />
-                <div className="truncate">
-                  <div className="text-xs font-semibold text-text">{user.name}</div>
-                  <div className="text-[10px] text-text3">{user.subLabel}</div>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileDrawerOpen(false);
-                  onLogout();
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-lg text-red bg-red/10 hover:bg-red/20 transition-colors"
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            onTabChange(item.id);
+                            setMobileDrawerOpen(false);
+                          }}
+                          className={`nav-item excelearn-nav-pill cursor-pointer ${
+                            isActive ? 'active' : ''
+                          }`}
+                        >
+                          <Icon className="w-[18px] h-[18px] shrink-0" aria-hidden="true" />
+                          <span className="truncate">{item.label}</span>
+                          {item.badge !== undefined && (
+                            <span className="nav-badge size-5 rounded-full bg-accent text-white font-bold text-[11px] flex items-center justify-center shrink-0 ml-auto">
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-border">
+            <div className="user-card">
+              <div
+                className="user-avatar text-white font-semibold text-xs"
+                style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
               >
-                <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
-                <span>Log Out</span>
-              </button>
+                {user.initials}
+              </div>
+              <div className="user-info min-w-0">
+                <p className="truncate">{user.name}</p>
+                <span className="truncate">{user.subLabel}</span>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

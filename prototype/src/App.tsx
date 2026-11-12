@@ -13,8 +13,8 @@ export default function App() {
 
   // Active sub-tabs for each role
   const [studentTab, setStudentTab] = useState<string>('dashboard');
-  const [teacherTab, setTeacherTab] = useState<string>('overview');
-  const [adminTab, setAdminTab] = useState<string>('overview');
+  const [teacherTab, setTeacherTab] = useState<string>('dashboard');
+  const [adminTab, setAdminTab] = useState<string>('dashboard');
 
   const handleRoleSelect = (newRole: Role) => {
     setCurrentRole(newRole);

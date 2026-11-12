@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import type { StudentSubmission } from '@/types';
 import { INITIAL_SUBMISSIONS, STUDENT_DIRECTORY } from '@/data/mockData';
+import { AboutView } from '@/components/views/AboutView';
 import {
-  RiBookOpenLine,
-  RiFileList3Line,
   RiVideoChatLine,
-  RiGroupLine,
   RiCheckLine,
   RiAddLine,
   RiFilePdfLine,
@@ -18,6 +16,19 @@ import {
   RiMicOffLine,
   RiCameraLine,
   RiTvLine,
+  RiBookOpenLine,
+  RiGroupLine,
+  RiSearchLine,
+  RiShieldCheckLine,
+  RiUserStarLine,
+  RiFileList3Line,
+  RiArrowRightLine,
+  RiEditLine,
+  RiDeleteBinLine,
+  RiBarChartLine,
+  RiCheckboxCircleLine,
+  RiFileTextLine,
+  RiQuestionLine,
 } from '@remixicon/react';
 
 interface TeacherDashboardProps {
@@ -79,6 +90,8 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
       body: 'Students who experienced technical difficulties uploading to Google Drive/ExceLearn have until tomorrow 5:00 PM.',
     },
   ]);
+  const [teacherAnnSearch, setTeacherAnnSearch] = useState('');
+  const [isPostAnnounceOpen, setIsPostAnnounceOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newBody, setNewBody] = useState('');
   const [newCategory, setNewCategory] = useState('Rubric Update');
@@ -159,126 +172,516 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
   return (
     <div className="space-y-6">
       {/* ============================================================ */}
-      {/* 1. TEACHER DASHBOARD (teachers/index.php)                    */}
+      {/* 1. TEACHER DASHBOARD (teachers/index.php lines 715-1015)     */}
       {/* ============================================================ */}
       {activeTab === 'dashboard' && (
-        <>
-          {/* 4 KPI Stat Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Active Subjects</span>
-                <div className="p-2 rounded-lg bg-accent/10 text-accent">
-                  <RiBookOpenLine className="size-4" aria-hidden="true" />
-                </div>
+        <div className="space-y-6">
+          {/* Section Header (teachers/index.php lines 715-728) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-text">
+                  Good morning, Ms. Velarde!
+                </h1>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent/15 text-accent border border-accent/25">
+                  Senior High Faculty
+                </span>
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">4</div>
-              <span className="text-xs text-accent mt-1 inline-block font-medium">STEM & HUMSS Tracks</span>
+              <p className="text-xs sm:text-sm text-text2 mt-1">
+                You have <span className="font-semibold text-amber">{pendingSubmissions.length} pending reviews</span> and 3 quizzes scheduled this week.
+              </p>
             </div>
-
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Pending Reviews</span>
-                <div className="p-2 rounded-lg bg-amber/10 text-amber">
-                  <RiFileList3Line className="size-4" aria-hidden="true" />
-                </div>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">
-                {pendingSubmissions.length}
-              </div>
-              <span className="text-xs text-amber mt-1 inline-block font-medium">Awaiting Rubric Scoring</span>
-            </div>
-
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Live Classes</span>
-                <div className="p-2 rounded-lg bg-cyan-bg text-cyan">
-                  <RiVideoChatLine className="size-4" aria-hidden="true" />
-                </div>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">1 Active</div>
-              <span className="text-xs text-cyan mt-1 inline-block font-medium">STEM 11-A In Session</span>
-            </div>
-
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Enrolled Students</span>
-                <div className="p-2 rounded-lg bg-purple/10 text-purple">
-                  <RiGroupLine className="size-4" aria-hidden="true" />
-                </div>
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">142</div>
-              <span className="text-xs text-purple mt-1 inline-block font-medium">Across 4 Sections</span>
-            </div>
-          </div>
-
-          {/* Quick Shortcuts Bar */}
-          <div className="p-4 rounded-xl bg-bg2 border border-border flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs font-bold text-text3 uppercase tracking-wider">Faculty Actions:</span>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setIsCreateQuizOpen(true)}
-                className="px-3 py-1.5 rounded-lg bg-bg3 hover:bg-bg4 text-text text-xs font-semibold border border-border flex items-center gap-1.5 cursor-pointer"
+                onClick={() => setIsPostAnnounceOpen(true)}
+                className="btn btn-primary btn-sm text-xs cursor-pointer shadow-sm hover:shadow-md inline-flex items-center gap-1.5"
               >
-                <RiAddLine className="size-3.5 text-accent" />
-                <span>+ Create Quiz</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCreateTaskOpen(true)}
-                className="px-3 py-1.5 rounded-lg bg-bg3 hover:bg-bg4 text-text text-xs font-semibold border border-border flex items-center gap-1.5 cursor-pointer"
-              >
-                <RiAddLine className="size-3.5 text-school-orange" />
-                <span>+ New Task</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onTabChange('live')}
-                className="px-3 py-1.5 rounded-lg bg-cyan text-[#0e0f14] text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:brightness-105 shadow-xs"
-              >
-                <RiVideoChatLine className="size-3.5" />
-                <span>Launch Live Room</span>
+                <RiAddLine size={15} />
+                <span>New Announcement</span>
               </button>
             </div>
           </div>
 
-          {/* Pending Submissions Quick Feed */}
-          <div className="p-5 rounded-xl bg-bg2 border border-border space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-base font-bold text-text font-serif">Recent Performance Task Submissions</h4>
-                <p className="text-xs text-text2">Speech performance recordings awaiting grading.</p>
+          {/* Stats Grid (teachers/index.php lines 735-744) */}
+          <div className="stats-grid">
+            <div className="stat-card blue group">
+              <div className="stat-icon">
+                <RiBookOpenLine size={22} />
+              </div>
+              <div className="stat-value">4</div>
+              <div className="stat-label">Active Subjects</div>
+              <div className="stat-change up">
+                <span>↑ +1 this term</span>
+              </div>
+            </div>
+            <div className="stat-card green group">
+              <div className="stat-icon">
+                <RiGroupLine size={22} />
+              </div>
+              <div className="stat-value">142</div>
+              <div className="stat-label">Total Students</div>
+              <div className="stat-change up">
+                <span>↑ across 4 sections</span>
+              </div>
+            </div>
+            <div className="stat-card amber group">
+              <div className="stat-icon">
+                <RiTimeLine size={22} />
+              </div>
+              <div className="stat-value">{pendingSubmissions.length || 12}</div>
+              <div className="stat-label">Pending Reviews</div>
+              <div className="stat-change down">
+                <span>↓ 3 urgent</span>
+              </div>
+            </div>
+            <div className="stat-card purple group">
+              <div className="stat-icon">
+                <RiVideoChatLine size={22} />
+              </div>
+              <div className="stat-value">1</div>
+              <div className="stat-label">Live Sessions</div>
+              <div className="stat-change up">
+                <span>Oral Communication</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Announcements Card (teachers/index.php lines 746-865) */}
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">
+                <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
+                  <RiNotification3Line size={18} />
+                </div>
+                <span>Announcements</span>
               </div>
               <button
                 type="button"
-                onClick={() => onTabChange('tasks')}
-                className="text-xs text-accent hover:underline font-semibold"
+                onClick={() => setIsPostAnnounceOpen(true)}
+                className="btn btn-primary btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
               >
-                View All Deliverables &rarr;
+                <RiAddLine size={14} />
+                <span>Post Notice</span>
               </button>
             </div>
 
-            <div className="divide-y divide-border">
-              {pendingSubmissions.map((subm) => (
-                <div key={subm.id} className="py-3 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-text">{subm.studentName}</span>
-                    <span className="text-[11px] text-text3 ml-2 font-mono">{subm.studentId}</span>
-                    <div className="text-[11px] text-text2 mt-0.5">{subm.taskTitle}</div>
-                  </div>
+            {/* Search Bar Form */}
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="relative flex gap-2 items-center mb-4"
+            >
+              <div className="relative flex-1">
+                <RiSearchLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text3 pointer-events-none" />
+                <input
+                  type="text"
+                  value={teacherAnnSearch}
+                  onChange={(e) => setTeacherAnnSearch(e.target.value)}
+                  placeholder="Search announcements by topic, section or date..."
+                  className="w-full pl-9 pr-8 py-2 rounded-xl border border-border bg-bg3 text-xs text-text placeholder:text-text3 outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 transition-all"
+                />
+                {teacherAnnSearch && (
                   <button
                     type="button"
-                    onClick={() => setGradingModalSubmission(subm)}
-                    className="px-3 py-1 rounded-lg bg-green text-[#0e0f14] text-xs font-semibold hover:brightness-105 cursor-pointer shadow-xs"
+                    onClick={() => setTeacherAnnSearch('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text3 hover:text-text p-0.5 cursor-pointer"
                   >
-                    Grade Rubric
+                    <RiCloseLine size={14} />
                   </button>
-                </div>
-              ))}
+                )}
+              </div>
+            </form>
+
+            <div className="space-y-3">
+              {[
+                {
+                  id: 'ann-1',
+                  type: 'important',
+                  posterRole: 'teacher',
+                  posterName: 'Ms. Juna Velarde',
+                  timeAgo: 'Just now',
+                  title: 'Midterm Speech Video Submission Deadline Extended',
+                  message:
+                    'Students who experienced technical difficulties uploading to Google Drive/ExceLearn have until tomorrow 5:00 PM.',
+                  isMine: true,
+                },
+                {
+                  id: 'ann-2',
+                  type: 'update',
+                  posterRole: 'admin',
+                  posterName: 'ExceLearn Admin',
+                  timeAgo: '2 hrs ago',
+                  title: 'Gradebook Quarterly Lock Schedule Announced',
+                  message:
+                    'Faculty members must finalize all formative task grades and periodic test percentages by Friday 11:59 PM.',
+                  isMine: false,
+                },
+                {
+                  id: 'ann-3',
+                  type: 'info',
+                  posterRole: 'teacher',
+                  posterName: 'Ms. Juna Velarde',
+                  timeAgo: '1 day ago',
+                  title: 'STEM 11-A Virtual Review Session for General Mathematics',
+                  message:
+                    'A specialized review room will be hosted tomorrow at 2:00 PM covering Rational Inequalities and Graphing.',
+                  isMine: true,
+                },
+              ]
+                .filter(
+                  (a) =>
+                    !teacherAnnSearch ||
+                    a.title.toLowerCase().includes(teacherAnnSearch.toLowerCase()) ||
+                    a.message.toLowerCase().includes(teacherAnnSearch.toLowerCase())
+                )
+                .map((ann) => (
+                  <div key={ann.id} className={`announce-item ${ann.type} flex items-start justify-between gap-3`}>
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <div className="announce-header flex items-center gap-2">
+                        <span className={`announce-tag ${ann.type}`}>{ann.type}</span>
+                        <span
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                          style={{
+                            background: ann.posterRole === 'admin' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(139, 92, 246, 0.12)',
+                            color: ann.posterRole === 'admin' ? 'var(--red)' : 'var(--purple)',
+                          }}
+                        >
+                          {ann.posterRole === 'admin' ? <RiShieldCheckLine size={12} /> : <RiUserStarLine size={12} />}
+                          {ann.posterRole === 'admin' ? 'Admin' : 'Teacher'}: {ann.posterName}
+                        </span>
+                        <span className="announce-date text-[11px] text-text3 ml-auto font-medium">{ann.timeAgo}</span>
+                      </div>
+                      <div className="announce-title text-sm font-bold text-text">{ann.title}</div>
+                      <div className="announce-msg text-xs text-text2 leading-relaxed">{ann.message}</div>
+                    </div>
+                    {ann.isMine && (
+                      <div className="flex gap-1.5 shrink-0 ml-2">
+                        <button
+                          type="button"
+                          className="p-1.5 rounded-lg text-xs font-medium border border-border hover:bg-bg4 text-text2 hover:text-text cursor-pointer transition-colors"
+                          title="Edit"
+                        >
+                          <RiEditLine size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red border border-red-500/20 hover:bg-red-500/20 cursor-pointer transition-colors"
+                          title="Delete"
+                        >
+                          <RiDeleteBinLine size={14} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
             </div>
           </div>
-        </>
+
+          {/* Dash Grid 1: My Subjects (1.4fr) & Quick Actions (1fr) (teachers/index.php lines 866-941) */}
+          <div className="dash-grid dash-grid-2-1">
+            {/* My Subjects Card */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
+                    <RiBookOpenLine size={18} />
+                  </div>
+                  <span>My Subjects</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onTabChange('courses')}
+                  className="btn btn-ghost btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
+                >
+                  <span>View all</span>
+                  <RiArrowRightLine size={13} />
+                </button>
+              </div>
+              <div className="space-y-2.5">
+                {[
+                  { title: 'Oral Communication in Context', code: 'ENG', students: 38, completed: 8, lessons: 10, progress: 80, color: 'var(--accent)', iconBg: 'bg-accent/10 text-accent' },
+                  { title: 'General Mathematics', code: 'MATH', students: 42, completed: 9, lessons: 10, progress: 90, color: 'var(--green)', iconBg: 'bg-green/10 text-green' },
+                  { title: 'Earth and Life Science', code: 'SCI', students: 35, completed: 6, lessons: 10, progress: 60, color: 'var(--accent)', iconBg: 'bg-purple/10 text-purple' },
+                  { title: 'Empowerment Technologies (ICT)', code: 'ICT', students: 27, completed: 7, lessons: 10, progress: 70, color: 'var(--accent)', iconBg: 'bg-cyan/10 text-cyan' },
+                ].map((c, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => onTabChange('courses')}
+                    className="course-row group"
+                  >
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${c.iconBg}`}>
+                      {c.code}
+                    </div>
+                    <div className="course-info">
+                      <div className="course-name group-hover:text-accent transition-colors">{c.title}</div>
+                      <div className="course-meta">
+                        <span>{c.students} learners</span>
+                        <span>·</span>
+                        <span>{c.completed}/{c.lessons} lessons</span>
+                      </div>
+                    </div>
+                    <div className="course-stats">
+                      <div className="course-bar">
+                        <div className="progress-bar">
+                          <div
+                            className={`progress-fill ${c.progress >= 90 ? 'green-fill' : ''}`}
+                            style={{ width: `${c.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="course-pct" style={{ color: c.color }}>
+                        {c.progress}%
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions Card (teachers/index.php lines 903-940) */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-amber/10 text-amber">
+                    <RiFileList3Line size={18} />
+                  </div>
+                  <span>Quick Actions</span>
+                </div>
+              </div>
+              <div className="quick-actions">
+                <div
+                  className="quick-action group"
+                  onClick={() => setIsCreateQuizOpen(true)}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiFileList3Line size={22} />
+                  </span>
+                  <span className="qa-label">Create Quiz</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => onTabChange('courses')}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiBookOpenLine size={22} />
+                  </span>
+                  <span className="qa-label">Add Lesson</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => onTabChange('live')}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiVideoChatLine size={22} />
+                  </span>
+                  <span className="qa-label">Start Class</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => setIsPostAnnounceOpen(true)}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiNotification3Line size={22} />
+                  </span>
+                  <span className="qa-label">Post Notice</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => onTabChange('grades')}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiBarChartLine size={22} />
+                  </span>
+                  <span className="qa-label">Gradebook</span>
+                </div>
+                <div
+                  className="quick-action group"
+                  onClick={() => onTabChange('tasks')}
+                >
+                  <span className="qa-icon group-hover:scale-110 transition-transform">
+                    <RiCheckboxCircleLine size={22} />
+                  </span>
+                  <span className="qa-label">Review Tasks</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Dash Grid 2: Recent Lessons & Recent Quizzes (teachers/index.php lines 943-1014) */}
+          <div className="dash-grid dash-grid-1-1">
+            {/* Recent Lessons */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-green/10 text-green">
+                    <RiFileTextLine size={18} />
+                  </div>
+                  <span>Recent Lessons</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onTabChange('courses')}
+                  className="btn btn-ghost btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
+                >
+                  <span>View all</span>
+                  <RiArrowRightLine size={13} />
+                </button>
+              </div>
+              <div className="space-y-1">
+                {[
+                  { title: 'Functions and Their Graphs', subj: 'General Mathematics', status: 'published', duration: '45 min', date: 'May 14' },
+                  { title: 'Principles of Effective Speech Delivery', subj: 'Oral Communication', status: 'published', duration: '60 min', date: 'May 12' },
+                  { title: 'The Universe and Solar System Exploration', subj: 'Earth and Life Science', status: 'draft', duration: '35 min', date: 'May 10' },
+                  { title: 'ICT and Society: The Online Collaborative Toolset', subj: 'Empowerment Tech', status: 'published', duration: '50 min', date: 'May 08' },
+                  { title: 'Rational Equations and Inequalities Practice', subj: 'General Mathematics', status: 'published', duration: '40 min', date: 'May 05' },
+                ].map((l, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-2 rounded-xl hover:bg-bg3/60 transition-colors">
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                        l.status === 'published' ? 'bg-green-500/10 text-green' : 'bg-amber-500/10 text-amber'
+                      }`}
+                    >
+                      <RiFileTextLine size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-text truncate">{l.title}</div>
+                      <div className="text-[11px] text-text3 font-medium">
+                        {l.subj} · {l.duration} · {l.date}
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      l.status === 'published'
+                        ? 'bg-green-500/10 text-green border border-green-500/20'
+                        : 'bg-amber-500/10 text-amber border border-amber-500/20'
+                    }`}>
+                      {l.status === 'published' ? 'Published' : 'Draft'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Quizzes */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-purple/10 text-purple">
+                    <RiQuestionLine size={18} />
+                  </div>
+                  <span>Recent Quizzes</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onTabChange('tasks')}
+                  className="btn btn-ghost btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
+                >
+                  <span>View all</span>
+                  <RiArrowRightLine size={13} />
+                </button>
+              </div>
+              <div className="space-y-1">
+                {[
+                  { title: 'Module 4: Rational Functions Mastery Test', subj: 'General Mathematics', qCount: 15, status: 'published', due: 'May 20' },
+                  { title: 'Speech Delivery Assessment & Self-Reflection', subj: 'Oral Communication', qCount: 10, status: 'published', due: 'May 18' },
+                  { title: 'Biogeochemical Cycles Diagnostic Quiz', subj: 'Earth & Life Science', qCount: 20, status: 'draft', due: 'May 25' },
+                  { title: 'Web Design Principles & UI Patterns Quiz', subj: 'Empowerment Tech', qCount: 15, status: 'published', due: 'May 22' },
+                  { title: 'Barayti at Rehistro ng Wika Pagsusulit', subj: 'Komunikasyon', qCount: 12, status: 'published', due: 'May 16' },
+                ].map((q, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-2 rounded-xl hover:bg-bg3/60 transition-colors">
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                        q.status === 'published' ? 'bg-purple-500/10 text-purple' : 'bg-amber-500/10 text-amber'
+                      }`}
+                    >
+                      <RiQuestionLine size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-text truncate">{q.title}</div>
+                      <div className="text-[11px] text-text3 font-medium">
+                        {q.subj} · {q.qCount} Questions · Due: {q.due}
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      q.status === 'published'
+                        ? 'bg-purple-500/10 text-purple border border-purple-500/20'
+                        : 'bg-amber-500/10 text-amber border border-amber-500/20'
+                    }`}>
+                      {q.status === 'published' ? 'Published' : 'Draft'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POST ANNOUNCEMENT MODAL (teachers/index.php lines 1020-1055) */}
+      {isPostAnnounceOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-md bg-bg2 rounded-2xl border border-border shadow-2xl overflow-hidden p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h4 className="text-base font-bold text-text">📢 Post Announcement</h4>
+              <button
+                type="button"
+                onClick={() => setIsPostAnnounceOpen(false)}
+                className="p-1 rounded-lg text-text3 hover:text-text cursor-pointer"
+              >
+                <RiCloseLine className="size-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setIsPostAnnounceOpen(false);
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block font-semibold text-text2 mb-1">Title *</label>
+                <input
+                  type="text"
+                  placeholder="Announcement title..."
+                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text outline-none focus:border-accent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block font-semibold text-text2 mb-1">Type</label>
+                <select className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text outline-none focus:border-accent">
+                  <option value="system">System</option>
+                  <option value="important">Important</option>
+                  <option value="event">Event</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-semibold text-text2 mb-1">Message *</label>
+                <textarea
+                  rows={4}
+                  placeholder="Write your announcement here..."
+                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text outline-none focus:border-accent resize-vertical"
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setIsPostAnnounceOpen(false)}
+                  className="px-3 py-1.5 rounded-lg border border-border text-text2 hover:bg-bg3 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-lg bg-accent text-white font-semibold hover:bg-accent2 cursor-pointer shadow-xs"
+                >
+                  Post Announcement
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* ============================================================ */}
@@ -910,6 +1313,11 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
             </div>
           </form>
         </div>
+      )}
+
+      {/* Screen: About (about.php) */}
+      {activeTab === 'about' && (
+        <AboutView role="teacher" onTabChange={onTabChange} />
       )}
 
       {/* ============================================================ */}

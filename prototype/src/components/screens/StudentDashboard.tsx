@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 import type { StudentTask } from '@/types';
 import { INITIAL_STUDENT_TASKS, SUBJECTS_LIST } from '@/data/mockData';
+import { AboutView } from '@/components/views/AboutView';
+import { StudentActivityHeatmap } from '@/components/screens/StudentActivityHeatmap';
 import {
-  RiBookOpenLine,
-  RiTimeLine,
-  RiCheckboxCircleLine,
-  RiAwardLine,
   RiVideoChatLine,
-  RiArrowRightLine,
   RiFilePdfLine,
   RiCheckLine,
   RiMicLine,
@@ -16,6 +13,22 @@ import {
   RiCloseLine,
   RiDownload2Line,
   RiUpload2Line,
+  RiBookOpenLine,
+  RiCheckboxCircleLine,
+  RiAwardLine,
+  RiFileList3Line,
+  RiNotification3Line,
+  RiSearchLine,
+  RiShieldCheckLine,
+  RiUserStarLine,
+  RiBarChartLine,
+  RiTimeLine,
+  RiTrophyLine,
+  RiTrophyFill,
+  RiMedalFill,
+  RiMedalLine,
+  RiHistoryLine,
+  RiArrowRightLine,
 } from '@remixicon/react';
 
 interface StudentDashboardProps {
@@ -70,6 +83,9 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
   const [passUpdated, setPassUpdated] = useState(false);
   const [notifyPush, setNotifyPush] = useState(true);
   const [notifyEmail, setNotifyEmail] = useState(true);
+
+  // Announcements Search state (students/index.php)
+  const [studentAnnSearch, setStudentAnnSearch] = useState('');
 
   // Virtual class studio controls
   const [isMuted, setIsMuted] = useState(false);
@@ -176,176 +192,453 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
   return (
     <div className="space-y-6">
       {/* ============================================================ */}
-      {/* 1. DASHBOARD PAGE (students/index.php)                        */}
+      {/* 1. DASHBOARD PAGE (students/index.php lines 531-880)          */}
       {/* ============================================================ */}
       {activeTab === 'dashboard' && (
-        <>
-          {/* Hero "Continue Learning" Card */}
-          <div className="relative rounded-2xl excelearn-living-grad p-6 sm:p-8 text-white shadow-lg overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="relative z-10 max-w-xl">
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-semibold text-amber-200 mb-3">
-                <span className="size-2 rounded-full bg-green animate-ping" />
-                Current Active Lesson · STEM 11
+        <div className="space-y-6">
+          {/* Section Header (students/index.php lines 532-537) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-text">
+                  Welcome back, Bryan!
+                </h1>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25">
+                  🔥 7-day streak
+                </span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-tight">
-                General Mathematics
-              </h3>
-              <p className="text-sm text-white/85 mt-1 font-sans">
-                Module 4: Rational Functions, Vertical & Horizontal Asymptotes, and Inverses
+              <p className="text-xs sm:text-sm text-text2 mt-1">
+                Keep up the momentum — Grade 11 STEM Section A · S.Y. 2026–2027
               </p>
-
-              <div className="mt-4 flex items-center gap-4">
-                <div className="flex-1 max-w-xs">
-                  <div className="flex items-center justify-between text-xs text-white/90 mb-1">
-                    <span>Module Progress</span>
-                    <span className="font-bold tabular-nums">75% Complete</span>
-                  </div>
-                  <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-school-orange rounded-full transition-all duration-500" style={{ width: '75%' }} />
-                  </div>
-                </div>
-              </div>
             </div>
-
-            <div className="relative z-10 shrink-0">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => onTabChange('courses')}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-[#0e0f14] shadow-md transition-all duration-150 cursor-pointer active:scale-[0.96] hover:brightness-105"
-                style={{ background: 'linear-gradient(135deg, #f7971e 0%, #fbb03b 100%)' }}
+                onClick={() => onTabChange('tasks')}
+                className="btn btn-primary btn-sm text-xs cursor-pointer shadow-sm hover:shadow-md"
               >
-                <span>Resume Lesson</span>
-                <RiArrowRightLine className="size-4" aria-hidden="true" />
+                <RiFileList3Line size={14} />
+                Open Task Board
               </button>
             </div>
           </div>
 
-          {/* 4 KPI Stat Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs hover:border-accent/40 transition-colors">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Enrolled Subjects</span>
-                <div className="p-2 rounded-lg bg-accent/10 text-accent">
-                  <RiBookOpenLine className="size-4" aria-hidden="true" />
-                </div>
+          {/* Stats Grid (students/index.php lines 538-565) */}
+          <div className="stats-grid">
+            <div className="stat-card blue group">
+              <div className="stat-icon">
+                <RiBookOpenLine size={22} />
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">6</div>
-              <span className="text-xs text-accent mt-1 inline-block font-medium">All STEM Core & Applied</span>
+              <div className="stat-value">6</div>
+              <div className="stat-label">Enrolled Courses</div>
+              <div className="stat-change up">
+                <span>↑ 1 new this week</span>
+              </div>
             </div>
-
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs hover:border-amber/40 transition-colors">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Due This Week</span>
-                <div className="p-2 rounded-lg bg-amber/10 text-amber">
-                  <RiTimeLine className="size-4" aria-hidden="true" />
-                </div>
+            <div className="stat-card green group">
+              <div className="stat-icon">
+                <RiCheckboxCircleLine size={22} />
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">3</div>
-              <span className="text-xs text-amber mt-1 inline-block font-medium">1 Quiz · 2 Tasks</span>
+              <div className="stat-value">24</div>
+              <div className="stat-label">Lessons Completed</div>
+              <div className="stat-change up">
+                <span>↑ 5 this week</span>
+              </div>
             </div>
-
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs hover:border-green/40 transition-colors">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Quiz Average</span>
-                <div className="p-2 rounded-lg bg-green/10 text-green">
-                  <RiCheckboxCircleLine className="size-4" aria-hidden="true" />
-                </div>
+            <div className="stat-card amber group">
+              <div className="stat-icon">
+                <RiAwardLine size={22} />
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">91.4%</div>
-              <span className="text-xs text-green mt-1 inline-block font-medium">+2.8% from Prelims</span>
+              <div className="stat-value">91.4%</div>
+              <div className="stat-label">Average Grade</div>
+              <div className="stat-change up">
+                <span>↑ across all subjects</span>
+              </div>
             </div>
-
-            <div className="p-4 sm:p-5 rounded-xl bg-bg2 border border-border shadow-xs hover:border-purple/40 transition-colors">
-              <div className="flex items-center justify-between text-text3 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider">Certificates</span>
-                <div className="p-2 rounded-lg bg-purple/10 text-purple">
-                  <RiAwardLine className="size-4" aria-hidden="true" />
-                </div>
+            <div className="stat-card purple group">
+              <div className="stat-icon">
+                <RiFileList3Line size={22} />
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-text tabular-nums">4</div>
-              <span className="text-xs text-purple mt-1 inline-block font-medium">STEM Honors Standing</span>
+              <div className="stat-value">12</div>
+              <div className="stat-label">Quizzes Taken</div>
+              <div className="stat-change up">
+                <span>↑ 12 completed</span>
+              </div>
             </div>
           </div>
 
-          {/* Live Virtual Class Banner */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-cyan-bg border border-cyan/30 text-text">
-            <div className="flex items-center gap-3">
-              <div className="relative size-3 flex items-center justify-center shrink-0">
-                <span className="absolute size-3 rounded-full bg-cyan animate-ping opacity-75" />
-                <span className="relative size-2 rounded-full bg-cyan" />
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-cyan uppercase tracking-wider">
-                  Live Virtual Classroom Now Active
+          {/* Student Learning Activity & Contribution Heatmap (QoL feature, GitHub-style) */}
+          <StudentActivityHeatmap />
+
+          {/* Announcements Card with Search Form (students/index.php lines 566-677) */}
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">
+                <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
+                  <RiNotification3Line size={18} />
                 </div>
-                <div className="text-sm font-semibold text-text">
-                  Oral Communication in Context — Ms. Juna Velarde is broadcasting live
-                </div>
+                <span>Announcements</span>
               </div>
+              <span className="text-xs text-text3 font-medium">3 active notices</span>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onTabChange('live')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-cyan text-[#0e0f14] hover:brightness-105 active:scale-95 transition-all cursor-pointer shadow-xs"
+            {/* Search Form */}
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="relative flex gap-2 items-center mb-4"
             >
-              <RiVideoChatLine className="size-4" aria-hidden="true" />
-              <span>Join Room</span>
-            </button>
+              <div className="relative flex-1">
+                <RiSearchLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text3 pointer-events-none" />
+                <input
+                  type="text"
+                  value={studentAnnSearch}
+                  onChange={(e) => setStudentAnnSearch(e.target.value)}
+                  placeholder="Search announcements by keyword, topic or faculty..."
+                  className="w-full pl-9 pr-8 py-2 rounded-xl border border-border bg-bg3 text-xs text-text placeholder:text-text3 outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 transition-all"
+                />
+                {studentAnnSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setStudentAnnSearch('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text3 hover:text-text p-0.5 cursor-pointer"
+                  >
+                    <RiCloseLine size={14} />
+                  </button>
+                )}
+              </div>
+            </form>
+
+            <div className="space-y-3">
+              {[
+                {
+                  id: 1,
+                  type: 'important',
+                  posterRole: 'admin',
+                  posterName: 'ExceLearn Admin',
+                  timeLabel: '2 hrs ago',
+                  title: 'Academic Year 2026–2027 Midterm Examination Schedule',
+                  message:
+                    'Senior High School midterm examinations for Grade 11 and Grade 12 will commence on October 20–24, 2026. Please ensure all performance tasks are submitted beforehand.',
+                },
+                {
+                  id: 2,
+                  type: 'info',
+                  posterRole: 'teacher',
+                  posterName: 'Ms. Juna Velarde',
+                  timeLabel: '1 day ago',
+                  title: 'Virtual Class Attendance & DepEd Submission Guidelines',
+                  message:
+                    'All learners are required to log in 5 minutes before scheduled virtual classes. Session recordings will be published under the Subject Modules tab.',
+                },
+                {
+                  id: 3,
+                  type: 'update',
+                  posterRole: 'teacher',
+                  posterName: 'Ms. Juna Velarde',
+                  timeLabel: '3 days ago',
+                  title: 'Science & Math Blended Workshop at Cabitan Campus',
+                  message:
+                    'Hands-on laboratory sessions for STEM learners will take place this Friday at the Cabitan Campus Science Lab. Bring your lab notebooks and safety gear.',
+                },
+              ]
+                .filter(
+                  (a) =>
+                    !studentAnnSearch ||
+                    a.title.toLowerCase().includes(studentAnnSearch.toLowerCase()) ||
+                    a.message.toLowerCase().includes(studentAnnSearch.toLowerCase())
+                )
+                .map((a) => (
+                  <div key={a.id} className={`announce-item ${a.type} flex flex-col gap-1.5`}>
+                    <div className="announce-header flex items-center gap-2">
+                      <span className={`announce-tag ${a.type}`}>{a.type}</span>
+                      <span
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{
+                          background: a.posterRole === 'admin' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(139, 92, 246, 0.12)',
+                          color: a.posterRole === 'admin' ? 'var(--red)' : 'var(--purple)',
+                        }}
+                      >
+                        {a.posterRole === 'admin' ? <RiShieldCheckLine size={12} /> : <RiUserStarLine size={12} />}
+                        {a.posterRole === 'admin' ? 'Admin' : 'Teacher'}: {a.posterName}
+                      </span>
+                      <span className="announce-time text-[11px] text-text3 ml-auto font-medium">{a.timeLabel}</span>
+                    </div>
+                    <div className="text-sm font-bold text-text pt-0.5">{a.title}</div>
+                    <div className="text-xs text-text2 leading-relaxed">{a.message}</div>
+                  </div>
+                ))}
+            </div>
           </div>
 
-          {/* DepEd Grade Breakdown Card (25% - 50% - 25%) */}
-          <div className="p-5 rounded-xl bg-bg2 border border-border space-y-4">
-            <div className="flex items-center justify-between">
+          {/* Dash Grid 1: My Subject Progress & Upcoming Deadlines (students/index.php lines 678-743) */}
+          <div className="dash-grid dash-grid-2-1">
+            {/* My Subject Progress */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-green/10 text-green">
+                    <RiBarChartLine size={18} />
+                  </div>
+                  <span>My Subject Progress</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onTabChange('courses')}
+                  className="btn btn-ghost btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
+                >
+                  <span>View all</span>
+                  <RiArrowRightLine size={13} />
+                </button>
+              </div>
+              <div className="space-y-4">
+                {[
+                  { subject: 'General Mathematics', code: 'MATH', done: 8, total: 10, pct: 80, fill: '', color: 'var(--accent)', iconBg: 'bg-accent/10 text-accent' },
+                  { subject: 'Oral Communication in Context', code: 'ENG', done: 9, total: 10, pct: 90, fill: 'green-fill', color: 'var(--green)', iconBg: 'bg-green/10 text-green' },
+                  { subject: 'Earth and Life Science', code: 'SCI', done: 6, total: 10, pct: 60, fill: '', color: 'var(--accent)', iconBg: 'bg-purple/10 text-purple' },
+                  { subject: 'Empowerment Technologies (ICT)', code: 'ICT', done: 9, total: 10, pct: 90, fill: 'green-fill', color: 'var(--green)', iconBg: 'bg-cyan/10 text-cyan' },
+                  { subject: 'Komunikasyon at Pananaliksik', code: 'FIL', done: 7, total: 10, pct: 70, fill: '', color: 'var(--accent)', iconBg: 'bg-amber/10 text-amber' },
+                  { subject: 'Physical Education and Health 1', code: 'PEH', done: 10, total: 10, pct: 100, fill: 'green-fill', color: 'var(--green)', iconBg: 'bg-green/10 text-green' },
+                ].map((s, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => onTabChange('courses')}
+                    className="p-2 -mx-2 rounded-xl hover:bg-bg3/60 cursor-pointer group transition-all"
+                  >
+                    <div className="flex items-center gap-3 mb-1.5">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${s.iconBg}`}>
+                        {s.code}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-text truncate group-hover:text-accent transition-colors">
+                          {s.subject}
+                        </div>
+                        <div className="text-[11px] text-text3 font-medium">{s.done} of {s.total} lessons completed</div>
+                      </div>
+                      <span className="text-xs font-bold tabular-nums px-2 py-0.5 rounded-md bg-bg3 border border-border/40" style={{ color: s.color }}>
+                        {s.pct}%
+                      </span>
+                    </div>
+                    <div className="progress-bar">
+                      <div className={`progress-fill ${s.fill}`} style={{ width: `${s.pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Upcoming Deadlines */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-red/10 text-red">
+                    <RiTimeLine size={18} />
+                  </div>
+                  <span>Upcoming Deadlines</span>
+                </div>
+              </div>
+              <div className="divide-y divide-border">
+                {[
+                  { title: 'General Mathematics — Rational Functions Quiz #3', meta: 'Quarter 2 Assessment', due: 'Today', urgency: 'urgent' },
+                  { title: 'Oral Communication — Extemporaneous Speech Recording', meta: 'Performance Task Deliverable', due: 'Tomorrow', urgency: 'soon' },
+                  { title: 'Earth and Life Science — Biogeochemical Cycles Diagram', meta: 'Module 3 Worksheet Submission', due: 'May 20, 11:59 PM', urgency: 'later' },
+                  { title: 'Empowerment Technologies — Web Portfolio Wireframe', meta: 'ICT Project Deliverable', due: 'May 24, 5:00 PM', urgency: 'later' },
+                ].map((d, idx) => (
+                  <div key={idx} className="deadline-item py-3">
+                    <div className="relative flex items-center justify-center shrink-0">
+                      {d.urgency === 'urgent' && (
+                        <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red opacity-60" />
+                      )}
+                      <div className={`deadline-dot ${d.urgency}`} />
+                    </div>
+                    <div className="deadline-info">
+                      <div className="deadline-title font-semibold">{d.title}</div>
+                      <div className="deadline-meta">{d.meta}</div>
+                    </div>
+                    <div className={`deadline-due text-[11px] px-2.5 py-1 rounded-full font-semibold border ${
+                      d.urgency === 'urgent'
+                        ? 'bg-red-500/10 text-red border-red-500/25'
+                        : d.urgency === 'soon'
+                        ? 'bg-amber-500/10 text-amber border-amber-500/25'
+                        : 'bg-green-500/10 text-green border-green-500/25'
+                    }`}>
+                      {d.due}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Dash Grid 2: Recent Quiz Scores & Class Leaderboard (students/index.php lines 745-820) */}
+          <div className="dash-grid dash-grid-1-1">
+            {/* Recent Quiz Scores */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-purple/10 text-purple">
+                    <RiFileList3Line size={18} />
+                  </div>
+                  <span>Recent Quiz Scores</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onTabChange('grades')}
+                  className="btn btn-ghost btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
+                >
+                  <span>All Scores</span>
+                  <RiArrowRightLine size={13} />
+                </button>
+              </div>
               <div>
-                <h4 className="text-base font-bold text-text font-serif">
-                  DepEd Order No. 8, s. 2015 Grading Standard
-                </h4>
-                <p className="text-xs text-text2">
-                  Senior High School STEM Track Component Weights (Written Work 25%, Performance Tasks 50%, Quarterly Exam 25%)
-                </p>
+                {[
+                  { course: 'General Mathematics: Rational Functions', take: 1, score: 95, pct: 95, fill: 'green-fill', color: 'var(--green)', label: 'Excellent' },
+                  { course: 'Oral Communication: Speech Models', take: 2, score: 92, pct: 92, fill: 'green-fill', color: 'var(--green)', label: 'Excellent' },
+                  { course: 'Earth Science: Rock Formations', take: 1, score: 85, pct: 85, fill: '', color: 'var(--accent)', label: 'Good' },
+                  { course: 'Empowerment Tech: Web Principles', take: 1, score: 98, pct: 98, fill: 'green-fill', color: 'var(--green)', label: 'Excellent' },
+                  { course: 'Komunikasyon: Barayti ng Wika', take: 1, score: 76, pct: 76, fill: 'amber-fill', color: 'var(--amber)', label: 'Fair' },
+                ].map((g, idx) => (
+                  <div key={idx} className="grade-row py-2.5">
+                    <div className="grade-course">
+                      <span className="font-medium text-text">{g.course}</span>{' '}
+                      <span className="text-[10px] text-text3 font-bold px-1.5 py-0.5 rounded bg-bg3 border border-border/50">Take #{g.take}</span>
+                    </div>
+                    <div className="grade-score font-bold tabular-nums text-sm" style={{ color: g.color }}>
+                      {g.score}%
+                    </div>
+                    <div className="grade-bar">
+                      <div className="progress-bar">
+                        <div className={`progress-fill ${g.fill}`} style={{ width: `${g.pct}%` }} />
+                      </div>
+                    </div>
+                    <div className="grade-label">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        g.label === 'Excellent'
+                          ? 'bg-green-500/10 text-green border border-green-500/20'
+                          : g.label === 'Good'
+                          ? 'bg-accent/10 text-accent border border-accent/20'
+                          : 'bg-amber-500/10 text-amber border border-amber-500/20'
+                      }`}>
+                        {g.label}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-green-bg text-green tabular-nums">
-                Projected Q1 Grade: 92 (Very Satisfactory)
-              </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-3.5 rounded-lg bg-bg3 border border-border space-y-2">
-                <div className="flex items-center justify-between text-xs font-semibold text-text">
-                  <span>Written Work (25%)</span>
-                  <span className="tabular-nums text-accent">89.2%</span>
+            {/* Class Leaderboard */}
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-amber/10 text-amber">
+                    <RiTrophyLine size={18} />
+                  </div>
+                  <span>Class Leaderboard</span>
                 </div>
-                <div className="h-2 w-full bg-bg4 rounded-full overflow-hidden">
-                  <div className="h-full bg-accent rounded-full" style={{ width: '89.2%' }} />
-                </div>
-                <p className="text-[11px] text-text3">Quizzes, concept papers, module activity sheets</p>
+                <span className="badge badge-blue">Grade 11 - STEM</span>
               </div>
-
-              <div className="p-3.5 rounded-lg bg-bg3 border border-border space-y-2">
-                <div className="flex items-center justify-between text-xs font-semibold text-text">
-                  <span>Performance Tasks (50%)</span>
-                  <span className="tabular-nums text-green">93.5%</span>
-                </div>
-                <div className="h-2 w-full bg-bg4 rounded-full overflow-hidden">
-                  <div className="h-full bg-green rounded-full" style={{ width: '93.5%' }} />
-                </div>
-                <p className="text-[11px] text-text3">Speech performances, lab projects, research posters</p>
-              </div>
-
-              <div className="p-3.5 rounded-lg bg-bg3 border border-border space-y-2">
-                <div className="flex items-center justify-between text-xs font-semibold text-text">
-                  <span>Quarterly Assessment (25%)</span>
-                  <span className="tabular-nums text-school-orange">94.0%</span>
-                </div>
-                <div className="h-2 w-full bg-bg4 rounded-full overflow-hidden">
-                  <div className="h-full bg-school-orange rounded-full" style={{ width: '94%' }} />
-                </div>
-                <p className="text-[11px] text-text3">Periodic quarterly examination test score</p>
+              <div className="space-y-1.5">
+                {[
+                  { rank: 1, rankType: 'gold', initials: 'KD', name: 'Katrina Diaz', score: '98.5%', isMe: false },
+                  { rank: 2, rankType: 'silver', initials: 'BD', name: 'Bryan Donceras', score: '96.2%', isMe: true },
+                  { rank: 3, rankType: 'bronze', initials: 'JL', name: 'Janloyd Lotino', score: '94.8%', isMe: false },
+                  { rank: 4, rankType: 'normal', initials: 'MS', name: 'Mary Santos', score: '93.1%', isMe: false },
+                  { rank: 5, rankType: 'normal', initials: 'RA', name: 'Rafael Aquino', score: '91.5%', isMe: false },
+                ].map((s) => (
+                  <div
+                    key={s.rank}
+                    className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${
+                      s.isMe
+                        ? 'bg-accent/10 border-2 border-accent/40 shadow-xs ring-2 ring-accent/15'
+                        : 'hover:bg-bg3/60'
+                    }`}
+                  >
+                    <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                      {s.rank === 1 && <RiTrophyFill size={18} className="text-amber-500" />}
+                      {s.rank === 2 && <RiMedalFill size={18} className="text-slate-400 dark:text-slate-300" />}
+                      {s.rank === 3 && <RiMedalLine size={18} className="text-amber-700 dark:text-amber-600" />}
+                      {s.rank > 3 && (
+                        <span className="text-xs font-bold text-text3 tabular-nums">#{s.rank}</span>
+                      )}
+                    </div>
+                    <div
+                      className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] text-white shrink-0 shadow-xs"
+                      style={{
+                        background:
+                          s.rank === 1
+                            ? 'linear-gradient(135deg, #f59e0b, #d97706)'
+                            : s.rank === 2
+                            ? 'linear-gradient(135deg, #06b6d4, #3b82f6)'
+                            : s.rank === 3
+                            ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)'
+                            : 'linear-gradient(135deg, #10b981, #059669)',
+                      }}
+                    >
+                      {s.initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-text truncate flex items-center gap-1.5">
+                        <span>{s.name}</span>
+                        {s.isMe && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent text-white">
+                            You
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-xs font-bold text-accent tabular-nums">
+                      {s.score}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </>
+
+          {/* Dash Grid 3: Recent Activity (students/index.php lines 821-880) */}
+          <div className="dash-grid dash-grid-1-1">
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">
+                  <div className="p-1.5 rounded-lg bg-cyan/10 text-cyan">
+                    <RiHistoryLine size={18} />
+                  </div>
+                  <span>Recent Activity</span>
+                </div>
+              </div>
+              <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
+                {[
+                  { passed: true, score: '95%', quiz: 'General Mathematics Quiz #1', time: '2 hrs ago' },
+                  { passed: true, score: '92%', quiz: 'Oral Communication Speech Quiz #2', time: 'Yesterday' },
+                  { passed: true, score: '98%', quiz: 'Empowerment Technologies Unit 1 Exam', time: '2 days ago' },
+                  { passed: false, score: '68%', quiz: 'Komunikasyon at Pananaliksik Diagnostic', time: '4 days ago' },
+                ].map((act, idx) => (
+                  <div key={idx} className="relative flex items-start gap-3 group">
+                    <div
+                      className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-bg2 shrink-0 ${
+                        act.passed
+                          ? 'bg-green text-white'
+                          : 'bg-amber text-white'
+                      }`}
+                    >
+                      {act.passed ? <RiCheckLine size={12} /> : <RiCloseLine size={12} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-text2 leading-snug">
+                        <span className="font-bold text-text">Scored {act.score}</span>{' '}
+                        <span className={act.passed ? 'text-green font-semibold' : 'text-amber font-semibold'}>
+                          {act.passed ? '✓ Passed' : '✗ Below passing'}
+                        </span>{' '}
+                        on <span className="font-medium text-text">{act.quiz}</span>
+                      </div>
+                      <div className="text-[11px] text-text3 font-medium mt-0.5">{act.time}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ============================================================ */}
@@ -940,6 +1233,11 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
             </div>
           </div>
         </div>
+      )}
+
+      {/* Screen: About (about.php) */}
+      {activeTab === 'about' && (
+        <AboutView role="student" onTabChange={onTabChange} />
       )}
 
       {/* ============================================================ */}
