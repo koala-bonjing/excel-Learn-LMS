@@ -1,0 +1,24 @@
+# AI assistant files & rules
+.cursor/
+.cursorrules
+AGENTS.md
+CLAUDE.md
+.claude/
+GEMINI.md
+.gemini/
+.windsurfrules
+.github/copilot-instructions.md
+.aider*
+
+# Credentials & local secrets
+email pass
+.env
+.env.*
+
+# Dependencies
+vendor/
+
+# Uploaded runtime media & logs
+uploads/
+*.log
+
