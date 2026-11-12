@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import type { StudentTask } from '@/types';
-import { INITIAL_STUDENT_TASKS, SUBJECTS_LIST } from '@/data/mockData';
+import { INITIAL_STUDENT_TASKS } from '@/data/mockData';
 import { AboutView } from '@/components/views/AboutView';
 import { StudentProfileView } from '@/components/views/StudentProfileView';
 import { StudentSettingsView } from '@/components/views/StudentSettingsView';
 import { StudentActivityHeatmap } from '@/components/screens/StudentActivityHeatmap';
+import { CourseSectionView } from '@/components/views/CourseSectionView';
+import { getCourseData } from '@/data/courseOutlineData';
 import {
   RiVideoChatLine,
   RiFilePdfLine,
@@ -172,6 +174,18 @@ interface EnrolledCourse {
 }
 
 const ENROLLED_COURSES: EnrolledCourse[] = [
+  {
+    id: 'c-social-issues',
+    code: 'SIPP-301',
+    title: 'Social Issues and Professional Practice',
+    fullTitle: 'Social Issues and Professional Practice (AY 2024-25 BSCS 3)',
+    semester: 'AY 2024 - 2025 1st Sem',
+    teacher: 'Prof. Dennis Morales, MSCS',
+    progressPercent: 25,
+    lastAccessed: 'Just now',
+    lastAccessedTime: 7,
+    artVariant: 'branded-blue',
+  },
   {
     id: 'c-gen-math',
     code: 'GEN-MATH-11',
@@ -395,9 +409,24 @@ function CourseCoverArt({
 interface StudentDashboardProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  selectedCourseId?: string | null;
+  onSelectCourse?: (courseId: string | null) => void;
+  activeCourseSectionId?: string | null;
+  onSelectCourseSection?: (sectionId: string) => void;
 }
 
-export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardProps) {
+export function StudentDashboard({
+  activeTab,
+  onTabChange,
+  selectedCourseId,
+  onSelectCourse,
+  activeCourseSectionId,
+  onSelectCourseSection: _onSelectCourseSection,
+}: StudentDashboardProps) {
+  const handleOpenCourse = (courseId: string) => {
+    onSelectCourse?.(courseId);
+    onTabChange('courses');
+  };
   const [tasks, setTasks] = useState<StudentTask[]>(INITIAL_STUDENT_TASKS);
 
   // PDF Viewer Modal (pdf_viewer.php)
@@ -909,7 +938,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
                 <div className="max-w-2xl mx-auto rounded-xl bg-bg border border-border shadow-xs overflow-hidden hover:border-accent/40 transition-all group">
                   {/* Rich branded banner header */}
                   <div
-                    onClick={() => onTabChange('courses')}
+                    onClick={() => handleOpenCourse(currentRecentCourse.id)}
                     className="h-32 sm:h-36 w-full relative overflow-hidden bg-gradient-to-r from-[#0c1a30] via-[#1a3668] to-[#162e58] flex items-center px-6 cursor-pointer select-none"
                   >
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(59,130,246,0.35),transparent_65%)]" />
@@ -942,7 +971,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
                       </div>
                       <button
                         type="button"
-                        onClick={() => onTabChange('courses')}
+                        onClick={() => handleOpenCourse(currentRecentCourse.id)}
                         className="text-left font-bold text-sm sm:text-base text-text hover:text-accent transition-colors block truncate cursor-pointer"
                       >
                         {currentRecentCourse.fullTitle}
@@ -1167,7 +1196,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
                         >
                           {/* Top artwork header banner (Screenshot 2) */}
                           <div
-                            onClick={() => onTabChange('courses')}
+                            onClick={() => handleOpenCourse(c.id)}
                             className="h-36 sm:h-40 w-full relative overflow-hidden rounded-t-xl border-b border-border/40 cursor-pointer"
                           >
                             <CourseCoverArt variant={c.artVariant} title={c.title} id={c.id} />
@@ -1253,7 +1282,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
                                       type="button"
                                       onClick={() => {
                                         setActiveMenuCourseId(null);
-                                        onTabChange('courses');
+                                        handleOpenCourse(c.id);
                                       }}
                                       className="w-full text-left px-3 py-1.5 rounded-lg text-accent hover:bg-accent/10 cursor-pointer flex items-center gap-2 font-semibold"
                                     >
@@ -1268,7 +1297,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
                             {/* Clickable Course Title (Screenshot 2) */}
                             <button
                               type="button"
-                              onClick={() => onTabChange('courses')}
+                              onClick={() => handleOpenCourse(c.id)}
                               className="text-left font-bold text-sm sm:text-base text-text hover:text-accent transition-colors block line-clamp-2 cursor-pointer"
                             >
                               {c.fullTitle}
@@ -1310,7 +1339,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
                         >
                           <div className="flex items-center gap-3.5 min-w-0 flex-1">
                             <div
-                              onClick={() => onTabChange('courses')}
+                              onClick={() => handleOpenCourse(c.id)}
                               className="w-32 sm:w-40 h-20 rounded-lg overflow-hidden shrink-0 cursor-pointer border border-border/60 relative"
                             >
                               <CourseCoverArt variant={c.artVariant} title={c.title} id={c.id} />
@@ -1324,7 +1353,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
                               <div className="text-[11px] text-text3 font-medium">{c.semester}</div>
                               <button
                                 type="button"
-                                onClick={() => onTabChange('courses')}
+                                onClick={() => handleOpenCourse(c.id)}
                                 className="text-left font-bold text-sm sm:text-base text-text hover:text-accent transition-colors block truncate cursor-pointer"
                               >
                                 {c.fullTitle}
@@ -1343,7 +1372,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
                           <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                             <button
                               type="button"
-                              onClick={() => onTabChange('courses')}
+                              onClick={() => handleOpenCourse(c.id)}
                               className="btn btn-secondary btn-sm text-xs cursor-pointer"
                             >
                               Open Course
@@ -1407,7 +1436,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
                                     type="button"
                                     onClick={() => {
                                       setActiveMenuCourseId(null);
-                                      onTabChange('courses');
+                                      handleOpenCourse(c.id);
                                     }}
                                     className="w-full text-left px-3 py-1.5 rounded-lg text-accent hover:bg-accent/10 cursor-pointer flex items-center gap-2 font-semibold"
                                   >
@@ -2369,92 +2398,16 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
       )}
 
       {/* ============================================================ */}
-      {/* 2. MY COURSES & MODULES (students/student_courses.php)        */}
+      {/* 2. COURSE SECTION OUTLINE & EXPERIENCE                       */}
       {/* ============================================================ */}
       {activeTab === 'courses' && (
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-xl font-bold font-serif text-text">My Courses & Syllabus Modules</h3>
-            <p className="text-xs text-text2">
-              Grade 11 STEM Section A · Semester 1 Academic Year 2026–2027
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {SUBJECTS_LIST.map((subj) => (
-              <div
-                key={subj.id}
-                className="rounded-xl bg-bg2 border border-border p-4 space-y-3 hover:border-accent/40 transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent/10 text-accent">
-                      {subj.code}
-                    </span>
-                    {subj.hasLive && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-bg text-cyan">
-                        <span className="size-1.5 rounded-full bg-cyan animate-pulse" />
-                        Live Now
-                      </span>
-                    )}
-                  </div>
-
-                  <h4 className="text-base font-bold text-text">{subj.title}</h4>
-                  <p className="text-xs text-text3 mt-0.5">{subj.teacher}</p>
-                  <p className="text-[11px] text-text2 mt-1">{subj.schedule}</p>
-                </div>
-
-                <div className="pt-3 border-t border-border space-y-2">
-                  <div className="text-xs font-semibold text-text truncate">
-                    {subj.currentModule}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between text-[11px] text-text3 mb-1">
-                      <span>Completion</span>
-                      <span className="tabular-nums font-semibold text-text">{subj.progressPercent}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-bg3 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-accent rounded-full transition-all"
-                        style={{ width: `${subj.progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setActivePdfModule({ title: subj.currentModule, subject: subj.title })}
-                      className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-bg3 hover:bg-bg4 text-text text-xs font-medium transition-colors cursor-pointer"
-                    >
-                      <RiFilePdfLine className="size-3.5 text-red" aria-hidden="true" />
-                      <span>Read PDF</span>
-                    </button>
-                    {subj.hasLive ? (
-                      <button
-                        type="button"
-                        onClick={() => onTabChange('live')}
-                        className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-cyan text-[#0e0f14] text-xs font-semibold hover:brightness-105 transition-all cursor-pointer"
-                      >
-                        <RiVideoChatLine className="size-3.5" aria-hidden="true" />
-                        <span>Join Live</span>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => onTabChange('tasks')}
-                        className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-accent/10 hover:bg-accent/20 text-accent text-xs font-medium transition-colors cursor-pointer"
-                      >
-                        <span>Tasks</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <CourseSectionView
+          courseData={getCourseData(selectedCourseId)}
+          activeSectionId={activeCourseSectionId}
+          onBackToCourses={() => onTabChange('dashboard')}
+          onNavigateToLive={() => onTabChange('live')}
+          onNavigateToTasks={() => onTabChange('tasks')}
+        />
       )}
 
       {/* ============================================================ */}

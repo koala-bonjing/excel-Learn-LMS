@@ -13,6 +13,41 @@ textarea {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ============================================================ */
+/* Sleek, Modern Minimalist Scrollbar (Thin 6px Overlay Style)   */
+/* ============================================================ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 3.5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text3);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 :root {
   --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-serif: 'DM Serif Display', Georgia, serif;
@@ -50,7 +85,8 @@ textarea {
 
   --sidebar-active-grad: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 48%, #6dd5ed 100%);
   --sidebar-active-text: #1e2230;
-  --sidebar-active-border: #4d6fff;
+  --sidebar-active-icon: var(--sidebar-active-text);
+  --sidebar-active-border: var(--school-orange);
   --sidebar-active-badge-bg: #4d6fff;
   --sidebar-active-badge-text: #ffffff;
 }
@@ -89,6 +125,7 @@ textarea {
 
   --sidebar-active-grad: linear-gradient(135deg, #1e3c72 0%, #2a5298 52%, #f7971e 100%);
   --sidebar-active-text: #ffffff;
+  --sidebar-active-icon: #ffffff;
   --sidebar-active-border: #f7971e;
   --sidebar-active-badge-bg: #ffffff;
   --sidebar-active-badge-text: #2a5298;
@@ -234,9 +271,34 @@ textarea {
   font-weight: 600;
 }
 
+.nav-item.active svg,
+.excelearn-nav-pill.active svg {
+  color: var(--sidebar-active-text) !important;
+  opacity: 1 !important;
+  transition: filter 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .nav-item.active .nav-icon {
-  stroke: var(--sidebar-active-text);
-  color: var(--sidebar-active-text);
+  stroke: var(--sidebar-active-text) !important;
+  color: var(--sidebar-active-text) !important;
+}
+
+/* In Light Mode: subtle warm orange gradient shadow & glow (never solid fill) */
+:root:not(.dark) .nav-item.active,
+:root:not(.dark) .excelearn-nav-pill.active,
+html:not(.dark) .nav-item.active,
+html:not(.dark) .excelearn-nav-pill.active {
+  box-shadow: 0 4px 16px -2px rgba(247, 151, 30, 0.20),
+              0 2px 6px -1px rgba(251, 176, 59, 0.12),
+              inset 4px 0 0 0 var(--school-orange) !important;
+}
+
+:root:not(.dark) .nav-item.active svg,
+:root:not(.dark) .excelearn-nav-pill.active svg,
+html:not(.dark) .nav-item.active svg,
+html:not(.dark) .excelearn-nav-pill.active svg {
+  color: var(--sidebar-active-text) !important;
+  filter: drop-shadow(0 2px 5px rgba(247, 151, 30, 0.32)) drop-shadow(0 1px 2px rgba(251, 176, 59, 0.18));
 }
 
 .nav-item.active .nav-badge {

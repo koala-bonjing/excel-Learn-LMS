@@ -202,7 +202,7 @@ export function TeacherProfileView({ onTabChange }: TeacherProfileViewProps) {
     .filter(Boolean);
 
   return (
-    <div className="space-y-6 w-full max-w-6xl mx-auto pb-12">
+    <div className="space-y-6 w-full pb-12">
       {/* Toast Notification Banner */}
       {toastMessage && (
         <div className="fixed top-18 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-bg2 border border-green/40 text-green shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-3 duration-200">

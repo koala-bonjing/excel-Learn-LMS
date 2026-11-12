@@ -38,7 +38,24 @@ import {
   RiNotification3Fill,
   RiMenuFoldLine,
   RiMenuUnfoldLine,
+  RiArrowRightSLine,
+  RiArrowDownSLine,
 } from '@remixicon/react';
+
+export interface CourseSectionNavItem {
+  id: string;
+  title: string;
+}
+
+export interface CourseSectionNavInfo {
+  courseId?: string;
+  courseTitle: string;
+  sections: CourseSectionNavItem[];
+  activeSectionId?: string | null;
+  onSelectSection?: (sectionId: string) => void;
+  onBackToOverview?: () => void;
+  onOpenCourse?: (courseId: string) => void;
+}
 
 export interface NavItemConfig {
   id: string;
@@ -59,6 +76,7 @@ interface ShellProps {
   onSelectRole: (role: Role) => void;
   onLogout: () => void;
   children: React.ReactNode;
+  courseSectionNav?: CourseSectionNavInfo | null;
 }
 
 export function Shell({
@@ -69,9 +87,11 @@ export function Shell({
   onSelectRole,
   onLogout,
   children,
+  courseSectionNav,
 }: ShellProps) {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [isCourseSubnavOpen, setIsCourseSubnavOpen] = useState(true);
 
   const handleRequestLogout = useCallback(() => {
     setIsLogoutModalOpen(true);
@@ -143,7 +163,7 @@ export function Shell({
         return [
           { id: 'dashboard', label: 'Dashboard', section: 'OVERVIEW', lineIcon: RiDashboardLine, fillIcon: RiDashboardFill },
           { id: 'announcements', label: 'Announcements', section: 'OVERVIEW', lineIcon: RiNotification3Line, fillIcon: RiNotification3Fill, badge: 3, badgeVariant: 'accent' },
-          { id: 'courses', label: 'My Subjects', section: 'LEARNING', lineIcon: RiStackLine, fillIcon: RiStackFill, badge: 6, badgeVariant: 'accent' },
+          { id: 'courses', label: 'Course Overview', section: 'LEARNING', lineIcon: RiStackLine, fillIcon: RiStackFill, badge: 6, badgeVariant: 'accent' },
           { id: 'tasks', label: 'Performance Tasks', section: 'LEARNING', lineIcon: RiFilmLine, fillIcon: RiFilmFill, badge: 3, badgeVariant: 'accent' },
           { id: 'live', label: 'Virtual Class', section: 'LEARNING', lineIcon: RiVideoLine, fillIcon: RiVideoFill },
           { id: 'grades', label: 'Grades', section: 'PROGRESS', lineIcon: RiCheckboxCircleLine, fillIcon: RiCheckboxCircleFill },
@@ -196,31 +216,31 @@ export function Shell({
         {/* Sidebar Logo Header - Fixed 74px height prevents CLS on collapse/expand */}
         <div className={`h-[74px] shrink-0 border-b border-border flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-3.5'}`}>
           {!isCollapsed ? (
-            <div className="flex items-center justify-between w-full min-w-0">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <img
-                  src="/img/Excelsior_Seal_Logo.png"
-                  alt="ExceLearn Logo"
-                  className="h-[38px] w-auto object-contain shrink-0"
-                />
-                <div className="min-w-0">
+            <div className="flex items-center gap-2.5 w-full min-w-0">
+              <img
+                src="/img/Excelsior_Seal_Logo.png"
+                alt="ExceLearn Logo"
+                className="h-[38px] w-auto object-contain shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-1">
                   <div className="logo-name whitespace-nowrap">
                     Exce<span style={{ color: '#22c55e' }}>Learn</span>
                   </div>
-                  <div className="logo-sub whitespace-nowrap">
-                    Learn Better. Anytime, Anywhere.
-                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleSidebarCollapse}
+                    title="Collapse sidebar (Ctrl+B)"
+                    aria-label="Collapse sidebar"
+                    className="p-1.5 rounded-lg text-text3 hover:text-text hover:bg-bg3 cursor-pointer shrink-0 press-scale transition-colors"
+                  >
+                    <RiMenuFoldLine className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+                <div className="logo-sub whitespace-nowrap truncate">
+                  Learn Better. Anytime, Anywhere.
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={toggleSidebarCollapse}
-                title="Collapse sidebar (Ctrl+B)"
-                aria-label="Collapse sidebar"
-                className="p-1.5 rounded-lg text-text3 hover:text-text hover:bg-bg3 cursor-pointer shrink-0 ml-1 press-scale"
-              >
-                <RiMenuFoldLine className="size-4" aria-hidden="true" />
-              </button>
             </div>
           ) : (
             <TooltipTrigger delay={0} closeDelay={0}>
@@ -327,6 +347,104 @@ export function Shell({
                           </div>
                         </Tooltip>
                       </TooltipTrigger>
+                    );
+                  }
+
+                  // For student, 'courses' acts as the PARENT nav with expandable course sections sub-navs
+                  if (item.id === 'courses' && currentRole === 'student') {
+                    const sectionsList = courseSectionNav?.sections || [
+                      { id: 'sec-general', title: 'General' },
+                      { id: 'sec-week-1-2', title: 'WEEK 1 - 2 | THE NATURE OF A PROFESSION' },
+                      { id: 'sec-week-3', title: 'WEEK 3 - PROFESSIONAL BODIES IN COMPUTING' },
+                      { id: 'sec-week-4', title: 'WEEK 4 - PROFESSIONAL RELATIONSHIPS' },
+                      { id: 'sec-groups', title: 'GROUPS' },
+                      { id: 'sec-week-6-10', title: 'WEEK 6-10 | RIGHT & WRONG FOR IT PROFESSIONALS' },
+                    ];
+
+                    return (
+                      <div key={item.id} className="space-y-1">
+                        {/* Parent Nav Button: Course Overview */}
+                        <div
+                          onClick={() => {
+                            if (currentTab !== 'courses') {
+                              onTabChange('courses');
+                              setIsCourseSubnavOpen(true);
+                            } else {
+                              setIsCourseSubnavOpen(!isCourseSubnavOpen);
+                            }
+                          }}
+                          className={`nav-item excelearn-nav-pill cursor-pointer flex items-center justify-between group ${
+                            isActive ? 'active' : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <Icon className="w-[18px] h-[18px] shrink-0 opacity-85" aria-hidden="true" />
+                            <span className="truncate font-semibold">{item.label}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span className="nav-badge size-5 rounded-full bg-accent text-white font-bold text-[10px] flex items-center justify-center">
+                              {sectionsList.length}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsCourseSubnavOpen(!isCourseSubnavOpen);
+                              }}
+                              title={isCourseSubnavOpen ? 'Collapse sections' : 'Expand sections'}
+                              aria-label={isCourseSubnavOpen ? 'Collapse sections' : 'Expand sections'}
+                              className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 text-text3 hover:text-text transition-colors cursor-pointer"
+                            >
+                              {isCourseSubnavOpen ? (
+                                <RiArrowDownSLine className="size-4" />
+                              ) : (
+                                <RiArrowRightSLine className="size-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Collapsible Subnavs: Clean, simple indented list */}
+                        {isCourseSubnavOpen && (
+                          <div className="ml-4 pl-3 border-l-2 border-border/70 my-1 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                            {sectionsList.map((sec) => {
+                              const isSecActive = currentTab === 'courses' && courseSectionNav?.activeSectionId === sec.id;
+                              return (
+                                <button
+                                  key={sec.id}
+                                  type="button"
+                                  onClick={() => {
+                                    if (currentTab !== 'courses') {
+                                      onTabChange('courses');
+                                    }
+                                    if (courseSectionNav?.onSelectSection) {
+                                      courseSectionNav.onSelectSection(sec.id);
+                                    } else {
+                                      const el = document.getElementById(sec.id);
+                                      if (el) {
+                                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                      }
+                                    }
+                                  }}
+                                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-2 transition-all cursor-pointer select-none group font-medium ${
+                                    isSecActive
+                                      ? 'bg-accent/15 text-accent font-semibold shadow-2xs'
+                                      : 'text-text3 hover:text-text hover:bg-bg3/70'
+                                  }`}
+                                >
+                                  <RiArrowRightSLine
+                                    className={`size-3 shrink-0 transition-transform ${
+                                      isSecActive ? 'text-accent translate-x-0.5' : 'text-text3/60 group-hover:text-text'
+                                    }`}
+                                  />
+                                  <span className="truncate leading-tight text-[11.5px]">{sec.title}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     );
                   }
 
@@ -574,6 +692,100 @@ export function Shell({
                             <RiLogoutBoxRLine className="w-[18px] h-[18px] text-red" aria-hidden="true" />
                             <span className="text-red font-medium">{item.label}</span>
                           </button>
+                        );
+                      }
+
+                      if (item.id === 'courses' && currentRole === 'student') {
+                        const sectionsList = courseSectionNav?.sections || [
+                          { id: 'sec-general', title: 'General' },
+                          { id: 'sec-week-1-2', title: 'WEEK 1 - 2 | THE NATURE OF A PROFESSION' },
+                          { id: 'sec-week-3', title: 'WEEK 3 - PROFESSIONAL BODIES IN COMPUTING' },
+                          { id: 'sec-week-4', title: 'WEEK 4 - PROFESSIONAL RELATIONSHIPS' },
+                          { id: 'sec-groups', title: 'GROUPS' },
+                          { id: 'sec-week-6-10', title: 'WEEK 6-10 | RIGHT & WRONG FOR IT PROFESSIONALS' },
+                        ];
+
+                        return (
+                          <div key={item.id} className="space-y-1">
+                            <div
+                              onClick={() => {
+                                if (currentTab !== 'courses') {
+                                  onTabChange('courses');
+                                  setIsCourseSubnavOpen(true);
+                                } else {
+                                  setIsCourseSubnavOpen(!isCourseSubnavOpen);
+                                }
+                              }}
+                              className={`nav-item excelearn-nav-pill cursor-pointer flex items-center justify-between group ${
+                                isActive ? 'active' : ''
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                <Icon className="w-[18px] h-[18px] shrink-0" aria-hidden="true" />
+                                <span className="truncate font-semibold">{item.label}</span>
+                              </div>
+
+                              <div className="flex items-center gap-1 shrink-0">
+                                <span className="nav-badge size-5 rounded-full bg-accent text-white font-bold text-[10px] flex items-center justify-center">
+                                  {sectionsList.length}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsCourseSubnavOpen(!isCourseSubnavOpen);
+                                  }}
+                                  className="p-1 rounded text-text3 hover:text-text cursor-pointer"
+                                >
+                                  {isCourseSubnavOpen ? (
+                                    <RiArrowDownSLine className="size-4" />
+                                  ) : (
+                                    <RiArrowRightSLine className="size-4" />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+
+                            {isCourseSubnavOpen && (
+                              <div className="ml-4 pl-3 border-l-2 border-border/70 my-1 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                                {sectionsList.map((sec) => {
+                                  const isSecActive = currentTab === 'courses' && courseSectionNav?.activeSectionId === sec.id;
+                                  return (
+                                    <button
+                                      key={sec.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setMobileDrawerOpen(false);
+                                        if (currentTab !== 'courses') {
+                                          onTabChange('courses');
+                                        }
+                                        if (courseSectionNav?.onSelectSection) {
+                                          courseSectionNav.onSelectSection(sec.id);
+                                        } else {
+                                          const el = document.getElementById(sec.id);
+                                          if (el) {
+                                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                          }
+                                        }
+                                      }}
+                                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-2 transition-all cursor-pointer select-none group font-medium ${
+                                        isSecActive
+                                          ? 'bg-accent/15 text-accent font-semibold shadow-2xs'
+                                          : 'text-text3 hover:text-text hover:bg-bg3/70'
+                                      }`}
+                                    >
+                                      <RiArrowRightSLine
+                                        className={`size-3 shrink-0 transition-transform ${
+                                          isSecActive ? 'text-accent translate-x-0.5' : 'text-text3/60 group-hover:text-text'
+                                        }`}
+                                      />
+                                      <span className="truncate leading-tight text-[11.5px]">{sec.title}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         );
                       }
 

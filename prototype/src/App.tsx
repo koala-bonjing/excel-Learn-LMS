@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Role } from '@/types';
 import { PROFILES } from '@/data/mockData';
+import { getCourseData } from '@/data/courseOutlineData';
 import { PrototypeSwitcher } from '@/components/layout/PrototypeSwitcher';
 import { Shell } from '@/components/layout/Shell';
 import { LoginScreen } from '@/components/screens/LoginScreen';
@@ -13,8 +14,39 @@ export default function App() {
 
   // Active sub-tabs for each role
   const [studentTab, setStudentTab] = useState<string>('dashboard');
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>('c-social-issues');
+  const [activeCourseSectionId, setActiveCourseSectionId] = useState<string | null>(null);
+
   const [teacherTab, setTeacherTab] = useState<string>('dashboard');
   const [adminTab, setAdminTab] = useState<string>('dashboard');
+
+  const currentCourseData = getCourseData(selectedCourseId);
+
+  const courseSectionNav = {
+    courseId: currentCourseData.courseId,
+    courseTitle: currentCourseData.fullTitle,
+    sections: currentCourseData.sections.map((s) => ({ id: s.id, title: s.title })),
+    activeSectionId: activeCourseSectionId,
+    onSelectSection: (sectionId: string) => {
+      setActiveCourseSectionId(sectionId);
+      if (studentTab !== 'courses') {
+        setStudentTab('courses');
+      }
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+    },
+    onBackToOverview: () => {
+      setStudentTab('dashboard');
+    },
+    onOpenCourse: (courseId: string) => {
+      setSelectedCourseId(courseId);
+      setStudentTab('courses');
+    },
+  };
 
   const handleRoleSelect = (newRole: Role) => {
     setCurrentRole(newRole);
@@ -50,10 +82,15 @@ export default function App() {
           onTabChange={setStudentTab}
           onSelectRole={handleRoleSelect}
           onLogout={handleLogout}
+          courseSectionNav={courseSectionNav}
         >
           <StudentDashboard
             activeTab={studentTab}
             onTabChange={setStudentTab}
+            selectedCourseId={selectedCourseId}
+            onSelectCourse={setSelectedCourseId}
+            activeCourseSectionId={activeCourseSectionId}
+            onSelectCourseSection={setActiveCourseSectionId}
           />
         </Shell>
       )}

@@ -196,7 +196,7 @@ export function TeacherSettingsView({ onTabChange }: TeacherSettingsViewProps) {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-5xl mx-auto pb-16 animate-in fade-in duration-200">
+    <div className="space-y-6 w-full pb-16 animate-in fade-in duration-200">
       {/* Toast Feedback */}
       {toast && (
         <div

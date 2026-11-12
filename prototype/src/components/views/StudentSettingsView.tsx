@@ -213,7 +213,7 @@ export function StudentSettingsView({ onTabChange: _onTabChange }: StudentSettin
   };
 
   return (
-    <div className="space-y-6 w-full max-w-5xl mx-auto pb-12 animate-in fade-in duration-200">
+    <div className="space-y-6 w-full pb-12 animate-in fade-in duration-200">
       {/* Toast Feedback */}
       {toast && (
         <div

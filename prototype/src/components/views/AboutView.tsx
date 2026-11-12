@@ -14,7 +14,7 @@ export interface AboutViewProps {
 
 export function AboutView({ role = 'student' }: AboutViewProps) {
   return (
-    <div className="space-y-8 sm:space-y-10 w-full max-w-6xl mx-auto relative pb-16">
+    <div className="space-y-8 sm:space-y-10 w-full relative pb-16">
       {/* ============================================================ */}
       {/* 1. HERO SECTION                                              */}
       {/* ============================================================ */}
