@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useShell } from '@/components/layout/ShellContext';
 import {
   RiSettings3Line,
   RiGlobalLine,
@@ -14,6 +15,7 @@ import {
   RiEyeLine,
   RiEyeOffLine,
   RiInformationLine,
+  RiLogoutBoxRLine,
 } from '@remixicon/react';
 
 export interface StudentSettingsViewProps {
@@ -66,9 +68,14 @@ const FILIPINO_DICT: Record<string, string> = {
   'Confirm New Password': 'Kumpirmahin ang Bagong Password',
   'Update Password': 'I-update ang Password',
   'Reset Form': 'I-reset ang Form',
+  'Portal Session': 'Sesyon ng Portal',
+  'Signed in as student on this browser. Terminating session will require re-authentication with your academy credentials.':
+    'Naka-sign in bilang mag-aaral sa browser na ito. Ang pagwawakas ng sesyon ay mangangailangan ng muling pagpapatotoo gamit ang iyong mga kredensyal ng akademya.',
+  'Log Out': 'Mag-log Out',
 };
 
 export function StudentSettingsView({ onTabChange: _onTabChange }: StudentSettingsViewProps) {
+  const { requestLogout } = useShell();
   // ── Settings State ────────────────────────────────────────────────────────
   const [settings, setSettings] = useState<StudentSettings>(() => {
     if (typeof window !== 'undefined') {
@@ -619,6 +626,33 @@ export function StudentSettingsView({ onTabChange: _onTabChange }: StudentSettin
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Session Management & Logout */}
+      <div className="p-6 rounded-2xl bg-bg2 border border-border shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="p-2 rounded-xl bg-red-bg text-red shrink-0 mt-0.5">
+              <RiLogoutBoxRLine className="size-5" aria-hidden="true" />
+            </span>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold font-serif text-text">
+                {t('Portal Session')}
+              </h3>
+              <p className="text-xs text-text3 mt-0.5 max-w-xl">
+                {t('Signed in as student on this browser. Terminating session will require re-authentication with your academy credentials.')}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={requestLogout}
+            className="self-start sm:self-auto px-4 py-2 rounded-xl bg-red-bg hover:bg-red/20 text-red text-xs sm:text-sm font-semibold border border-red/30 cursor-pointer active:scale-95 transition-all inline-flex items-center gap-1.5"
+          >
+            <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
+            <span>{t('Log Out')}</span>
+          </button>
+        </div>
       </div>
     </div>
   );

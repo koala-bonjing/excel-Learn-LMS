@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useShell } from '@/components/layout/ShellContext';
 import {
   RiSettings3Line,
   RiGlobalLine,
@@ -15,6 +16,7 @@ import {
   RiEyeLine,
   RiEyeOffLine,
   RiArrowRightLine,
+  RiLogoutBoxRLine,
 } from '@remixicon/react';
 
 export interface TeacherSettingsViewProps {
@@ -51,6 +53,7 @@ const DEFAULT_SETTINGS: TeacherSettingsState = {
 };
 
 export function TeacherSettingsView({ onTabChange }: TeacherSettingsViewProps) {
+  const { requestLogout } = useShell();
   // Settings state with localStorage loading
   const [settings, setSettings] = useState<TeacherSettingsState>(() => {
     try {
@@ -741,6 +744,33 @@ export function TeacherSettingsView({ onTabChange }: TeacherSettingsViewProps) {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Session Management & Logout */}
+      <div className="p-6 rounded-2xl bg-bg2 border border-border shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="p-2 rounded-xl bg-red-bg text-red shrink-0 mt-0.5">
+              <RiLogoutBoxRLine className="size-5" aria-hidden="true" />
+            </span>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold font-serif text-text">
+                Faculty Portal Session
+              </h3>
+              <p className="text-xs text-text3 mt-0.5 max-w-xl">
+                Active teacher session on this device. Terminating your session clears local tokens and prompts for identity confirmation.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={requestLogout}
+            className="self-start sm:self-auto px-4 py-2 rounded-xl bg-red-bg hover:bg-red/20 text-red text-xs sm:text-sm font-semibold border border-red/30 cursor-pointer active:scale-95 transition-all inline-flex items-center gap-1.5"
+          >
+            <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
+            <span>Log Out</span>
+          </button>
+        </div>
       </div>
     </div>
   );

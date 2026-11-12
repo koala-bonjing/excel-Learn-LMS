@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShell } from '@/components/layout/ShellContext';
 import {
   RiUserLine,
   RiMailLine,
@@ -21,6 +22,7 @@ import {
   RiBarChartLine,
   RiQrCodeLine,
   RiLockLine,
+  RiLogoutBoxRLine,
 } from '@remixicon/react';
 
 export interface AdminProfileViewProps {
@@ -48,6 +50,7 @@ interface ActivityEvent {
 }
 
 export function AdminProfileView({ onTabChange }: AdminProfileViewProps) {
+  const { requestLogout } = useShell();
   const [activeSubTab, setActiveSubTab] = useState<AdminSubTab>('overview');
 
   // Master Admin Profile state (matching tblusers)
@@ -685,13 +688,23 @@ export function AdminProfileView({ onTabChange }: AdminProfileViewProps) {
                   <p className="text-[11px] text-text3">Active web login devices recorded in tbluser_sessions</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={handleRevokeOtherSessions}
-                className="px-3 py-1 rounded-lg text-xs font-semibold text-text2 hover:text-text bg-bg3 hover:bg-bg4 border border-border cursor-pointer transition-colors"
-              >
-                Revoke Others
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleRevokeOtherSessions}
+                  className="px-3 py-1 rounded-lg text-xs font-semibold text-text2 hover:text-text bg-bg3 hover:bg-bg4 border border-border cursor-pointer transition-colors"
+                >
+                  Revoke Others
+                </button>
+                <button
+                  type="button"
+                  onClick={requestLogout}
+                  className="px-3 py-1 rounded-lg text-xs font-semibold text-red hover:bg-red-bg border border-red/30 cursor-pointer transition-colors flex items-center gap-1 active:scale-95"
+                >
+                  <RiLogoutBoxRLine className="size-3.5" aria-hidden="true" />
+                  <span>Log Out</span>
+                </button>
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -931,6 +944,24 @@ export function AdminProfileView({ onTabChange }: AdminProfileViewProps) {
               }`}
             >
               {profile.twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+            </button>
+          </div>
+
+          {/* Active Session & Logout Card Row */}
+          <div className="p-4 rounded-xl bg-bg3 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div>
+              <div className="font-semibold text-text text-sm">Active Administrator Session</div>
+              <div className="text-text3 mt-0.5">
+                Current browser session · Session ID: #ADM-SESSION-SEC9
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={requestLogout}
+              className="self-start sm:self-auto px-4 py-1.5 rounded-lg bg-red-bg hover:bg-red/20 border border-red/30 text-red font-semibold flex items-center gap-1.5 cursor-pointer transition-colors active:scale-95"
+            >
+              <RiLogoutBoxRLine className="size-3.5" aria-hidden="true" />
+              <span>Log Out</span>
             </button>
           </div>
         </div>

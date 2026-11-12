@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShell } from '@/components/layout/ShellContext';
 import {
   RiUserLine,
   RiGraduationCapLine,
@@ -11,6 +12,7 @@ import {
   RiCheckLine,
   RiCloseLine,
   RiAlertLine,
+  RiLogoutBoxRLine,
 } from '@remixicon/react';
 
 export interface StudentProfileViewProps {
@@ -18,6 +20,7 @@ export interface StudentProfileViewProps {
 }
 
 export function StudentProfileView({ onTabChange }: StudentProfileViewProps) {
+  const { requestLogout } = useShell();
   // Personal & Academic profile master state (matching tblstudents + tblsections)
   const [personalInfo, setPersonalInfo] = useState({
     firstName: 'Bryan',
@@ -613,6 +616,23 @@ export function StudentProfileView({ onTabChange }: StudentProfileViewProps) {
             className="self-start sm:self-auto px-4 py-2 rounded-xl bg-red-bg hover:bg-red/20 text-red text-xs font-semibold border border-red/30 cursor-pointer active:scale-95 transition-all"
           >
             Deactivate Account
+          </button>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 mt-4 border-t border-border">
+          <div>
+            <div className="font-semibold text-sm text-text">Sign Out of Session</div>
+            <div className="text-xs text-text3 mt-0.5 max-w-xl">
+              Log out of your student portal on this device. You will be prompted to confirm before session termination.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={requestLogout}
+            className="self-start sm:self-auto px-4 py-2 rounded-xl bg-red-bg hover:bg-red/20 text-red text-xs font-semibold border border-red/30 cursor-pointer active:scale-95 transition-all inline-flex items-center gap-1.5"
+          >
+            <RiLogoutBoxRLine className="size-3.5" aria-hidden="true" />
+            <span>Sign Out</span>
           </button>
         </div>
       </div>

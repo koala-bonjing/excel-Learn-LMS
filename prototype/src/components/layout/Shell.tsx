@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
 import type { Role, UserProfile } from '@/types';
 import { PrototypeSwitcher } from '@/components/layout/PrototypeSwitcher';
 import { Tooltip, TooltipTrigger } from '@/components/base/tooltip/tooltip';
+import { LogoutModal } from '@/components/layout/LogoutModal';
+import { ShellContext } from '@/components/layout/ShellContext';
 import {
   RiDashboardLine,
   RiDashboardFill,
@@ -68,7 +70,17 @@ export function Shell({
   onLogout,
   children,
 }: ShellProps) {
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  const handleRequestLogout = useCallback(() => {
+    setIsLogoutModalOpen(true);
+  }, []);
+
+  const shellContextValue = useMemo(
+    () => ({ requestLogout: handleRequestLogout }),
+    [handleRequestLogout]
+  );
   const [isCollapsed, setIsCollapsed] = useState(() => {
     try {
       return localStorage.getItem('excelearn_sidebar_collapsed') === 'true';
@@ -165,7 +177,7 @@ export function Shell({
 
   const handleNavClick = (item: NavItemConfig) => {
     if (item.isLogout) {
-      onLogout();
+      setIsLogoutModalOpen(true);
     } else {
       onTabChange(item.id);
     }
@@ -260,7 +272,7 @@ export function Shell({
                       return (
                         <TooltipTrigger key={item.id} delay={0} closeDelay={0}>
                           <AriaButton
-                            onPress={onLogout}
+                            onPress={() => setIsLogoutModalOpen(true)}
                             aria-label={item.label}
                             className="nav-item text-red hover:bg-red/10 cursor-pointer mt-1 !justify-center !px-0 !border-l-0 h-10 w-10 mx-auto outline-none"
                           >
@@ -277,7 +289,7 @@ export function Shell({
                       <button
                         key={item.id}
                         type="button"
-                        onClick={onLogout}
+                        onClick={() => setIsLogoutModalOpen(true)}
                         aria-label={item.label}
                         className="nav-item text-red hover:bg-red/10 cursor-pointer mt-1"
                       >
@@ -345,24 +357,35 @@ export function Shell({
         {/* Sidebar Footer - Fixed 68px height */}
         <div className={`h-[68px] shrink-0 border-t border-border flex items-center ${isCollapsed ? 'justify-center p-2' : 'p-3.5'}`}>
           {!isCollapsed ? (
-            <div
-              onClick={() => onTabChange('profile')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && onTabChange('profile')}
-              title="View Profile"
-              className="user-card w-full cursor-pointer hover:bg-bg3 transition-all active:scale-[0.98] select-none"
-            >
+            <div className="flex items-center justify-between w-full min-w-0 gap-2">
               <div
-                className="user-avatar text-white font-semibold text-xs shrink-0"
-                style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
+                onClick={() => onTabChange('profile')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && onTabChange('profile')}
+                title="View Profile"
+                className="user-card flex-1 min-w-0 cursor-pointer hover:bg-bg3 transition-all active:scale-[0.98] select-none"
               >
-                {user.initials}
+                <div
+                  className="user-avatar text-white font-semibold text-xs shrink-0"
+                  style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
+                >
+                  {user.initials}
+                </div>
+                <div className="user-info min-w-0">
+                  <p className="truncate font-semibold">{user.name}</p>
+                  <span className="truncate">{user.subLabel}</span>
+                </div>
               </div>
-              <div className="user-info min-w-0">
-                <p className="truncate font-semibold">{user.name}</p>
-                <span className="truncate">{user.subLabel}</span>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsLogoutModalOpen(true)}
+                title="Log out"
+                aria-label="Log out"
+                className="p-2 rounded-xl text-text3 hover:text-red hover:bg-red/10 cursor-pointer transition-colors shrink-0 press-scale"
+              >
+                <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
+              </button>
             </div>
           ) : (
             <TooltipTrigger delay={0} closeDelay={0}>
@@ -435,7 +458,9 @@ export function Shell({
 
         {/* Content Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1460px] mx-auto w-full transition-all duration-200">
-          {children}
+          <ShellContext.Provider value={shellContextValue}>
+            {children}
+          </ShellContext.Provider>
         </main>
       </div>
 
@@ -542,7 +567,7 @@ export function Shell({
                             type="button"
                             onClick={() => {
                               setMobileDrawerOpen(false);
-                              onLogout();
+                              setIsLogoutModalOpen(true);
                             }}
                             className="nav-item text-red hover:bg-red/10 cursor-pointer mt-1"
                           >
@@ -580,8 +605,22 @@ export function Shell({
             </div>
           </div>
 
-          <div className="pt-4 border-t border-border">
-            <div className="user-card">
+          <div className="pt-4 border-t border-border flex items-center justify-between gap-2">
+            <div
+              onClick={() => {
+                setMobileDrawerOpen(false);
+                onTabChange('profile');
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setMobileDrawerOpen(false);
+                  onTabChange('profile');
+                }
+              }}
+              className="user-card flex-1 min-w-0 cursor-pointer hover:bg-bg3 transition-all select-none"
+            >
               <div
                 className="user-avatar text-white font-semibold text-xs"
                 style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
@@ -589,13 +628,37 @@ export function Shell({
                 {user.initials}
               </div>
               <div className="user-info min-w-0">
-                <p className="truncate">{user.name}</p>
+                <p className="truncate font-semibold">{user.name}</p>
                 <span className="truncate">{user.subLabel}</span>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileDrawerOpen(false);
+                setIsLogoutModalOpen(true);
+              }}
+              title="Log out"
+              aria-label="Log out"
+              className="p-2 rounded-xl text-text3 hover:text-red hover:bg-red/10 cursor-pointer transition-colors shrink-0 press-scale"
+            >
+              <RiLogoutBoxRLine className="size-4" aria-hidden="true" />
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Intentional Role-Aware Logout Modal */}
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={() => {
+          setIsLogoutModalOpen(false);
+          onLogout();
+        }}
+        currentRole={currentRole}
+        user={user}
+      />
     </div>
   );
 }
