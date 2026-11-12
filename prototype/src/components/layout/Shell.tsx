@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Button as AriaButton } from 'react-aria-components';
 import type { Role, UserProfile } from '@/types';
 import { PrototypeSwitcher } from '@/components/layout/PrototypeSwitcher';
+import { Tooltip, TooltipTrigger } from '@/components/base/tooltip/tooltip';
 import {
   RiDashboardLine,
   RiDashboardFill,
@@ -31,6 +33,7 @@ import {
   RiMenuLine,
   RiCloseLine,
   RiNotification3Line,
+  RiNotification3Fill,
   RiMenuFoldLine,
   RiMenuUnfoldLine,
 } from '@remixicon/react';
@@ -127,6 +130,7 @@ export function Shell({
       case 'student':
         return [
           { id: 'dashboard', label: 'Dashboard', section: 'OVERVIEW', lineIcon: RiDashboardLine, fillIcon: RiDashboardFill },
+          { id: 'announcements', label: 'Announcements', section: 'OVERVIEW', lineIcon: RiNotification3Line, fillIcon: RiNotification3Fill, badge: 3, badgeVariant: 'accent' },
           { id: 'courses', label: 'My Subjects', section: 'LEARNING', lineIcon: RiStackLine, fillIcon: RiStackFill, badge: 6, badgeVariant: 'accent' },
           { id: 'tasks', label: 'Performance Tasks', section: 'LEARNING', lineIcon: RiFilmLine, fillIcon: RiFilmFill, badge: 3, badgeVariant: 'accent' },
           { id: 'live', label: 'Virtual Class', section: 'LEARNING', lineIcon: RiVideoLine, fillIcon: RiVideoFill },
@@ -207,20 +211,30 @@ export function Shell({
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={toggleSidebarCollapse}
-              title="Expand sidebar (Ctrl+B)"
-              aria-label="Expand sidebar"
-              className="p-1.5 rounded-xl hover:bg-bg3 cursor-pointer flex items-center justify-center group press-scale"
-            >
-              <img
-                src="/img/Excelsior_Seal_Logo.png"
-                alt="ExceLearn Logo"
-                className="size-9 object-contain group-hover:scale-105 transition-transform"
-              />
-              <span className="sr-only">Expand sidebar</span>
-            </button>
+            <TooltipTrigger delay={0} closeDelay={0}>
+              <AriaButton
+                onPress={toggleSidebarCollapse}
+                aria-label="Expand sidebar (Ctrl+B)"
+                className="relative p-1.5 rounded-xl hover:bg-bg3 focus-visible:ring-2 focus-visible:ring-accent cursor-pointer flex items-center justify-center group press-scale outline-none size-11"
+              >
+                <img
+                  src="/img/Excelsior_Seal_Logo.png"
+                  alt="ExceLearn Logo"
+                  className="size-9 object-contain transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-90 group-hover:scale-50 group-hover:opacity-0 group-focus-visible:rotate-90 group-focus-visible:scale-50 group-focus-visible:opacity-0"
+                />
+                <RiMenuUnfoldLine
+                  className="absolute size-5 text-accent -rotate-90 scale-50 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-0 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:rotate-0 group-focus-visible:scale-100 group-focus-visible:opacity-100"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">Expand sidebar</span>
+              </AriaButton>
+              <Tooltip placement="right" offset={10}>
+                <div className="flex items-center gap-1.5 whitespace-nowrap">
+                  <span>Expand sidebar</span>
+                  <kbd className="px-1 py-0.5 text-[10px] font-mono font-medium rounded bg-bg3 border border-border text-text3">Ctrl+B</kbd>
+                </div>
+              </Tooltip>
+            </TooltipTrigger>
           )}
         </div>
 
@@ -242,20 +256,65 @@ export function Shell({
                   const Icon = isActive ? item.fillIcon : item.lineIcon;
 
                   if (item.isLogout) {
+                    if (isCollapsed) {
+                      return (
+                        <TooltipTrigger key={item.id} delay={0} closeDelay={0}>
+                          <AriaButton
+                            onPress={onLogout}
+                            aria-label={item.label}
+                            className="nav-item text-red hover:bg-red/10 cursor-pointer mt-1 !justify-center !px-0 !border-l-0 h-10 w-10 mx-auto outline-none"
+                          >
+                            <RiLogoutBoxRLine className="w-[18px] h-[18px] shrink-0 text-red opacity-90" aria-hidden="true" />
+                          </AriaButton>
+                          <Tooltip placement="right" offset={10}>
+                            <span className="whitespace-nowrap font-medium text-red">{item.label}</span>
+                          </Tooltip>
+                        </TooltipTrigger>
+                      );
+                    }
+
                     return (
                       <button
                         key={item.id}
                         type="button"
                         onClick={onLogout}
-                        title={isCollapsed ? item.label : undefined}
                         aria-label={item.label}
-                        className={`nav-item text-red hover:bg-red/10 cursor-pointer mt-1 ${
-                          isCollapsed ? '!justify-center !px-0 !border-l-0 h-10 w-10 mx-auto' : ''
-                        }`}
+                        className="nav-item text-red hover:bg-red/10 cursor-pointer mt-1"
                       >
                         <RiLogoutBoxRLine className="w-[18px] h-[18px] shrink-0 text-red opacity-90" aria-hidden="true" />
-                        {!isCollapsed && <span className="font-medium text-[13.5px] text-red">{item.label}</span>}
+                        <span className="font-medium text-[13.5px] text-red">{item.label}</span>
                       </button>
+                    );
+                  }
+
+                  if (isCollapsed) {
+                    return (
+                      <TooltipTrigger key={item.id} delay={0} closeDelay={0}>
+                        <AriaButton
+                          onPress={() => handleNavClick(item)}
+                          aria-label={item.label}
+                          className={`nav-item excelearn-nav-pill cursor-pointer !justify-center !px-0 !border-l-0 relative h-10 w-10 mx-auto outline-none ${
+                            isActive ? 'active' : ''
+                          }`}
+                        >
+                          <Icon className="w-[18px] h-[18px] shrink-0 opacity-85" aria-hidden="true" />
+                          {item.badge !== undefined && (
+                            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-accent text-white font-bold text-[9px] flex items-center justify-center shadow-xs">
+                              {typeof item.badge === 'number' && item.badge > 99 ? '99+' : item.badge}
+                            </span>
+                          )}
+                        </AriaButton>
+                        <Tooltip placement="right" offset={10}>
+                          <div className="flex items-center gap-2 whitespace-nowrap">
+                            <span>{item.label}</span>
+                            {item.badge !== undefined && (
+                              <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-accent text-white font-bold text-[10px] leading-none">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                        </Tooltip>
+                      </TooltipTrigger>
                     );
                   }
 
@@ -264,25 +323,16 @@ export function Shell({
                       key={item.id}
                       type="button"
                       onClick={() => handleNavClick(item)}
-                      title={isCollapsed ? item.label : undefined}
                       aria-label={item.label}
-                      className={`nav-item excelearn-nav-pill cursor-pointer ${
-                        isCollapsed ? '!justify-center !px-0 !border-l-0 relative h-10 w-10 mx-auto' : ''
-                      } ${isActive ? 'active' : ''}`}
+                      className={`nav-item excelearn-nav-pill cursor-pointer ${isActive ? 'active' : ''}`}
                     >
                       <Icon className="w-[18px] h-[18px] shrink-0 opacity-85" aria-hidden="true" />
-                      {!isCollapsed && <span className="truncate">{item.label}</span>}
+                      <span className="truncate">{item.label}</span>
 
                       {item.badge !== undefined && (
-                        !isCollapsed ? (
-                          <span className="nav-badge size-5 rounded-full bg-accent text-white font-bold text-[11px] flex items-center justify-center shrink-0 ml-auto">
-                            {item.badge}
-                          </span>
-                        ) : (
-                          <span className="absolute -top-1 -right-1 size-4 rounded-full bg-accent text-white font-bold text-[9px] flex items-center justify-center shadow-xs">
-                            {typeof item.badge === 'number' && item.badge > 99 ? '99+' : item.badge}
-                          </span>
-                        )
+                        <span className="nav-badge size-5 rounded-full bg-accent text-white font-bold text-[11px] flex items-center justify-center shrink-0 ml-auto">
+                          {item.badge}
+                        </span>
                       )}
                     </button>
                   );
@@ -308,13 +358,21 @@ export function Shell({
               </div>
             </div>
           ) : (
-            <div
-              className="user-avatar text-white font-semibold text-xs cursor-pointer hover:ring-2 hover:ring-accent transition-all shrink-0 press-scale"
-              style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
-              title={`${user.name} (${user.subLabel})`}
-            >
-              {user.initials}
-            </div>
+            <TooltipTrigger delay={0} closeDelay={0}>
+              <AriaButton
+                aria-label={`${user.name} (${user.subLabel})`}
+                className="user-avatar text-white font-semibold text-xs cursor-pointer hover:ring-2 hover:ring-accent transition-all shrink-0 press-scale flex items-center justify-center outline-none"
+                style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
+              >
+                {user.initials}
+              </AriaButton>
+              <Tooltip placement="right" offset={10}>
+                <div className="whitespace-nowrap">
+                  <div className="font-semibold text-text">{user.name}</div>
+                  <div className="text-[11px] text-text3">{user.subLabel}</div>
+                </div>
+              </Tooltip>
+            </TooltipTrigger>
           )}
         </div>
       </aside>
@@ -336,19 +394,6 @@ export function Shell({
               <RiMenuLine className="size-5" aria-hidden="true" />
             </button>
 
-            {/* Desktop Sidebar Expand Trigger (shown when sidebar is collapsed) */}
-            {isCollapsed && (
-              <button
-                type="button"
-                onClick={toggleSidebarCollapse}
-                className="hidden lg:flex p-1.5 text-text2 hover:text-text hover:bg-bg3 rounded-lg cursor-pointer press-scale"
-                aria-label="Expand sidebar (Ctrl+B)"
-                title="Expand sidebar (Ctrl+B)"
-              >
-                <RiMenuUnfoldLine className="size-5" aria-hidden="true" />
-              </button>
-            )}
-
             {/* School Long Logo matching PHP */}
             <img
               src="/img/Excelsior_Logo_long.png"
@@ -362,8 +407,10 @@ export function Shell({
             {/* Notification Bell */}
             <button
               type="button"
+              onClick={() => onTabChange('announcements')}
               className="relative p-2 text-text2 hover:text-text hover:bg-bg3 rounded-lg cursor-pointer press-scale"
-              aria-label="Notifications"
+              aria-label="Announcements & Notifications"
+              title="View Announcements"
             >
               <RiNotification3Line className="size-4" aria-hidden="true" />
               <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-accent animate-pulse" />

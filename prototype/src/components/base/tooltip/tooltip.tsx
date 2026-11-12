@@ -58,7 +58,7 @@ const sizes = sortCx({
  * the direction the tip already points — past the tip, never back toward the
  * body — matching the one spot that already looked right by default.
  */
-export const TOOLTIP_CARETS = sortCx({
+const TOOLTIP_CARETS = sortCx({
   top: { width: 12, height: 7, path: "M0 0 L6 6 L12 0", shadow: "0 1.5px 1px" },
   bottom: { width: 12, height: 7, path: "M0 7 L6 1 L12 7", shadow: "0 -1.5px 1px" },
   // left/right carets stick out sideways from the body; their shadow should
@@ -85,7 +85,7 @@ export function Tooltip({ children, className, size = "sm", showArrow = true, of
       {...props}
       className={(state) =>
         cx(
-          "pointer-events-none z-120 max-w-[240px] select-none rounded-lg border border-border-button-default bg-background-primary-default text-text-primary shadow-dropdown",
+          "pointer-events-none z-[120] max-w-[240px] select-none rounded-lg border border-border-button-default bg-background-primary-default text-text-primary shadow-dropdown",
           sizes[size],
           // Blur + scale in/out. react-aria stamps `data-entering` on mount then
           // removes it (transition to base), and holds the element mounted while

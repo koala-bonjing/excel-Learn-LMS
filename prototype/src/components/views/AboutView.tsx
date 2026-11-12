@@ -36,8 +36,8 @@ export function AboutView({ role = 'student' }: AboutViewProps) {
           <div className="about-banner-shape3 pointer-events-none" />
         </div>
 
-        <div className="about-hero-content px-6 sm:px-10 py-6 sm:py-8 space-y-4 relative z-10">
-          <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-5 text-center sm:text-left">
+        <div className="about-hero-content px-6 sm:px-10 py-6 sm:py-8 relative z-10">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
             <div className="about-logo size-20 sm:size-24 rounded-full border-4 border-bg2 bg-bg2 overflow-hidden shadow-md flex items-center justify-center shrink-0 ring-2 ring-border/60">
               <img
                 src="/img/Excelsior_Seal_Logo.png"
@@ -56,43 +56,45 @@ export function AboutView({ role = 'student' }: AboutViewProps) {
               </div>
             </div>
 
-            <div className="min-w-0">
-              <h1
-                className="about-hero-name font-serif text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight inline-block"
-                style={{
-                  background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 42%, #f7971e 100%)',
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  color: 'transparent',
-                }}
-              >
-                Excelsior Polytechnic Academy
-              </h1>
-              <p className="text-xs sm:text-sm font-serif italic text-text3 tracking-wide mt-1">
-                « in avanti, in alto, sempre »
+            <div className="min-w-0 flex-1 space-y-3.5">
+              <div>
+                <h1
+                  className="about-hero-name font-serif text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight inline-block"
+                  style={{
+                    background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 42%, #f7971e 100%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    color: 'transparent',
+                  }}
+                >
+                  Excelsior Polytechnic Academy
+                </h1>
+                <p className="text-xs sm:text-sm font-serif italic text-text3 tracking-wide mt-1">
+                  « in avanti, in alto, sempre »
+                </p>
+              </div>
+
+              <p className="about-hero-tagline text-sm sm:text-base text-text2 max-w-4xl leading-relaxed">
+                Excelsior Polytechnic Academy, Inc. is a private educational institution offering Senior High School,
+                Preschool, Kindergarten, and Grade 1, with campuses in Cabitan, Mandaon, Masbate and in Crossing, Uson, Masbate. Visit us!
               </p>
+
+              <div className="about-hero-badges flex flex-wrap gap-2.5 pt-1 justify-center sm:justify-start">
+                <span className="badge badge-blue inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-accent-glow text-accent border border-accent/20">
+                  <RiMapPin2Line className="size-3.5" aria-hidden="true" />
+                  Cabitan, Mandaon
+                </span>
+                <span className="badge badge-green inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-bg text-green border border-green/20">
+                  <RiGraduationCapLine className="size-3.5" aria-hidden="true" />
+                  DepEd Recognized
+                </span>
+                <span className="badge badge-amber inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-bg text-amber border border-amber/20">
+                  <RiComputerLine className="size-3.5" aria-hidden="true" />
+                  Blended Learning
+                </span>
+              </div>
             </div>
-          </div>
-
-          <p className="about-hero-tagline text-sm sm:text-base text-text2 max-w-4xl leading-relaxed">
-            Excelsior Polytechnic Academy, Inc. is a private educational institution offering Senior High School,
-            Preschool, Kindergarten, and Grade 1, with campuses in Cabitan, Mandaon, Masbate and in Crossing, Uson, Masbate. Visit us!
-          </p>
-
-          <div className="about-hero-badges flex flex-wrap gap-2.5 pt-1 justify-center sm:justify-start">
-            <span className="badge badge-blue inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-accent-glow text-accent border border-accent/20">
-              <RiMapPin2Line className="size-3.5" aria-hidden="true" />
-              Cabitan, Mandaon
-            </span>
-            <span className="badge badge-green inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-bg text-green border border-green/20">
-              <RiGraduationCapLine className="size-3.5" aria-hidden="true" />
-              DepEd Recognized
-            </span>
-            <span className="badge badge-amber inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-bg text-amber border border-amber/20">
-              <RiComputerLine className="size-3.5" aria-hidden="true" />
-              Blended Learning
-            </span>
           </div>
         </div>
       </div>
