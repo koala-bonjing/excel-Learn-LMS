@@ -6,6 +6,7 @@ import {
   STUDENT_DIRECTORY,
 } from '@/data/mockData';
 import { AboutView } from '@/components/views/AboutView';
+import { AdminProfileView } from '@/components/views/AdminProfileView';
 import {
   RiCheckLine,
   RiCloseLine,
@@ -1097,9 +1098,16 @@ export function AdminDashboard({ activeTab, onTabChange }: AdminDashboardProps) 
       )}
 
       {/* ============================================================ */}
-      {/* 6. ADMIN PROFILE & SETTINGS (admin_profile.php / settings.php)*/}
+      {/* 6. ADMIN PROFILE (admin/admin_profile.php)                    */}
       {/* ============================================================ */}
-      {(activeTab === 'profile' || activeTab === 'settings') && (
+      {activeTab === 'profile' && (
+        <AdminProfileView onTabChange={onTabChange} />
+      )}
+
+      {/* ============================================================ */}
+      {/* 7. ADMIN SETTINGS (admin/settings.php)                        */}
+      {/* ============================================================ */}
+      {activeTab === 'settings' && (
         <div className="max-w-2xl p-6 rounded-xl bg-bg2 border border-border shadow-xs space-y-4">
           <h3 className="text-xl font-bold font-serif text-text">Administrator Credentials & Security</h3>
           <p className="text-xs text-text2">Super Administrator account settings.</p>

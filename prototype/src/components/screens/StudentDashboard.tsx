@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { StudentTask } from '@/types';
 import { INITIAL_STUDENT_TASKS, SUBJECTS_LIST } from '@/data/mockData';
 import { AboutView } from '@/components/views/AboutView';
+import { StudentProfileView } from '@/components/views/StudentProfileView';
 import { StudentActivityHeatmap } from '@/components/screens/StudentActivityHeatmap';
 import {
   RiVideoChatLine,
@@ -414,27 +415,6 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
   const [submissionRemarks, setSubmissionRemarks] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Profile Form State (student_profile.php)
-  const [profileSaved, setProfileSaved] = useState(false);
-  const [profileData, setProfileData] = useState({
-    firstName: 'Bryan',
-    middleName: 'Gomez',
-    lastName: 'Donceras',
-    suffix: '',
-    studentId: 'STUD-123456',
-    lrn: '109823456712',
-    gradeLevel: 'Grade 11',
-    strand: 'STEM',
-    section: 'STEM 11-A',
-    birthdate: '2008-05-14',
-    age: 18,
-    gender: 'Male',
-    contact: '09123456789',
-    address: 'Poblacion, Mandaon, Masbate',
-    guardianName: 'Roberto Donceras',
-    guardianContact: '0917-889-1234',
-  });
-
   // Settings State (settings.php)
   const [currentPass, setCurrentPass] = useState('');
   const [newPass, setNewPass] = useState('');
@@ -588,12 +568,6 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
       setSubmissionFileName('');
       setSubmissionRemarks('');
     }, 1500);
-  };
-
-  const handleProfileSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 2500);
   };
 
   const handlePasswordSave = (e: React.FormEvent) => {
@@ -2765,147 +2739,7 @@ export function StudentDashboard({ activeTab, onTabChange }: StudentDashboardPro
       {/* 7. STUDENT PROFILE (students/student_profile.php)             */}
       {/* ============================================================ */}
       {activeTab === 'profile' && (
-        <div className="p-6 rounded-xl bg-bg2 border border-border shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-border pb-3">
-            <div>
-              <h3 className="text-xl font-bold font-serif text-text">Student Academic Profile</h3>
-              <p className="text-xs text-text2">DepEd Learner Information System (LIS) Master Data</p>
-            </div>
-            <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-accent/15 text-accent">
-              Enrolled · Active
-            </span>
-          </div>
-
-          {profileSaved && (
-            <div className="p-3 rounded-lg bg-green-bg border border-green/30 text-xs text-green flex items-center gap-2">
-              <RiCheckLine className="size-4" aria-hidden="true" />
-              <span>Student profile records updated successfully!</span>
-            </div>
-          )}
-
-          <form onSubmit={handleProfileSave} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">First Name *</label>
-                <input
-                  type="text"
-                  value={profileData.firstName}
-                  onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">Middle Name</label>
-                <input
-                  type="text"
-                  value={profileData.middleName}
-                  onChange={(e) => setProfileData({ ...profileData, middleName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">Last Name *</label>
-                <input
-                  type="text"
-                  value={profileData.lastName}
-                  onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">Suffix</label>
-                <input
-                  type="text"
-                  placeholder="Jr., Sr., III"
-                  value={profileData.suffix}
-                  onChange={(e) => setProfileData({ ...profileData, suffix: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">Student ID</label>
-                <input
-                  type="text"
-                  value={profileData.studentId}
-                  disabled
-                  className="w-full px-3 py-2 rounded-lg bg-bg4 border border-border text-xs text-text3 font-mono cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">DepEd LRN (12-Digit)</label>
-                <input
-                  type="text"
-                  value={profileData.lrn}
-                  disabled
-                  className="w-full px-3 py-2 rounded-lg bg-bg4 border border-border text-xs text-accent font-mono cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">Grade & Section</label>
-                <input
-                  type="text"
-                  value={`${profileData.gradeLevel} · ${profileData.section}`}
-                  disabled
-                  className="w-full px-3 py-2 rounded-lg bg-bg4 border border-border text-xs text-text3 cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">Contact Number</label>
-                <input
-                  type="text"
-                  value={profileData.contact}
-                  onChange={(e) => setProfileData({ ...profileData, contact: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">Parent / Guardian Name</label>
-                <input
-                  type="text"
-                  value={profileData.guardianName}
-                  onChange={(e) => setProfileData({ ...profileData, guardianName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-text2 mb-1">Guardian Contact</label>
-                <input
-                  type="text"
-                  value={profileData.guardianContact}
-                  onChange={(e) => setProfileData({ ...profileData, guardianContact: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-text2 mb-1">Residential Address</label>
-              <input
-                type="text"
-                value={profileData.address}
-                onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-xs text-text"
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                className="px-5 py-2.5 rounded-xl bg-accent text-white text-xs font-semibold hover:bg-accent2 cursor-pointer shadow-xs transition-all"
-              >
-                Save Profile Changes
-              </button>
-            </div>
-          </form>
-        </div>
+        <StudentProfileView onTabChange={onTabChange} />
       )}
 
       {/* ============================================================ */}

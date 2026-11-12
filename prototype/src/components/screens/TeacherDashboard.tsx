@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { StudentSubmission } from '@/types';
 import { INITIAL_SUBMISSIONS, STUDENT_DIRECTORY } from '@/data/mockData';
 import { AboutView } from '@/components/views/AboutView';
+import { TeacherProfileView } from '@/components/views/TeacherProfileView';
 import {
   RiVideoChatLine,
   RiCheckLine,
@@ -52,7 +53,6 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
   const [gradingModalSubmission, setGradingModalSubmission] = useState<StudentSubmission | null>(null);
-  const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
 
   // Create Quiz form state (matching teacher_quizzes.php)
   const [quizLesson, setQuizLesson] = useState('Oral Communication — Module 5');
@@ -96,15 +96,6 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
   const [newBody, setNewBody] = useState('');
   const [newCategory, setNewCategory] = useState('Rubric Update');
   const [newSection, setNewSection] = useState('STEM 11-A');
-
-  // Education state (update_education.php)
-  const [educationRecords, setEducationRecords] = useState([
-    { degree: 'Master of Arts in Language Education', school: 'Bicol University', year: '2023' },
-    { degree: 'Bachelor of Secondary Education (Major in English)', school: 'Masbate Colleges', year: '2019' },
-  ]);
-  const [newDegree, setNewDegree] = useState('');
-  const [newSchool, setNewSchool] = useState('');
-  const [newYear, setNewYear] = useState('');
 
   // Studio state
   const [isMuted, setIsMuted] = useState(false);
@@ -157,16 +148,6 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
     setIsCreateTaskOpen(false);
     setTaskTitle('');
     setTaskInstructions('');
-  };
-
-  const handleAddEducation = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newDegree || !newSchool) return;
-    setEducationRecords([...educationRecords, { degree: newDegree, school: newSchool, year: newYear }]);
-    setNewDegree('');
-    setNewSchool('');
-    setNewYear('');
-    setIsEducationModalOpen(false);
   };
 
   return (
@@ -1190,55 +1171,7 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
       {/* 9. FACULTY PROFILE (teachers/teacher_profile.php)             */}
       {/* ============================================================ */}
       {activeTab === 'profile' && (
-        <div className="p-6 rounded-xl bg-bg2 border border-border shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-border pb-3">
-            <div>
-              <h3 className="text-xl font-bold font-serif text-text">Faculty Professional Credentials</h3>
-              <p className="text-xs text-text2">PRC Professional Teacher license & educational attainment records</p>
-            </div>
-            <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-green-bg text-green">
-              Verified Faculty
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div className="p-3 rounded-lg bg-bg3 border border-border space-y-1">
-              <span className="text-text3 text-[10px] uppercase font-bold">Faculty Name</span>
-              <div className="font-bold text-text text-sm">Ms. Juna C. Velarde</div>
-              <div className="text-text2">Senior High School Languages Department</div>
-            </div>
-            <div className="p-3 rounded-lg bg-bg3 border border-border space-y-1">
-              <span className="text-text3 text-[10px] uppercase font-bold">PRC Teacher License</span>
-              <div className="font-mono font-bold text-accent text-sm">PRC-0948210 (Active)</div>
-              <div className="text-text2">DepEd Verified Educator</div>
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <div className="flex items-center justify-between mb-2">
-              <h5 className="text-sm font-bold text-text">Educational Background (update_education.php)</h5>
-              <button
-                type="button"
-                onClick={() => setIsEducationModalOpen(true)}
-                className="px-2.5 py-1 rounded-lg bg-bg3 hover:bg-bg4 text-text text-xs font-semibold border border-border flex items-center gap-1 cursor-pointer"
-              >
-                <RiAddLine className="size-3.5" />
-                <span>+ Add Degree</span>
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {educationRecords.map((ed, idx) => (
-                <div key={idx} className="p-3 rounded-lg bg-bg3 border border-border flex items-center justify-between text-xs">
-                  <div>
-                    <div className="font-semibold text-text">{ed.degree}</div>
-                    <div className="text-text3">{ed.school} · Class of {ed.year}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <TeacherProfileView onTabChange={onTabChange} />
       )}
 
       {/* ============================================================ */}
@@ -1667,77 +1600,6 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
           </div>
         </div>
       )}
-
-      {/* ============================================================ */}
-      {/* MODAL 4: EDUCATIONAL ATTAINMENT (update_education.php)        */}
-      {/* ============================================================ */}
-      {isEducationModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-md bg-bg2 rounded-2xl border border-border shadow-2xl p-6 space-y-4 text-xs">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <h4 className="text-base font-bold text-text">Add Educational Background</h4>
-              <button
-                type="button"
-                onClick={() => setIsEducationModalOpen(false)}
-                className="p-1 rounded-lg text-text3 hover:text-text cursor-pointer"
-              >
-                <RiCloseLine className="size-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddEducation} className="space-y-3">
-              <div>
-                <label className="block font-semibold text-text2 mb-1">Degree / Qualification *</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Ph.D. in Educational Management"
-                  value={newDegree}
-                  onChange={(e) => setNewDegree(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block font-semibold text-text2 mb-1">College / University *</label>
-                <input
-                  type="text"
-                  placeholder="e.g. University of the Philippines"
-                  value={newSchool}
-                  onChange={(e) => setNewSchool(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block font-semibold text-text2 mb-1">Year Graduated</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 2025"
-                  value={newYear}
-                  onChange={(e) => setNewYear(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-bg3 border border-border text-text"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEducationModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-bg3 text-text cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-accent text-white font-semibold cursor-pointer shadow-xs"
-                >
-                  Save Degree
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* ============================================================ */}
       {/* MODAL 5: ADD COURSE / LESSON                                 */}
       {/* ============================================================ */}

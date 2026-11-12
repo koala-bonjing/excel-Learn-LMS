@@ -345,21 +345,29 @@ export function Shell({
         {/* Sidebar Footer - Fixed 68px height */}
         <div className={`h-[68px] shrink-0 border-t border-border flex items-center ${isCollapsed ? 'justify-center p-2' : 'p-3.5'}`}>
           {!isCollapsed ? (
-            <div className="user-card w-full">
+            <div
+              onClick={() => onTabChange('profile')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && onTabChange('profile')}
+              title="View Profile"
+              className="user-card w-full cursor-pointer hover:bg-bg3 transition-all active:scale-[0.98] select-none"
+            >
               <div
-                className="user-avatar text-white font-semibold text-xs"
+                className="user-avatar text-white font-semibold text-xs shrink-0"
                 style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
               >
                 {user.initials}
               </div>
               <div className="user-info min-w-0">
-                <p className="truncate">{user.name}</p>
+                <p className="truncate font-semibold">{user.name}</p>
                 <span className="truncate">{user.subLabel}</span>
               </div>
             </div>
           ) : (
             <TooltipTrigger delay={0} closeDelay={0}>
               <AriaButton
+                onPress={() => onTabChange('profile')}
                 aria-label={`${user.name} (${user.subLabel})`}
                 className="user-avatar text-white font-semibold text-xs cursor-pointer hover:ring-2 hover:ring-accent transition-all shrink-0 press-scale flex items-center justify-center outline-none"
                 style={{ background: 'linear-gradient(135deg, var(--cyan), var(--accent))' }}
