@@ -14,7 +14,7 @@ export interface StudentTask {
   id: string;
   title: string;
   subject: string;
-  category: 'Quiz' | 'Performance Task' | 'Written Work';
+  category: 'Quiz' | 'Performance Task' | 'Written Work' | 'Study Task';
   dueDate: string;
   dueTime: string;
   points: number;
@@ -22,6 +22,18 @@ export interface StudentTask {
   urgency: 'high' | 'normal' | 'done';
   grade?: number;
   feedback?: string;
+  priorityRank?: number;
+  priorityLabel?: string;
+  kanbanColumn?: 'urgent' | 'high' | 'normal' | 'submitted';
+  deliverableType?: string;
+  instructor?: string;
+  subjectCode?: string;
+  description?: string;
+  rubricPreview?: string;
+  allowedFormats?: string;
+  hoursLeft?: number;
+  draftNote?: string;
+  submissionAttachment?: string;
 }
 
 export interface SubjectModule {

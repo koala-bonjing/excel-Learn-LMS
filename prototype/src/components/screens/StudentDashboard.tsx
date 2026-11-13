@@ -6,6 +6,8 @@ import { StudentProfileView } from '@/components/views/StudentProfileView';
 import { StudentSettingsView } from '@/components/views/StudentSettingsView';
 import { StudentActivityHeatmap } from '@/components/screens/StudentActivityHeatmap';
 import { CourseSectionView } from '@/components/views/CourseSectionView';
+import { StudentPerformanceTasksView } from '@/components/views/StudentPerformanceTasksView';
+import { StudentGradesView } from '@/components/views/StudentGradesView';
 import { getCourseData } from '@/data/courseOutlineData';
 import {
   RiVideoChatLine,
@@ -582,7 +584,9 @@ export function StudentDashboard({
     setSubmitSuccess(true);
     setTasks((prev) =>
       prev.map((t) =>
-        t.id === submitTaskModal.id ? { ...t, status: 'submitted' } : t
+        t.id === submitTaskModal.id
+          ? { ...t, status: 'submitted', kanbanColumn: 'submitted', urgency: 'done', grade: t.grade ?? t.points }
+          : t
       )
     );
     setTimeout(() => {
@@ -2477,64 +2481,12 @@ export function StudentDashboard({
       {/* 4. PERFORMANCE TASKS (students/student_performance_tasks.php) */}
       {/* ============================================================ */}
       {activeTab === 'tasks' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold font-serif text-text">Performance Tasks & Submissions</h3>
-              <p className="text-xs text-text2">
-                Upload demonstration videos, laboratory papers, and research outputs for rubric evaluation.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {tasks.filter((t) => t.category === 'Performance Task' || t.category === 'Written Work').map((task) => (
-              <div
-                key={task.id}
-                className="p-5 rounded-xl bg-bg2 border border-border shadow-xs space-y-3 hover:border-accent/40 transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent/15 text-accent uppercase tracking-wider">
-                      {task.subject}
-                    </span>
-                    <span className="text-xs font-bold text-accent tabular-nums">
-                      {task.points} pts
-                    </span>
-                  </div>
-                  <h4 className="text-base font-bold text-text">{task.title}</h4>
-                  <p className="text-xs text-text3 mt-1">Due: {task.dueDate} at {task.dueTime}</p>
-                </div>
-
-                <div className="pt-3 border-t border-border flex items-center justify-between">
-                  <div className="text-xs">
-                    {task.status === 'submitted' ? (
-                      <span className="text-green font-semibold flex items-center gap-1">
-                        <RiCheckLine className="size-4" aria-hidden="true" />
-                        Submitted ({task.grade ?? 'Pending Evaluation'})
-                      </span>
-                    ) : (
-                      <span className="text-amber font-medium">To Submit</span>
-                    )}
-                  </div>
-
-                  {task.status !== 'submitted' ? (
-                    <button
-                      type="button"
-                      onClick={() => setSubmitTaskModal(task)}
-                      className="flex items-center gap-1 px-4 py-1.5 rounded-lg bg-green text-[#0e0f14] text-xs font-semibold hover:brightness-105 cursor-pointer shadow-xs"
-                    >
-                      <RiUpload2Line className="size-3.5" aria-hidden="true" />
-                      <span>Submit Output</span>
-                    </button>
-                  ) : (
-                    <span className="text-xs text-text3">Graded / Stored</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <StudentPerformanceTasksView
+          tasks={tasks}
+          onTasksChange={setTasks}
+          onSubmitTask={(task) => setSubmitTaskModal(task)}
+          onTabChange={onTabChange}
+        />
       )}
 
       {/* ============================================================ */}
@@ -2609,68 +2561,7 @@ export function StudentDashboard({
       {/* 6. GRADES & CERTIFICATES (students/student_grades.php)        */}
       {/* ============================================================ */}
       {activeTab === 'grades' && (
-        <div className="space-y-6">
-          <div className="p-5 rounded-xl bg-bg2 border border-border space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold font-serif text-text">DepEd Form 138-SHS (Report Card)</h3>
-                <p className="text-xs text-text2">Bryan Donceras · STEM 11-A · General Weighted Average: 92.8</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => alert('Downloading official DepEd Form 138 PDF via Dompdf...')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent2 cursor-pointer shadow-xs"
-              >
-                <RiDownload2Line className="size-4" aria-hidden="true" />
-                <span>Download Form 138 PDF</span>
-              </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-bg3 text-text3 uppercase tracking-wider">
-                  <tr>
-                    <th className="py-2.5 px-3 font-semibold">Subject Title</th>
-                    <th className="py-2.5 px-3 font-semibold text-center">Prelims (Q1)</th>
-                    <th className="py-2.5 px-3 font-semibold text-center">Midterms (Q2)</th>
-                    <th className="py-2.5 px-3 font-semibold text-center">Final Rating</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Remarks</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  <tr>
-                    <td className="py-2.5 px-3 font-medium text-text">General Mathematics</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums text-text">92</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums text-text">94</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums font-bold text-green">93</td>
-                    <td className="py-2.5 px-3 text-right text-green font-semibold">Passed</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 px-3 font-medium text-text">Oral Communication in Context</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums text-text">91</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums text-text">95</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums font-bold text-green">93</td>
-                    <td className="py-2.5 px-3 text-right text-green font-semibold">Passed</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 px-3 font-medium text-text">Earth and Life Science</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums text-text">94</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums text-text">96</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums font-bold text-green">95</td>
-                    <td className="py-2.5 px-3 text-right text-green font-semibold">Passed</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2.5 px-3 font-medium text-text">Empowerment Technologies (ICT)</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums text-text">95</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums text-text">96</td>
-                    <td className="py-2.5 px-3 text-center tabular-nums font-bold text-green">95.5</td>
-                    <td className="py-2.5 px-3 text-right text-green font-semibold">Passed</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <StudentGradesView onTabChange={onTabChange} />
       )}
 
       {/* ============================================================ */}

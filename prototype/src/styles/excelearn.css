@@ -1751,3 +1751,37 @@ p {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
   }
 }
+
+/* ============================================================ */
+/* Print Styles for DepEd Form 138-SHS / SF9 Physical Report Card */
+/* ============================================================ */
+@media print {
+  aside,
+  header,
+  nav,
+  .topbar-material,
+  .mobile-dock-material,
+  button,
+  .btn,
+  .sidebar,
+  .no-print {
+    display: none !important;
+  }
+
+  body, html {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+  }
+
+  #official-report-card-sheet {
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+}
+
