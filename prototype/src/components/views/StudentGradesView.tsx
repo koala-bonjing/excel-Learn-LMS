@@ -3,6 +3,7 @@ import {
   RiBarChartLine,
   RiTrophyLine,
   RiStarLine,
+  RiStarFill,
   RiCheckLine,
   RiCloseLine,
   RiSearchLine,
@@ -15,7 +16,11 @@ import {
   RiArrowRightSLine,
   RiInformationLine,
   RiFileList3Line,
+  RiCalendarLine,
+  RiFilter3Line,
+  RiArrowUpDownLine,
 } from '@remixicon/react';
+import { HoverCombobox, type HoverComboboxOption } from '@/components/base/combobox';
 import {
   STUDENT_REPORT_PROFILE,
   FIRST_SEMESTER_GRADES,
@@ -80,6 +85,58 @@ export const StudentGradesView: React.FC<StudentGradesViewProps> = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(7);
+
+  const pageSizeOptions: HoverComboboxOption<string>[] = useMemo(
+    () => [
+      { value: '5', label: '5 per page' },
+      { value: '7', label: '7 per page' },
+      { value: '10', label: '10 per page' },
+      { value: '20', label: '20 per page' },
+    ],
+    [],
+  );
+
+  // Options for hoverable comboboxes
+  const semesterOptions: HoverComboboxOption<'all' | '1' | '2'>[] = useMemo(
+    () => [
+      {
+        value: 'all',
+        label: 'All Semesters (SY 2025–26)',
+        badge: FIRST_SEMESTER_GRADES.length + SECOND_SEMESTER_GRADES.length,
+      },
+      {
+        value: '1',
+        label: '1st Semester (Completed)',
+        badge: FIRST_SEMESTER_GRADES.length,
+      },
+      {
+        value: '2',
+        label: '2nd Semester (Current Ongoing)',
+        badge: SECOND_SEMESTER_GRADES.length,
+      },
+    ],
+    [],
+  );
+
+  const categoryOptions: HoverComboboxOption<'all' | 'core' | 'applied' | 'specialized'>[] = useMemo(
+    () => [
+      { value: 'all', label: 'All Categories' },
+      { value: 'core', label: 'Core Subjects' },
+      { value: 'applied', label: 'Applied Track' },
+      { value: 'specialized', label: 'Specialized STEM' },
+    ],
+    [],
+  );
+
+  const sortOptions: HoverComboboxOption<'default' | 'score-desc' | 'score-asc' | 'name-asc'>[] = useMemo(
+    () => [
+      { value: 'default', label: 'Sort: Default (Curriculum)' },
+      { value: 'score-desc', label: 'Score: High → Low' },
+      { value: 'score-asc', label: 'Score: Low → High' },
+      { value: 'name-asc', label: 'Subject: A → Z' },
+    ],
+    [],
+  );
 
   // Modal detail state (matching student_grades.php openModal)
   const [activeModalSubject, setActiveModalSubject] = useState<SubjectGradeRecord | null>(null);
@@ -366,40 +423,42 @@ export const StudentGradesView: React.FC<StudentGradesViewProps> = () => {
                 )}
               </div>
 
-              {/* Semester Filter */}
-              <select
+              {/* Semester Filter Combobox */}
+              <HoverCombobox
                 value={selectedSemester}
-                onChange={(e) => setSelectedSemester(e.target.value as 'all' | '1' | '2')}
-                className="px-3 py-1.5 rounded-lg bg-bg border border-border text-xs text-text font-medium cursor-pointer focus:outline-none focus:border-accent"
-              >
-                <option value="all">All Semesters (SY 2025–26)</option>
-                <option value="1">1st Semester (Completed)</option>
-                <option value="2">2nd Semester (Current Ongoing)</option>
-              </select>
+                onChange={(val) => {
+                  setSelectedSemester(val);
+                  setCurrentPage(1);
+                }}
+                options={semesterOptions}
+                prefixIcon={RiCalendarLine}
+                title="Academic Semester"
+                menuWidthClassName="w-64"
+                showCountBadge
+              />
 
-              {/* Subject Category Filter */}
-              <select
+              {/* Subject Category Filter Combobox */}
+              <HoverCombobox
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value as 'all' | 'core' | 'applied' | 'specialized')}
-                className="px-3 py-1.5 rounded-lg bg-bg border border-border text-xs text-text font-medium cursor-pointer focus:outline-none focus:border-accent"
-              >
-                <option value="all">All Categories</option>
-                <option value="core">Core Subjects</option>
-                <option value="applied">Applied Track</option>
-                <option value="specialized">Specialized STEM</option>
-              </select>
+                onChange={(val) => {
+                  setSelectedCategory(val);
+                  setCurrentPage(1);
+                }}
+                options={categoryOptions}
+                prefixIcon={RiFilter3Line}
+                title="Subject Category"
+                menuWidthClassName="w-56"
+              />
 
-              {/* Sort Order */}
-              <select
+              {/* Sort Order Combobox */}
+              <HoverCombobox
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'default' | 'score-desc' | 'score-asc' | 'name-asc')}
-                className="px-3 py-1.5 rounded-lg bg-bg border border-border text-xs text-text font-medium cursor-pointer focus:outline-none focus:border-accent"
-              >
-                <option value="default">Sort: Default (Curriculum)</option>
-                <option value="score-desc">Score: High → Low</option>
-                <option value="score-asc">Score: Low → High</option>
-                <option value="name-asc">Subject: A → Z</option>
-              </select>
+                onChange={(val) => setSortBy(val)}
+                options={sortOptions}
+                prefixIcon={RiArrowUpDownLine}
+                title="Sort Ordering"
+                menuWidthClassName="w-56"
+              />
             </div>
           </div>
 
@@ -466,8 +525,9 @@ export const StudentGradesView: React.FC<StudentGradesViewProps> = () => {
                                 <div className="font-bold text-text group-hover:text-accent transition-colors flex items-center gap-1.5">
                                   <span>{g.title}</span>
                                   {g.semFinal >= 95 && (
-                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-bg text-amber font-semibold">
-                                      ★ High Mark
+                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-bg text-amber font-semibold inline-flex items-center gap-1">
+                                      <RiStarFill className="size-2.5" aria-hidden="true" />
+                                      <span>High Mark</span>
                                     </span>
                                   )}
                                 </div>
@@ -554,19 +614,17 @@ export const StudentGradesView: React.FC<StudentGradesViewProps> = () => {
                   <span className="hidden sm:inline">·</span>
                   <div className="flex items-center gap-1.5">
                     <span className="text-text3 text-[11px]">Rows:</span>
-                    <select
-                      value={pageSize}
-                      onChange={(e) => {
-                        setPageSize(Number(e.target.value));
+                    <HoverCombobox
+                      value={String(pageSize)}
+                      onChange={(val) => {
+                        setPageSize(Number(val));
                         setCurrentPage(1);
                       }}
-                      className="px-2 py-0.5 rounded-md bg-bg border border-border text-xs text-text font-medium cursor-pointer focus:outline-none focus:border-accent"
-                    >
-                      <option value={5}>5</option>
-                      <option value={7}>7</option>
-                      <option value={10}>10</option>
-                      <option value={20}>All</option>
-                    </select>
+                      options={pageSizeOptions}
+                      size="sm"
+                      menuWidthClassName="w-32"
+                      buttonClassName="px-2 py-0.5 rounded-md text-xs font-mono"
+                    />
                   </div>
                 </div>
 
@@ -1203,9 +1261,15 @@ export const StudentGradesView: React.FC<StudentGradesViewProps> = () => {
                 <div className="text-xs text-text3">
                   {activeModalSubject.totalScore} / {activeModalSubject.totalMax} total points ·{' '}
                   {activeModalSubject.passed ? (
-                    <span className="text-green font-semibold">✓ Passing Grade (Cutoff: {activeModalSubject.passingScore}%)</span>
+                    <span className="text-green font-semibold inline-flex items-center gap-1">
+                      <RiCheckLine className="size-3.5" aria-hidden="true" />
+                      <span>Passing Grade (Cutoff: {activeModalSubject.passingScore}%)</span>
+                    </span>
                   ) : (
-                    <span className="text-red font-semibold">✗ Below Passing (Cutoff: {activeModalSubject.passingScore}%)</span>
+                    <span className="text-red font-semibold inline-flex items-center gap-1">
+                      <RiCloseLine className="size-3.5" aria-hidden="true" />
+                      <span>Below Passing (Cutoff: {activeModalSubject.passingScore}%)</span>
+                    </span>
                   )}
                 </div>
 

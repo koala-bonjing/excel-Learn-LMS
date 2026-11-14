@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useShell } from '@/components/layout/ShellContext';
+import { useTheme, toggleThemeWithTransition } from '@/utils/theme';
 import {
   RiSettings3Line,
   RiGlobalLine,
@@ -64,12 +65,7 @@ export function TeacherSettingsView({ onTabChange }: TeacherSettingsViewProps) {
   });
 
   // Theme state synced with documentElement
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    if (typeof document !== 'undefined') {
-      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-    }
-    return 'dark';
-  });
+  const theme = useTheme();
 
   // Password fields
   const [currentPassword, setCurrentPassword] = useState('');
@@ -89,18 +85,6 @@ export function TeacherSettingsView({ onTabChange }: TeacherSettingsViewProps) {
       setToast((cur) => (cur?.message === message ? null : cur));
     }, 3200);
   };
-
-  // Sync theme with external mutations (e.g. PrototypeSwitcher)
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-    const observer = new MutationObserver(() => {
-      const isDark = root.classList.contains('dark');
-      setTheme(isDark ? 'dark' : 'light');
-    });
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
 
   // Persist helper
   const updateSetting = <K extends keyof TeacherSettingsState>(
@@ -132,19 +116,15 @@ export function TeacherSettingsView({ onTabChange }: TeacherSettingsViewProps) {
     showToast(`Timezone updated to ${tz}.`, 'success');
   };
 
-  const handleThemeChange = (newTheme: 'dark' | 'light') => {
-    setTheme(newTheme);
+  const handleThemeChange = (newTheme: 'dark' | 'light', e?: React.MouseEvent) => {
     updateSetting('theme', newTheme);
-    const root = document.documentElement;
-    if (newTheme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    try {
-      localStorage.setItem('excelearn-theme', newTheme);
-    } catch {}
-    showToast(`Theme updated to ${newTheme === 'dark' ? 'Dark' : 'Light'} Mode.`, 'info');
+    void toggleThemeWithTransition({
+      event: e,
+      forceTheme: newTheme,
+      onThemeChanged: () => {
+        showToast(`Theme updated to ${newTheme === 'dark' ? 'Dark' : 'Light'} Mode.`, 'info');
+      },
+    });
   };
 
   const handleToggle = (key: keyof TeacherSettingsState, label: string) => {
@@ -338,7 +318,7 @@ export function TeacherSettingsView({ onTabChange }: TeacherSettingsViewProps) {
               type="button"
               role="radio"
               aria-checked={theme === 'dark'}
-              onClick={() => handleThemeChange('dark')}
+              onClick={(e) => handleThemeChange('dark', e)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all active:scale-95 ${
                 theme === 'dark'
                   ? 'bg-accent/15 border border-accent text-accent shadow-[0_0_16px_var(--accent-glow)] ring-1 ring-accent/30'
@@ -353,7 +333,7 @@ export function TeacherSettingsView({ onTabChange }: TeacherSettingsViewProps) {
               type="button"
               role="radio"
               aria-checked={theme === 'light'}
-              onClick={() => handleThemeChange('light')}
+              onClick={(e) => handleThemeChange('light', e)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all active:scale-95 ${
                 theme === 'light'
                   ? 'bg-accent/15 border border-accent text-accent shadow-[0_0_16px_var(--accent-glow)] ring-1 ring-accent/30'

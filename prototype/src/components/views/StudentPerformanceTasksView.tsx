@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Button as AriaButton } from 'react-aria-components';
 import type { StudentTask } from '@/types';
+import { Tooltip, TooltipTrigger } from '@/components/base/tooltip/tooltip';
 import {
   RiFlashlightFill,
   RiArrowRightLine,
@@ -13,7 +15,6 @@ import {
   RiKanbanView,
   RiListUnordered,
   RiArrowDownSLine,
-  RiArrowRightSLine,
   RiSearchLine,
   RiCloseLine,
   RiAddLine,
@@ -53,6 +54,15 @@ const ARCHIVED_SUBMISSIONS: ArchivedItem[] = [
 ];
 
 const ARCHIVED_COUNT = 47; // Baseline historical archived graded count
+
+// Subject to Assigned Faculty Lead mapping
+const SUBJECT_INSTRUCTOR_MAP: Record<string, string> = {
+  'Oral Communication': 'Prof. Maria Santos, PhD',
+  'Earth and Life Science': 'Engr. Ronald Gomez',
+  'Komunikasyon at Pananaliksik': 'Bb. Clarissa Reyes',
+  'Empowerment Technologies': 'Sir Jeffrey Lim',
+  'General Mathematics': 'Mr. Roderick Tan',
+};
 
 // -------------------------------------------------------------
 // Generic Linear-Style Hoverable Combo Box
@@ -544,6 +554,7 @@ interface LinearTaskCardProps {
   viewMode: 'subject' | 'kanban';
   isDragging: boolean;
   isDragOver: boolean;
+  isCompressed?: boolean;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
   onDragOver: (e: React.DragEvent, id: string) => void;
@@ -558,6 +569,7 @@ const LinearTaskCard: React.FC<LinearTaskCardProps> = ({
   viewMode,
   isDragging,
   isDragOver,
+  isCompressed = false,
   onDragStart,
   onDragEnd,
   onDragOver,
@@ -592,199 +604,306 @@ const LinearTaskCard: React.FC<LinearTaskCardProps> = ({
     );
   };
 
+  const cardBg = viewMode === 'subject' ? 'bg-bg2' : 'bg-bg';
+  const basePadding = isCompressed
+    ? 'px-3 py-2.5'
+    : viewMode === 'subject'
+    ? 'p-5 space-y-3'
+    : 'p-4 space-y-3';
+
+  const cardClasses = isDragging
+    ? 'px-3 py-2.5 bg-accent/5 border-dashed border-accent/60 opacity-45 scale-[0.985] shadow-none cursor-grabbing'
+    : isDragOver
+    ? `${basePadding} border-accent ring-2 ring-accent/30 bg-accent/10 translate-y-0.5 shadow-2xs`
+    : isCompressed
+    ? `${basePadding} ${cardBg} shadow-2xs transition-all hover:border-accent/40 hover:bg-bg3/40 ${
+        isUrgent
+          ? 'border-red/40 hover:border-red/60 ring-1 ring-red/10'
+          : isSubmitted
+          ? 'border-green/30 hover:border-green/50'
+          : 'border-border'
+      }`
+    : `${basePadding} ${cardBg} transition-all hover:shadow-xs hover:border-accent/40 ${
+        viewMode === 'subject' ? 'hover:bg-bg3/30' : 'hover:bg-bg2/60'
+      } ${
+        isUrgent
+          ? 'border-red/40 hover:border-red/60 ring-1 ring-red/10'
+          : isSubmitted
+          ? 'border-green/30 hover:border-green/50'
+          : 'border-border'
+      }`;
+
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, task.id)}
       onDragEnd={onDragEnd}
-      onDragOver={(e) => onDragOver(e, task.id)}
+      onDragOver={(e) => {
+        e.stopPropagation();
+        onDragOver(e, task.id);
+      }}
       onDrop={(e) => onDrop(e, task.id)}
-      className={`rounded-xl border transition-all duration-150 select-none cursor-grab active:cursor-grabbing ${
-        viewMode === 'subject' ? 'p-5 space-y-3 bg-bg2' : 'p-4 space-y-3 bg-bg'
-      } ${
-        isDragging
-          ? 'opacity-35 border-dashed border-accent scale-[0.99] bg-accent/5'
-          : isDragOver
-          ? 'border-accent ring-2 ring-accent/30 bg-accent/5 translate-y-0.5'
-          : isUrgent
-          ? 'border-red/40 hover:border-red/60 shadow-2xs hover:shadow-xs ring-1 ring-red/10'
-          : isSubmitted
-          ? 'border-green/30 hover:border-green/50 shadow-2xs'
-          : 'border-border hover:border-accent/40 shadow-2xs hover:shadow-xs'
-      }`}
+      onClick={(e) => {
+        const target = e.target as HTMLElement;
+        if (!target.closest('button') && !target.closest('a') && !target.closest('.cursor-grab')) {
+          onOpenRubric(task);
+        }
+      }}
+      className={`group task-card-collapsible rounded-xl border select-none cursor-grab active:cursor-grabbing ${cardClasses}`}
+      data-dragging={isDragging ? 'true' : 'false'}
     >
-      {/* Top Spec Bar: Drag Handle, Subject (Kanban only), Priority Rank, Deliverable Type, Points */}
-      <div className="flex items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="cursor-grab text-text3 hover:text-text shrink-0" title="Drag to reorder priority">
-            <RiDraggable className="size-3.5" />
-          </span>
-
-          {/* Subject badge ONLY rendered in Kanban mode to avoid redundancy in Subject Group mode */}
-          {viewMode === 'kanban' && getSubjectBadge()}
-
-          {/* Priority pill */}
-          {task.priorityLabel && !isSubmitted && (
+      {isCompressed ? (
+        /* Compact Summary Row when any task is being dragged across the board */
+        <div className="flex items-center justify-between gap-2.5 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 truncate">
             <span
-              className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
-                isUrgent
-                  ? 'bg-red-bg text-red'
-                  : task.priorityRank === 2 || task.kanbanColumn === 'high'
-                  ? 'bg-amber-bg text-amber'
-                  : 'bg-bg3 text-text2'
+              className="task-card-drag-handle cursor-grab active:cursor-grabbing p-1 -m-1 rounded text-text3 hover:text-text hover:bg-bg3 shrink-0 transition-colors"
+              title="Drag to reorder priority"
+            >
+              <RiDraggable className="size-3.5" />
+            </span>
+
+            {/* Subject badge in Kanban mode */}
+            {viewMode === 'kanban' && getSubjectBadge()}
+
+            {/* Priority pill */}
+            {task.priorityLabel && !isSubmitted && (
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
+                  isUrgent
+                    ? 'bg-red-bg text-red'
+                    : task.priorityRank === 2 || task.kanbanColumn === 'high'
+                    ? 'bg-amber-bg text-amber'
+                    : 'bg-bg3 text-text2'
+                }`}
+              >
+                {task.priorityLabel}
+              </span>
+            )}
+
+            {/* Title */}
+            <h4 className="font-bold text-xs text-text truncate">
+              {task.title}
+            </h4>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 text-xs">
+            {/* Due Date */}
+            <span
+              className={`text-[11px] text-text3 items-center gap-1 font-mono shrink-0 ${
+                viewMode === 'kanban' ? 'hidden 2xl:inline-flex' : 'hidden sm:inline-flex'
               }`}
             >
-              {task.priorityLabel}
+              <RiCalendarLine className="size-3 shrink-0 text-text3" />
+              <span>{task.dueDate}</span>
             </span>
-          )}
 
-          {/* Deliverable Type (Video, Infographic, Code, Essay) */}
-          {task.deliverableType && viewMode === 'subject' && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-bg3 text-text2 border border-border/60 shrink-0">
-              {task.deliverableType}
+            {/* Points */}
+            <span className="font-mono font-bold text-xs shrink-0">
+              {isSubmitted ? `${task.grade ?? 48}/${task.points}` : `${task.points} pts`}
             </span>
-          )}
-        </div>
 
-        {/* Points Display */}
-        <div className="text-right shrink-0">
-          {isSubmitted ? (
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-mono font-extrabold text-green">
-                {task.grade ?? 48}/{task.points}
+            {/* Graded / To Submit badge */}
+            {isSubmitted ? (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-bg text-green shrink-0 flex items-center gap-0.5">
+                <RiCheckLine className="size-3" />
+                <span>Graded</span>
               </span>
-              <span className="text-[10px] font-bold text-green">96% (A)</span>
-            </div>
-          ) : (
-            <div>
-              <span className="text-sm font-extrabold text-text font-mono">
-                {task.points}
+            ) : (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent/15 text-accent shrink-0">
+                To Submit
               </span>
-              <span className="text-[10px] text-text3 ml-1 uppercase font-bold tracking-wider hidden sm:inline">
-                PTS
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Title & Description */}
-      <div>
-        <h4 className="text-sm sm:text-base font-bold text-text group-hover:text-accent transition-colors leading-snug">
-          {task.title}
-        </h4>
-        {task.description && (
-          <p className={`text-xs text-text2 mt-1 leading-relaxed ${viewMode === 'kanban' ? 'line-clamp-2' : ''}`}>
-            {task.description}
-          </p>
-        )}
-      </div>
-
-      {/* Submitted Feedback Box (Kanban Column 4 / Graded card) */}
-      {isSubmitted && task.feedback && (
-        <div className="p-2.5 rounded-lg bg-bg2 border border-border text-[11px] text-text2 italic space-y-1">
-          <div className="font-semibold text-text not-italic text-[10px] text-text3 uppercase">
-            {task.instructor || 'Sir Jeffrey Lim'}'s Feedback:
+            )}
           </div>
-          <div>"{task.feedback}"</div>
         </div>
+      ) : (
+        <>
+          {/* Top Spec Bar: Drag Handle, Subject (Kanban or when dragging), Priority Rank, Deliverable Type, Points */}
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+              <span
+                className="task-card-drag-handle cursor-grab active:cursor-grabbing p-1 -m-1 rounded text-text3 hover:text-text hover:bg-bg3 shrink-0 transition-colors"
+                title="Drag to reorder priority"
+              >
+                <RiDraggable className="size-3.5" />
+              </span>
+
+              {/* Subject badge (Kanban mode) */}
+              {viewMode === 'kanban' && getSubjectBadge()}
+
+              {/* Priority pill */}
+              {task.priorityLabel && !isSubmitted && (
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
+                    isUrgent
+                      ? 'bg-red-bg text-red'
+                      : task.priorityRank === 2 || task.kanbanColumn === 'high'
+                      ? 'bg-amber-bg text-amber'
+                      : 'bg-bg3 text-text2'
+                  }`}
+                >
+                  {task.priorityLabel}
+                </span>
+              )}
+
+              {/* Deliverable Type (Video, Infographic, Code, Essay) */}
+              {task.deliverableType && viewMode === 'subject' && (
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-bg3 text-text2 border border-border/60 shrink-0">
+                  {task.deliverableType}
+                </span>
+              )}
+            </div>
+
+            {/* Points Display */}
+            <div className="text-right shrink-0">
+              {isSubmitted ? (
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-mono font-extrabold text-green">
+                    {task.grade ?? 48}/{task.points}
+                  </span>
+                  <span className="text-[10px] font-bold text-green">96% (A)</span>
+                </div>
+              ) : (
+                <div>
+                  <span className="text-sm font-extrabold text-text font-mono">
+                    {task.points}
+                  </span>
+                  <span className="text-[10px] text-text3 ml-1 uppercase font-bold tracking-wider hidden sm:inline">
+                    PTS
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Title - Stable DOM node with responsive font */}
+          <div>
+            <h4 className="font-bold text-text group-hover:text-accent transition-colors leading-snug text-sm sm:text-base">
+              {task.title}
+            </h4>
+          </div>
+        </>
       )}
 
-      {/* Due Date & Criteria Specs Strip */}
+      {/* Auto-Collapsible Card Body: Description, Feedback, Criteria Strip, Actions */}
       <div
-        className={`p-2.5 rounded-lg border text-xs flex flex-wrap items-center justify-between gap-2 ${
-          isUrgent
-            ? 'bg-red-bg/40 border-red/20 text-red font-medium'
-            : 'bg-bg2 border-border/80 text-text2'
-        }`}
+        className="task-card-body-collapse"
+        data-collapsed={isCompressed ? 'true' : 'false'}
       >
-        <div className="flex items-center gap-1.5">
-          {isUrgent ? (
-            <RiTimeLine className="size-3.5 shrink-0 text-red" />
-          ) : (
-            <RiCalendarLine className="size-3.5 shrink-0 text-text3" />
+        <div className="min-h-0 space-y-3 pt-1 overflow-hidden">
+          {task.description && (
+            <p className={`text-xs text-text2 leading-relaxed ${viewMode === 'kanban' ? 'line-clamp-2' : ''}`}>
+              {task.description}
+            </p>
           )}
-          <span className={`text-[11px] font-semibold uppercase tracking-wider ${isUrgent ? 'text-red' : 'text-text'}`}>
-            Due {task.dueDate} {task.dueTime}
-          </span>
-          {task.hoursLeft && !isSubmitted && (
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-bg text-red shrink-0">
-              {task.hoursLeft} hrs left
-            </span>
+
+          {/* Submitted Feedback Box (Kanban Column 4 / Graded card) */}
+          {isSubmitted && task.feedback && (
+            <div className="p-2.5 rounded-lg bg-bg2 border border-border text-[11px] text-text2 italic space-y-1">
+              <div className="font-semibold text-text not-italic text-[10px] text-text3 uppercase">
+                {task.instructor || 'Sir Jeffrey Lim'}'s Feedback:
+              </div>
+              <div>"{task.feedback}"</div>
+            </div>
           )}
-        </div>
 
-        {/* Rubric Weights Preview in Subject View */}
-        {viewMode === 'subject' && task.rubricPreview && (
-          <div className="hidden md:flex items-center gap-1.5 text-text2">
-            <span className="text-[10px] text-text3 font-semibold uppercase">Rubric:</span>
-            <span className="px-2 py-0.5 rounded bg-bg3 border border-border text-[10px] font-mono">
-              {task.rubricPreview}
-            </span>
-          </div>
-        )}
-
-        {/* Allowed Formats in Subject View */}
-        {viewMode === 'subject' && task.allowedFormats && (
-          <div className="text-[11px] text-text3 hidden lg:flex items-center gap-1">
-            <RiFileTextLine className="size-3.5" />
-            <span>{task.allowedFormats}</span>
-          </div>
-        )}
-
-        {/* Submission attachment in Graded View */}
-        {isSubmitted && (
-          <div className="flex items-center gap-1 text-[11px] text-text3 font-mono">
-            <RiFileTextLine className="size-3.5" />
-            <span>{task.submissionAttachment || 'milestone1_final.zip'}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Card Action Footer */}
-      <div className="pt-1 flex items-center justify-between gap-2 border-t border-border/60">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onOpenRubric(task)}
-            className="text-xs text-accent hover:underline flex items-center gap-1 font-medium cursor-pointer"
+          {/* Due Date & Criteria Specs Strip */}
+          <div
+            className={`p-2.5 rounded-lg border text-xs flex flex-wrap items-center justify-between gap-2 ${
+              isUrgent
+                ? 'bg-red-bg/40 border-red/20 text-red font-medium'
+                : 'bg-bg2 border-border/80 text-text2'
+            }`}
           >
-            <RiFileList3Line className="size-3.5" />
-            <span>{isSubmitted ? 'View Rubric' : 'Rubric Table'}</span>
-          </button>
+            <div className="flex items-center gap-1.5">
+              {isUrgent ? (
+                <RiTimeLine className="size-3.5 shrink-0 text-red" />
+              ) : (
+                <RiCalendarLine className="size-3.5 shrink-0 text-text3" />
+              )}
+              <span className={`text-[11px] font-semibold uppercase tracking-wider ${isUrgent ? 'text-red' : 'text-text'}`}>
+                Due {task.dueDate} {task.dueTime}
+              </span>
+              {task.hoursLeft && !isSubmitted && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-bg text-red shrink-0">
+                  {task.hoursLeft} hrs left
+                </span>
+              )}
+            </div>
 
-          {viewMode === 'subject' && !isSubmitted && (
-            <>
-              <span className="text-border">|</span>
+            {/* Rubric Weights Preview in Subject View */}
+            {viewMode === 'subject' && task.rubricPreview && (
+              <div className="hidden md:flex items-center gap-1.5 text-text2">
+                <span className="text-[10px] text-text3 font-semibold uppercase">Rubric:</span>
+                <span className="px-2 py-0.5 rounded bg-bg3 border border-border text-[10px] font-mono">
+                  {task.rubricPreview}
+                </span>
+              </div>
+            )}
+
+            {/* Allowed Formats in Subject View */}
+            {viewMode === 'subject' && task.allowedFormats && (
+              <div className="text-[11px] text-text3 hidden lg:flex items-center gap-1">
+                <RiFileTextLine className="size-3.5" />
+                <span>{task.allowedFormats}</span>
+              </div>
+            )}
+
+            {/* Submission attachment in Graded View */}
+            {isSubmitted && (
+              <div className="flex items-center gap-1 text-[11px] text-text3 font-mono">
+                <RiFileTextLine className="size-3.5" />
+                <span>{task.submissionAttachment || 'milestone1_final.zip'}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Card Action Footer */}
+          <div className="pt-1 flex items-center justify-between gap-2 border-t border-border/60">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => onOpenDraft(task)}
-                className="text-xs text-text3 hover:text-text flex items-center gap-1 cursor-pointer"
+                onClick={() => onOpenRubric(task)}
+                className="text-xs text-accent hover:underline flex items-center gap-1 font-medium cursor-pointer"
               >
-                <RiDraftLine className="size-3.5" />
-                <span>{task.draftNote ? 'Draft Note' : 'Draft'}</span>
+                <RiFileList3Line className="size-3.5" />
+                <span>{isSubmitted ? 'View Rubric' : 'Rubric Table'}</span>
               </button>
-            </>
-          )}
-        </div>
 
-        {/* Action Buttons */}
-        <div>
-          {!isSubmitted ? (
-            <button
-              type="button"
-              onClick={() => onSubmit(task)}
-              className="px-3.5 py-1.5 rounded-lg bg-green hover:brightness-105 text-[#0e0f14] text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 transition-all"
-            >
-              <RiUpload2Line className="size-3.5" />
-              <span>Submit Output</span>
-            </button>
-          ) : (
-            <span className="text-xs font-semibold text-green flex items-center gap-1">
-              <RiCheckLine className="size-3.5" />
-              <span>Graded</span>
-            </span>
-          )}
+              {viewMode === 'subject' && !isSubmitted && (
+                <>
+                  <span className="text-border">|</span>
+                  <button
+                    type="button"
+                    onClick={() => onOpenDraft(task)}
+                    className="text-xs text-text3 hover:text-text flex items-center gap-1 cursor-pointer"
+                  >
+                    <RiDraftLine className="size-3.5" />
+                    <span>{task.draftNote ? 'Draft Note' : 'Draft'}</span>
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div>
+              {!isSubmitted ? (
+                <button
+                  type="button"
+                  onClick={() => onSubmit(task)}
+                  className="px-3.5 py-1.5 rounded-lg bg-green hover:brightness-105 text-[#0e0f14] text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 transition-all"
+                >
+                  <RiUpload2Line className="size-3.5" />
+                  <span>Submit Output</span>
+                </button>
+              ) : (
+                <span className="text-xs font-semibold text-green flex items-center gap-1">
+                  <RiCheckLine className="size-3.5" />
+                  <span>Graded</span>
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -813,6 +932,11 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [dragOverSubject, setDragOverSubject] = useState<string | null>(null);
+
+  // Drag Animation Frame & Lifecycle Guards
+  const dragRafRef = useRef<number | null>(null);
+  const isDraggingRef = useRef<boolean>(false);
 
   // Collapsed Subject Groups state
   const [collapsedSubjects, setCollapsedSubjects] = useState<Record<string, boolean>>({});
@@ -857,26 +981,42 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', taskId);
-    setDraggingTaskId(taskId);
+    isDraggingRef.current = true;
+    if (dragRafRef.current !== null) {
+      cancelAnimationFrame(dragRafRef.current);
+    }
+    dragRafRef.current = requestAnimationFrame(() => {
+      dragRafRef.current = null;
+      if (isDraggingRef.current) {
+        setDraggingTaskId(taskId);
+      }
+    });
   };
 
   const handleDragEnd = () => {
+    isDraggingRef.current = false;
+    if (dragRafRef.current !== null) {
+      cancelAnimationFrame(dragRafRef.current);
+      dragRafRef.current = null;
+    }
     setDraggingTaskId(null);
     setDragOverTaskId(null);
     setDragOverColumn(null);
+    setDragOverSubject(null);
   };
 
   const handleDragOver = (e: React.DragEvent, targetTaskId: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    if (dragOverTaskId !== targetTaskId) {
+    if (draggingTaskId && draggingTaskId !== targetTaskId && dragOverTaskId !== targetTaskId) {
       setDragOverTaskId(targetTaskId);
     }
   };
 
-  // Dropping on another task: reorders list and in Kanban view adopts target column
+  // Dropping on another task: reorders list and synchronizes subject or kanban column
   const handleDropOnTask = (e: React.DragEvent, targetTaskId: string) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!draggingTaskId || draggingTaskId === targetTaskId || !onTasksChange) {
       handleDragEnd();
       return;
@@ -891,25 +1031,40 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
       const targetTask = list[targetIdx];
       const [moved] = list.splice(sourceIdx, 1);
 
+      // In subject view, synchronize subject and instructor if moved across subjects
+      if (viewMode === 'subject' && targetTask.subject) {
+        moved.subject = targetTask.subject;
+        moved.instructor = targetTask.instructor || SUBJECT_INSTRUCTOR_MAP[targetTask.subject] || moved.instructor;
+      }
+
       // In kanban view, synchronize column, urgency, rank, and status
-      if (viewMode === 'kanban' && targetTask.kanbanColumn) {
-        moved.kanbanColumn = targetTask.kanbanColumn;
-        if (targetTask.kanbanColumn === 'urgent') {
+      if (viewMode === 'kanban') {
+        const targetColumn: 'urgent' | 'high' | 'normal' | 'submitted' =
+          targetTask.status === 'submitted' || targetTask.kanbanColumn === 'submitted'
+            ? 'submitted'
+            : targetTask.kanbanColumn === 'urgent'
+            ? 'urgent'
+            : targetTask.kanbanColumn === 'high'
+            ? 'high'
+            : 'normal';
+
+        moved.kanbanColumn = targetColumn;
+        if (targetColumn === 'urgent') {
           moved.urgency = 'high';
           moved.priorityRank = 1;
           moved.priorityLabel = '#1 Top Priority';
           moved.status = moved.status === 'submitted' ? 'in-progress' : moved.status;
-        } else if (targetTask.kanbanColumn === 'high') {
+        } else if (targetColumn === 'high') {
           moved.urgency = 'high';
           moved.priorityRank = 2;
           moved.priorityLabel = '#2 High Priority';
           moved.status = moved.status === 'submitted' ? 'in-progress' : moved.status;
-        } else if (targetTask.kanbanColumn === 'normal') {
+        } else if (targetColumn === 'normal') {
           moved.urgency = 'normal';
           moved.priorityRank = 3;
           moved.priorityLabel = '#3 Normal';
           moved.status = moved.status === 'submitted' ? 'in-progress' : moved.status;
-        } else if (targetTask.kanbanColumn === 'submitted') {
+        } else if (targetColumn === 'submitted') {
           moved.status = 'submitted';
           moved.urgency = 'done';
           moved.priorityRank = undefined;
@@ -924,9 +1079,49 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
     handleDragEnd();
   };
 
+  // Dropping directly onto a subject group header or empty dropzone in Subject View
+  const handleDropOnSubject = (e: React.DragEvent, targetSubject: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!draggingTaskId || !onTasksChange) {
+      handleDragEnd();
+      return;
+    }
+
+    onTasksChange((prev) => {
+      const list = [...prev];
+      const sourceIdx = list.findIndex((t) => t.id === draggingTaskId);
+      if (sourceIdx === -1) return prev;
+
+      const [moved] = list.splice(sourceIdx, 1);
+      moved.subject = targetSubject;
+
+      if (SUBJECT_INSTRUCTOR_MAP[targetSubject]) {
+        moved.instructor = SUBJECT_INSTRUCTOR_MAP[targetSubject];
+      }
+
+      const firstTargetIdx = list.findIndex((t) => t.subject === targetSubject);
+      if (firstTargetIdx !== -1) {
+        list.splice(firstTargetIdx, 0, moved);
+      } else {
+        list.push(moved);
+      }
+      return list;
+    });
+
+    // Ensure the subject group is uncollapsed so the user sees the newly placed task
+    setCollapsedSubjects((prev) => ({
+      ...prev,
+      [targetSubject]: false,
+    }));
+
+    handleDragEnd();
+  };
+
   // Dropping into an entire column container in Kanban View
   const handleDropOnColumn = (e: React.DragEvent, targetColumn: 'urgent' | 'high' | 'normal' | 'submitted') => {
     e.preventDefault();
+    e.stopPropagation();
     if (!draggingTaskId || !onTasksChange) {
       handleDragEnd();
       return;
@@ -1206,7 +1401,10 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
   };
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-200">
+    <div
+      className="space-y-5 animate-in fade-in duration-200"
+      data-board-dragging={draggingTaskId !== null ? 'true' : 'false'}
+    >
       {/* ============================================================ */}
       {/* 1. HEADER & MIDTERM PROGRESS WIDGET                          */}
       {/* ============================================================ */}
@@ -1281,31 +1479,41 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
         {/* Left: View Mode Toggle & Linear Hoverable Combo Boxes */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Mode Switcher */}
-          <div className="flex items-center bg-bg3 p-0.5 rounded-lg border border-border text-xs">
-            <button
-              type="button"
-              onClick={() => setViewMode('subject')}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 font-medium transition-all cursor-pointer ${
-                viewMode === 'subject'
-                  ? 'bg-bg2 text-text shadow-2xs font-semibold'
-                  : 'text-text3 hover:text-text'
-              }`}
-            >
-              <RiListUnordered className="size-3.5" />
-              <span>Group by Subject</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('kanban')}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 font-medium transition-all cursor-pointer ${
-                viewMode === 'kanban'
-                  ? 'bg-bg2 text-text shadow-2xs font-semibold'
-                  : 'text-text3 hover:text-text'
-              }`}
-            >
-              <RiKanbanView className="size-3.5" />
-              <span>Kanban / Priority View</span>
-            </button>
+          <div className="flex items-center bg-bg3 p-0.5 rounded-lg border border-border" role="group" aria-label="View mode">
+            <TooltipTrigger delay={0} closeDelay={0}>
+              <AriaButton
+                onPress={() => setViewMode('subject')}
+                aria-label="Group by Subject"
+                aria-pressed={viewMode === 'subject'}
+                className={`size-7 rounded-md flex items-center justify-center transition-colors duration-150 cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-accent ${
+                  viewMode === 'subject'
+                    ? 'bg-bg2 text-text shadow-2xs font-semibold'
+                    : 'text-text3 hover:text-text hover:bg-bg2/50'
+                }`}
+              >
+                <RiListUnordered className="size-4" />
+              </AriaButton>
+              <Tooltip placement="top" offset={10}>
+                <span className="whitespace-nowrap font-medium">Group by Subject</span>
+              </Tooltip>
+            </TooltipTrigger>
+            <TooltipTrigger delay={0} closeDelay={0}>
+              <AriaButton
+                onPress={() => setViewMode('kanban')}
+                aria-label="Kanban / Priority View"
+                aria-pressed={viewMode === 'kanban'}
+                className={`size-7 rounded-md flex items-center justify-center transition-colors duration-150 cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-accent ${
+                  viewMode === 'kanban'
+                    ? 'bg-bg2 text-text shadow-2xs font-semibold'
+                    : 'text-text3 hover:text-text hover:bg-bg2/50'
+                }`}
+              >
+                <RiKanbanView className="size-4" />
+              </AriaButton>
+              <Tooltip placement="top" offset={10}>
+                <span className="whitespace-nowrap font-medium">Kanban / Priority View</span>
+              </Tooltip>
+            </TooltipTrigger>
           </div>
 
           <div className="h-4 w-px bg-border mx-1 hidden sm:block" />
@@ -1384,18 +1592,49 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
       {viewMode === 'subject' && (
         <div className="space-y-6">
           {subjectGroups.map((group) => {
-            const isCollapsed = !!collapsedSubjects[group.subject];
+            const isDraggingActive = draggingTaskId !== null;
+            const draggingTask = isDraggingActive ? deliverables.find((t) => t.id === draggingTaskId) : null;
+            const isSourceSubject = isDraggingActive && group.subject === draggingTask?.subject;
+            const isTargetSubject = isDraggingActive && (
+              dragOverSubject === group.subject ||
+              group.tasks.some((t) => t.id === dragOverTaskId)
+            );
+            // In Group by Subject mode, since all task cards auto-collapse into compact ~44px rows during drag,
+            // keep open subject groups open during drag.
+            // Only collapse a subject if manually collapsed, and if a manually-collapsed subject is hovered during drag,
+            // temporarily expand it so the user can drop into it.
+            const isManuallyCollapsed = Boolean(collapsedSubjects[group.subject]);
+            const isCollapsed = isDraggingActive
+              ? (isManuallyCollapsed && !isTargetSubject && !isSourceSubject)
+              : isManuallyCollapsed;
             const activeTasks = group.tasks;
             const hasUrgent = activeTasks.some(
               (t) => (t.kanbanColumn === 'urgent' || t.priorityRank === 1) && t.status !== 'submitted'
             );
 
             return (
-              <div key={group.subject} className="space-y-3">
-                {/* Subject Group Header */}
+              <div
+                key={group.subject}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                  if (dragOverSubject !== group.subject) {
+                    setDragOverSubject(group.subject);
+                  }
+                }}
+                className="space-y-3"
+              >
+                {/* Subject Group Header - Acts as smooth dropzone during drag */}
                 <div
                   onClick={() => toggleSubjectCollapse(group.subject)}
-                  className="flex items-center justify-between py-2 px-1 border-b border-border/80 cursor-pointer select-none group"
+                  onDrop={(e) => handleDropOnSubject(e, group.subject)}
+                  className={`flex items-center justify-between py-2 px-2.5 rounded-lg border-b border-border/80 cursor-pointer select-none group transition-all duration-150 ${
+                    dragOverSubject === group.subject
+                      ? 'border-accent bg-accent/10 ring-2 ring-accent/30'
+                      : isDraggingActive && isSourceSubject
+                      ? 'bg-accent/5 border-accent/40'
+                      : 'hover:bg-bg2/60'
+                  }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <span className={`size-2.5 rounded-full shrink-0 ${group.color}`} />
@@ -1405,6 +1644,11 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
                     <span className="text-xs text-text3 font-normal hidden sm:inline">
                       | Instructor: {group.instructor}
                     </span>
+                    {isDraggingActive && dragOverSubject === group.subject && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent text-white uppercase tracking-wider animate-in fade-in duration-100">
+                        Drop to move here
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -1418,23 +1662,44 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
                     </span>
                     <button
                       type="button"
+                      aria-label={isCollapsed ? `Expand ${group.subject}` : `Collapse ${group.subject}`}
+                      aria-expanded={!isCollapsed}
                       className="p-1 rounded text-text3 group-hover:text-text transition-transform"
                     >
-                      {isCollapsed ? (
-                        <RiArrowRightSLine className="size-4" />
-                      ) : (
-                        <RiArrowDownSLine className="size-4" />
-                      )}
+                      <RiArrowDownSLine
+                        className={`size-4 transition-transform duration-200 ${
+                          isCollapsed ? '-rotate-90' : 'rotate-0'
+                        }`}
+                      />
                     </button>
                   </div>
                 </div>
 
-                {/* Tasks List for this Subject */}
-                {!isCollapsed && (
-                  <div className="space-y-2.5 pl-1">
+                {/* Tasks List for this Subject - Smooth CSS Grid Auto-Collapse */}
+                <div
+                  className="subject-group-tasks-collapse"
+                  data-collapsed={isCollapsed ? 'true' : 'false'}
+                >
+                  <div className="min-h-0 space-y-2.5 pl-1 overflow-hidden">
                     {activeTasks.length === 0 ? (
-                      <div className="p-6 rounded-xl bg-bg2 border border-dashed border-border text-center text-xs text-text3">
-                        No active performance tasks under this filter.
+                      <div
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = 'move';
+                          if (dragOverSubject !== group.subject) {
+                            setDragOverSubject(group.subject);
+                          }
+                        }}
+                        onDrop={(e) => handleDropOnSubject(e, group.subject)}
+                        className={`p-6 rounded-xl border border-dashed text-center text-xs transition-colors ${
+                          isDraggingActive && dragOverSubject === group.subject
+                            ? 'border-accent bg-accent/10 text-accent font-medium'
+                            : 'bg-bg2 border-border text-text3'
+                        }`}
+                      >
+                        {isDraggingActive && dragOverSubject === group.subject
+                          ? `Drop task here to assign to ${group.subject}`
+                          : 'No active performance tasks under this filter.'}
                       </div>
                     ) : (
                       activeTasks.map((task) => (
@@ -1444,6 +1709,7 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
                           viewMode="subject"
                           isDragging={draggingTaskId === task.id}
                           isDragOver={dragOverTaskId === task.id}
+                          isCompressed={draggingTaskId !== null}
                           onDragStart={handleDragStart}
                           onDragEnd={handleDragEnd}
                           onDragOver={handleDragOver}
@@ -1455,7 +1721,7 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
                       ))
                     )}
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
@@ -1471,7 +1737,8 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
           <div
             onDragOver={(e) => {
               e.preventDefault();
-              setDragOverColumn('urgent');
+              e.dataTransfer.dropEffect = 'move';
+              if (dragOverColumn !== 'urgent') setDragOverColumn('urgent');
             }}
             onDrop={(e) => handleDropOnColumn(e, 'urgent')}
             className={`rounded-2xl bg-bg2 border p-3.5 space-y-3 shadow-2xs transition-colors ${
@@ -1498,6 +1765,7 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
                   viewMode="kanban"
                   isDragging={draggingTaskId === task.id}
                   isDragOver={dragOverTaskId === task.id}
+                  isCompressed={draggingTaskId !== null}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onDragOver={handleDragOver}
@@ -1526,7 +1794,8 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
           <div
             onDragOver={(e) => {
               e.preventDefault();
-              setDragOverColumn('high');
+              e.dataTransfer.dropEffect = 'move';
+              if (dragOverColumn !== 'high') setDragOverColumn('high');
             }}
             onDrop={(e) => handleDropOnColumn(e, 'high')}
             className={`rounded-2xl bg-bg2 border p-3.5 space-y-3 shadow-2xs transition-colors ${
@@ -1553,6 +1822,7 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
                   viewMode="kanban"
                   isDragging={draggingTaskId === task.id}
                   isDragOver={dragOverTaskId === task.id}
+                  isCompressed={draggingTaskId !== null}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onDragOver={handleDragOver}
@@ -1581,7 +1851,8 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
           <div
             onDragOver={(e) => {
               e.preventDefault();
-              setDragOverColumn('normal');
+              e.dataTransfer.dropEffect = 'move';
+              if (dragOverColumn !== 'normal') setDragOverColumn('normal');
             }}
             onDrop={(e) => handleDropOnColumn(e, 'normal')}
             className={`rounded-2xl bg-bg2 border p-3.5 space-y-3 shadow-2xs transition-colors ${
@@ -1608,6 +1879,7 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
                   viewMode="kanban"
                   isDragging={draggingTaskId === task.id}
                   isDragOver={dragOverTaskId === task.id}
+                  isCompressed={draggingTaskId !== null}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onDragOver={handleDragOver}
@@ -1636,7 +1908,8 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
           <div
             onDragOver={(e) => {
               e.preventDefault();
-              setDragOverColumn('submitted');
+              e.dataTransfer.dropEffect = 'move';
+              if (dragOverColumn !== 'submitted') setDragOverColumn('submitted');
             }}
             onDrop={(e) => handleDropOnColumn(e, 'submitted')}
             className={`rounded-2xl bg-bg2 border p-3.5 space-y-3 shadow-2xs transition-colors ${
@@ -1664,6 +1937,7 @@ export const StudentPerformanceTasksView: React.FC<StudentPerformanceTasksViewPr
                   viewMode="kanban"
                   isDragging={draggingTaskId === task.id}
                   isDragOver={dragOverTaskId === task.id}
+                  isCompressed={draggingTaskId !== null}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onDragOver={handleDragOver}

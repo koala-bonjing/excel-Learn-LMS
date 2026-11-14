@@ -94,3 +94,54 @@ export interface StudentDirectoryItem {
   status: 'Active' | 'Pending Requirements' | 'Transferred';
   gwa: number;
 }
+
+export interface TeacherResourceLink {
+  id: string;
+  title: string;
+  url: string;
+  type: 'slides' | 'document' | 'video' | 'link' | 'code' | 'worksheet';
+  description?: string;
+  addedByTeacher?: boolean;
+}
+
+export interface ClassSession {
+  id: string;
+  subjectCode: string;
+  subjectName: string;
+  courseId?: string;
+  teacher: {
+    name: string;
+    role: string;
+    department: string;
+    initials: string;
+    avatarUrl?: string;
+  };
+  scheduleDays: number[]; // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
+  scheduleDaysText: string;
+  startTime: string;
+  endTime: string;
+  timeRange: string;
+  durationMinutes: number;
+  deliveryMode: 'virtual' | 'physical';
+  room: string;
+  strand: string;
+  semester: string;
+  topic: string;
+  description: string;
+  color: 'cyan' | 'accent' | 'green' | 'amber' | 'purple' | 'teal';
+  virtualDetails?: {
+    meetingUrl: string;
+    platform: string;
+    meetingId: string;
+    passcode: string;
+    serverRegion: string;
+    videoQuality: string;
+    attendanceRequirement: string;
+    isLiveNow?: boolean;
+    activeLearnersCount?: number;
+    recordingArchived: boolean;
+  };
+  additionalLinks: TeacherResourceLink[];
+  teacherNotes?: string;
+}
+

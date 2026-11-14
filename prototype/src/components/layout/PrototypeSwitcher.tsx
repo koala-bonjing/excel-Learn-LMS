@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react';
 import type { Role } from '@/types';
 import {
-  RiSunLine,
-  RiMoonLine,
   RiLoginCircleLine,
   RiGraduationCapLine,
   RiPresentationLine,
   RiShieldCheckLine,
 } from '@remixicon/react';
+import { ThemeToggle } from '@/components/base/theme-toggle/theme-toggle';
 
 interface PrototypeSwitcherProps {
   currentRole: Role;
@@ -16,26 +14,6 @@ interface PrototypeSwitcherProps {
 }
 
 export function PrototypeSwitcher({ currentRole, onSelectRole, inline = false }: PrototypeSwitcherProps) {
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof document !== 'undefined') {
-      return document.documentElement.classList.contains('dark');
-    }
-    return true;
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, [isDark]);
-
-  const toggleTheme = () => {
-    setIsDark((prev) => !prev);
-  };
-
   const roles: { role: Role; label: string; icon: typeof RiLoginCircleLine; userHint: string }[] = [
     { role: 'login', label: 'Login', icon: RiLoginCircleLine, userHint: 'Auth Portal' },
     { role: 'student', label: 'Student', icon: RiGraduationCapLine, userHint: 'Bryan · STEM 11-A' },
@@ -79,19 +57,7 @@ export function PrototypeSwitcher({ currentRole, onSelectRole, inline = false }:
       <div className="w-px h-4 bg-border mx-0.5" />
 
       {/* Theme Toggle */}
-      <button
-        type="button"
-        onClick={toggleTheme}
-        title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-        aria-label="Toggle Dark / Light Theme"
-        className="p-1.5 rounded-full text-text2 hover:text-text hover:bg-bg2 transition-colors cursor-pointer active:scale-96"
-      >
-        {isDark ? (
-          <RiSunLine className="size-4 text-amber" aria-hidden="true" />
-        ) : (
-          <RiMoonLine className="size-4 text-accent" aria-hidden="true" />
-        )}
-      </button>
+      <ThemeToggle size="sm" variant="ghost" />
     </div>
   );
 }

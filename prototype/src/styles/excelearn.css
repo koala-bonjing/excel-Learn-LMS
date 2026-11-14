@@ -1400,6 +1400,12 @@ html:not(.dark) .excelearn-nav-pill.active svg {
   -webkit-text-fill-color: transparent;
   line-height: 1;
 }
+.dark .core-values-badge {
+  background: linear-gradient(135deg, #60a5fa 0%, #93c5fd 42%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .core-values-sub {
   font-size: 13.5px;
   color: var(--text2);
@@ -1458,6 +1464,58 @@ html:not(.dark) .excelearn-nav-pill.active svg {
   overflow: hidden;
   margin-bottom: 20px;
 }
+
+/* Staggered entrance animations for About Page */
+@keyframes aboutRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.about-stagger-1 {
+  animation: aboutRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0ms;
+}
+.about-stagger-2 {
+  animation: aboutRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 60ms;
+}
+.about-stagger-3 {
+  animation: aboutRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 120ms;
+}
+.about-stagger-4 {
+  animation: aboutRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 180ms;
+}
+.about-stagger-5 {
+  animation: aboutRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 240ms;
+}
+.about-stagger-6 {
+  animation: aboutRise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 300ms;
+}
+
+/* Interactive Card Transitions */
+.about-interactive-card {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.about-interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -2px rgba(0, 0, 0, 0.05);
+}
+.dark .about-interactive-card:hover {
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.2);
+}
 .about-footer-card-bg {
   position: absolute;
   inset: 0;
@@ -1478,6 +1536,12 @@ html:not(.dark) .excelearn-nav-pill.active svg {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 6px;
+}
+.dark .about-footer-logo {
+  background: linear-gradient(135deg, #60a5fa 0%, #93c5fd 42%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .about-footer-text {
   font-size: 14px;
@@ -1504,18 +1568,24 @@ html:not(.dark) .excelearn-nav-pill.active svg {
   color: var(--text2);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
   background: var(--bg3);
   border: 1px solid var(--border);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
+  user-select: none;
+  font-weight: 500;
 }
 .about-footer-link:hover {
   color: var(--accent);
   border-color: var(--accent);
+  background: var(--bg2);
   transform: translateY(-1px);
+}
+.about-footer-link:active {
+  transform: scale(0.96);
 }
 @media (max-width: 768px) {
   .about-hero-content {
@@ -1701,8 +1771,19 @@ p {
   .vm-card,
   .core-value-card,
   .about-footer-link,
+  .about-interactive-card,
   .press-scale {
     transition: opacity 150ms ease, background-color 150ms ease, color 150ms ease, border-color 150ms ease !important;
+    transform: none !important;
+  }
+
+  .about-stagger-1,
+  .about-stagger-2,
+  .about-stagger-3,
+  .about-stagger-4,
+  .about-stagger-5,
+  .about-stagger-6 {
+    animation: none !important;
     transform: none !important;
   }
 
@@ -1784,4 +1865,105 @@ p {
     width: 100% !important;
   }
 }
+
+/* ============================================================ */
+/* Performance Task Drag-and-Drop Auto-Collapse & Transitions   */
+/* ============================================================ */
+.task-card-collapsible {
+  transition: padding 200ms cubic-bezier(0.2, 0, 0, 1),
+              background-color 150ms ease,
+              border-color 150ms ease,
+              transform 150ms cubic-bezier(0.2, 0, 0, 1),
+              opacity 150ms ease,
+              box-shadow 150ms ease;
+  will-change: transform, opacity;
+  cursor: url('/cursors/grab.svg') 10 6, grab;
+  cursor: -webkit-grab;
+}
+
+.task-card-collapsible:active {
+  cursor: url('/cursors/grabbing.svg') 10 10, grabbing;
+  cursor: -webkit-grabbing;
+}
+
+.task-card-drag-handle {
+  cursor: url('/cursors/grab.svg') 10 6, grab;
+}
+
+.task-card-drag-handle:active {
+  cursor: url('/cursors/grabbing.svg') 10 10, grabbing;
+}
+
+.task-card-collapsible[data-dragging="true"] {
+  opacity: 0.45;
+  transform: scale(0.985);
+  border-style: dashed;
+  cursor: url('/cursors/grabbing.svg') 10 10, grabbing !important;
+  cursor: -webkit-grabbing !important;
+}
+
+/* While any task is actively being dragged across the board to re-rank */
+[data-board-dragging="true"],
+[data-board-dragging="true"] * {
+  cursor: url('/cursors/grabbing.svg') 10 10, grabbing !important;
+  cursor: -webkit-grabbing !important;
+}
+
+/* Action buttons and links inside the card keep pointer when not dragging */
+[data-board-dragging="false"] .task-card-collapsible button,
+[data-board-dragging="false"] .task-card-collapsible a {
+  cursor: pointer;
+}
+
+.task-card-body-collapse {
+  display: grid;
+  overflow: hidden;
+  transition: grid-template-rows 220ms cubic-bezier(0.2, 0, 0, 1),
+              opacity 160ms ease;
+  will-change: grid-template-rows, opacity;
+}
+
+.task-card-body-collapse[data-collapsed="true"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.task-card-body-collapse[data-collapsed="false"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.subject-group-tasks-collapse {
+  display: grid;
+  overflow: hidden;
+  transition: grid-template-rows 240ms cubic-bezier(0.2, 0, 0, 1),
+              opacity 180ms ease;
+  will-change: grid-template-rows, opacity;
+}
+
+.subject-group-tasks-collapse[data-collapsed="true"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  margin-top: 0 !important;
+}
+
+.subject-group-tasks-collapse[data-collapsed="false"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-card-collapsible,
+  .task-card-body-collapse,
+  .subject-group-tasks-collapse {
+    transition: none !important;
+  }
+}
+
 

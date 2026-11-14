@@ -4,6 +4,7 @@ import { INITIAL_SUBMISSIONS, STUDENT_DIRECTORY } from '@/data/mockData';
 import { AboutView } from '@/components/views/AboutView';
 import { TeacherProfileView } from '@/components/views/TeacherProfileView';
 import { TeacherSettingsView } from '@/components/views/TeacherSettingsView';
+import { StudentClassesView } from '@/components/views/StudentClassesView';
 import {
   RiVideoChatLine,
   RiCheckLine,
@@ -14,10 +15,6 @@ import {
   RiCloseLine,
   RiTimeLine,
   RiFileExcel2Line,
-  RiMicLine,
-  RiMicOffLine,
-  RiCameraLine,
-  RiTvLine,
   RiBookOpenLine,
   RiGroupLine,
   RiSearchLine,
@@ -31,6 +28,7 @@ import {
   RiCheckboxCircleLine,
   RiFileTextLine,
   RiQuestionLine,
+  RiCalendarEventLine,
 } from '@remixicon/react';
 
 interface TeacherDashboardProps {
@@ -97,12 +95,6 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
   const [newBody, setNewBody] = useState('');
   const [newCategory, setNewCategory] = useState('Rubric Update');
   const [newSection, setNewSection] = useState('STEM 11-A');
-
-  // Studio state
-  const [isMuted, setIsMuted] = useState(false);
-  const [isCameraOn, setIsCameraOn] = useState(true);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-
 
   const pendingSubmissions = submissions.filter((s) => s.status === 'pending');
 
@@ -449,9 +441,9 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                   onClick={() => onTabChange('live')}
                 >
                   <span className="qa-icon group-hover:scale-110 transition-transform">
-                    <RiVideoChatLine size={22} />
+                    <RiCalendarEventLine size={22} />
                   </span>
-                  <span className="qa-label">Start Class</span>
+                  <span className="qa-label">Classes</span>
                 </div>
                 <div
                   className="quick-action group"
@@ -598,7 +590,10 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="w-full max-w-md bg-bg2 rounded-2xl border border-border shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <h4 className="text-base font-bold text-text">📢 Post Announcement</h4>
+              <h4 className="text-base font-bold text-text flex items-center gap-1.5">
+                <RiNotification3Line className="size-4 text-accent" />
+                <span>Post Announcement</span>
+              </h4>
               <button
                 type="button"
                 onClick={() => setIsPostAnnounceOpen(false)}
@@ -992,78 +987,13 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
       )}
 
       {/* ============================================================ */}
-      {/* 7. VIRTUAL CLASSROOM BROADCASTER (teacher_virtual_class.php) */}
+      {/* 7. CLASSES & TEACHING TIMETABLE (teachers/teacher_classes.php) */}
       {/* ============================================================ */}
       {activeTab === 'live' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold font-serif text-text">WebRTC Live Broadcast Studio</h3>
-              <p className="text-xs text-text2">Broadcasting to STEM 11-A · Oral Communication in Context</p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-cyan-bg text-cyan text-xs font-semibold flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-cyan animate-pulse" />
-              Broadcasting Live · 28 Students Tuned In
-            </span>
-          </div>
-
-          <div className="rounded-2xl bg-[#090a0f] border border-border overflow-hidden shadow-2xl">
-            <div className="relative aspect-video flex items-center justify-center p-6 text-white">
-              <div className="text-center space-y-3">
-                <div className="size-24 mx-auto rounded-full bg-cyan/20 border-2 border-cyan flex items-center justify-center text-cyan">
-                  <RiVideoChatLine className="size-12" aria-hidden="true" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-bold">Studio Feed Active (Ms. Juna Velarde)</h4>
-                  <p className="text-xs text-white/70">Audio, Video & Screen Signaling Negotiated via WebRTC</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 bg-bg2 border-t border-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsMuted(!isMuted)}
-                  className={`p-2.5 rounded-xl cursor-pointer ${
-                    isMuted ? 'bg-red text-white' : 'bg-bg3 text-text border border-border'
-                  }`}
-                  aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
-                >
-                  {isMuted ? <RiMicOffLine className="size-4" /> : <RiMicLine className="size-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsCameraOn(!isCameraOn)}
-                  className={`p-2.5 rounded-xl cursor-pointer ${
-                    !isCameraOn ? 'bg-red text-white' : 'bg-bg3 text-text border border-border'
-                  }`}
-                  aria-label="Toggle camera"
-                >
-                  <RiCameraLine className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsScreenSharing(!isScreenSharing)}
-                  className={`p-2.5 rounded-xl cursor-pointer ${
-                    isScreenSharing ? 'bg-accent text-white' : 'bg-bg3 text-text border border-border'
-                  }`}
-                  aria-label="Toggle screen share"
-                >
-                  <RiTvLine className="size-4" />
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onTabChange('dashboard')}
-                className="px-5 py-2 rounded-xl bg-red text-white text-xs font-semibold hover:bg-red/90 cursor-pointer"
-              >
-                End Live Stream
-              </button>
-            </div>
-          </div>
-        </div>
+        <StudentClassesView
+          userRole="teacher"
+          onTabChange={onTabChange}
+        />
       )}
 
       {/* ============================================================ */}
@@ -1088,7 +1018,7 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                   <option value="Rubric Update">Rubric Update</option>
                   <option value="Exam Alert">Exam Alert</option>
                   <option value="General Reminder">General Reminder</option>
-                  <option value="Virtual Class Schedule">Virtual Class Schedule</option>
+                  <option value="Class Schedule">Class Schedule</option>
                 </select>
               </div>
 

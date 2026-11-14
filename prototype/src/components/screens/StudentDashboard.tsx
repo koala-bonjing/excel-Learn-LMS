@@ -8,14 +8,12 @@ import { StudentActivityHeatmap } from '@/components/screens/StudentActivityHeat
 import { CourseSectionView } from '@/components/views/CourseSectionView';
 import { StudentPerformanceTasksView } from '@/components/views/StudentPerformanceTasksView';
 import { StudentGradesView } from '@/components/views/StudentGradesView';
+import { StudentClassesView } from '@/components/views/StudentClassesView';
 import { getCourseData } from '@/data/courseOutlineData';
 import {
-  RiVideoChatLine,
   RiFilePdfLine,
   RiCheckLine,
-  RiMicLine,
-  RiMicOffLine,
-  RiCameraLine,
+  RiFireFill,
   RiCloseLine,
   RiDownload2Line,
   RiUpload2Line,
@@ -61,7 +59,7 @@ import {
 export interface AnnouncementItem {
   id: number;
   type: 'important' | 'info' | 'update';
-  category: 'Academic' | 'Virtual Classes' | 'Workshops' | 'Institutional';
+  category: 'Academic' | 'Classes' | 'Virtual Classes' | 'Workshops' | 'Institutional';
   posterRole: 'admin' | 'teacher';
   posterName: string;
   timeLabel: string;
@@ -92,14 +90,14 @@ const INITIAL_ANNOUNCEMENTS: AnnouncementItem[] = [
   {
     id: 2,
     type: 'info',
-    category: 'Virtual Classes',
+    category: 'Classes',
     posterRole: 'teacher',
     posterName: 'Ms. Juna Velarde',
     timeLabel: '1 day ago',
     date: 'Oct 19, 2026',
-    title: 'Virtual Class Attendance & DepEd Submission Guidelines',
+    title: 'Class Attendance & DepEd SF2 Submission Guidelines',
     message:
-      'All learners are required to log in 5 minutes before scheduled virtual classes. Session recordings and transcript summaries will be automatically published under the Subject Modules tab.',
+      'All learners are required to log in 5 minutes before scheduled classes (both WebRTC virtual and physical). Session recordings and lecture slides will be automatically published under the Classes and Subject Modules tabs.',
     tag: 'Languages & Oral Comm Lead',
     isRead: false,
     bookmarked: true,
@@ -155,7 +153,7 @@ const ANNOUNCEMENT_CATEGORIES = [
   { id: 'All', label: 'All Categories', dotColor: 'bg-text3' },
   { id: 'Important', label: 'Important Notices', dotColor: 'bg-red' },
   { id: 'Academic', label: 'Academic', dotColor: 'bg-accent' },
-  { id: 'Virtual Classes', label: 'Virtual Classes', dotColor: 'bg-green' },
+  { id: 'Classes', label: 'Classes', dotColor: 'bg-green' },
   { id: 'Workshops', label: 'Workshops', dotColor: 'bg-purple' },
   { id: 'Institutional', label: 'Institutional', dotColor: 'bg-amber' },
 ] as const;
@@ -446,10 +444,6 @@ export function StudentDashboard({
   const [submissionFileName, setSubmissionFileName] = useState('');
   const [submissionRemarks, setSubmissionRemarks] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
-
-
-  // Virtual class studio controls
-  const [isMuted, setIsMuted] = useState(false);
 
   // Student Dashboard Side A / Side B toggle state (default 'a' for Course Overview)
   const [dashboardSide, setDashboardSide] = useState<'a' | 'b'>('a');
@@ -1473,7 +1467,8 @@ export function StudentDashboard({
                       Welcome back, Bryan!
                     </h1>
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25">
-                      🔥 7-day streak
+                      <RiFireFill className="size-3.5 text-amber-500" />
+                      <span>7-day streak</span>
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-text2 mt-1">
@@ -1939,8 +1934,18 @@ export function StudentDashboard({
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-text2 leading-snug">
                             <span className="font-bold text-text">Scored {act.score}</span>{' '}
-                            <span className={act.passed ? 'text-green font-semibold' : 'text-amber font-semibold'}>
-                              {act.passed ? '✓ Passed' : '✗ Below passing'}
+                            <span className={act.passed ? 'text-green font-semibold inline-flex items-center gap-0.5' : 'text-amber font-semibold inline-flex items-center gap-0.5'}>
+                              {act.passed ? (
+                                <>
+                                  <RiCheckLine size={12} className="inline" />
+                                  <span>Passed</span>
+                                </>
+                              ) : (
+                                <>
+                                  <RiCloseLine size={12} className="inline" />
+                                  <span>Below passing</span>
+                                </>
+                              )}
                             </span>{' '}
                             on <span className="font-medium text-text">{act.quiz}</span>
                           </div>
@@ -2038,8 +2043,9 @@ export function StudentDashboard({
               </button>
             </form>
             {messageSentSuccess && (
-              <div className="px-4 py-1.5 bg-green/10 text-green text-[11px] font-semibold text-center border-t border-green/20">
-                ✓ Message successfully delivered to adviser!
+              <div className="px-4 py-1.5 bg-green/10 text-green text-[11px] font-semibold text-center border-t border-green/20 flex items-center justify-center gap-1">
+                <RiCheckLine className="size-3.5" />
+                <span>Message successfully delivered to adviser!</span>
               </div>
             )}
           </div>
@@ -2372,13 +2378,13 @@ export function StudentDashboard({
                         </button>
 
                         {/* Quick destination button */}
-                        {a.category === 'Virtual Classes' && (
+                        {(a.category === 'Classes' || a.category === 'Virtual Classes') && (
                           <button
                             type="button"
                             onClick={() => onTabChange('live')}
                             className="btn btn-primary btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
                           >
-                            <span>Open Virtual Class</span>
+                            <span>Open Classes</span>
                             <RiArrowRightLine size={13} />
                           </button>
                         )}
@@ -2490,71 +2496,14 @@ export function StudentDashboard({
       )}
 
       {/* ============================================================ */}
-      {/* 5. VIRTUAL CLASSROOM (students/student_virtual_class.php)      */}
+      {/* 5. CLASSES & SCHEDULE (students/student_classes.php)          */}
       {/* ============================================================ */}
       {activeTab === 'live' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold font-serif text-text">WebRTC Virtual Classroom</h3>
-              <p className="text-xs text-text2">
-                Oral Communication in Context with Ms. Juna Velarde
-              </p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-cyan-bg text-cyan text-xs font-semibold flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-cyan animate-ping" />
-              Connected · 28 Students Active
-            </span>
-          </div>
-
-          <div className="rounded-2xl bg-[#090a0f] border border-border overflow-hidden shadow-2xl">
-            <div className="relative aspect-video flex items-center justify-center p-6 text-white">
-              <div className="text-center space-y-3">
-                <div className="size-20 mx-auto rounded-full bg-cyan/20 border-2 border-cyan flex items-center justify-center text-cyan">
-                  <RiVideoChatLine className="size-10" aria-hidden="true" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold">Ms. Juna Velarde (Broadcasting)</h4>
-                  <p className="text-xs text-white/70">Topic: Speech Acts & Non-Verbal Dynamics</p>
-                </div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs text-green">
-                  <span className="size-2 rounded-full bg-green animate-pulse" />
-                  HD 1080p · Low-Latency WebRTC Signaling
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 bg-bg2 border-t border-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsMuted(!isMuted)}
-                  className={`p-2 rounded-lg cursor-pointer ${
-                    isMuted ? 'bg-red text-white' : 'bg-bg3 text-text border border-border'
-                  }`}
-                  aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
-                >
-                  {isMuted ? <RiMicOffLine className="size-4" /> : <RiMicLine className="size-4" />}
-                </button>
-                <button
-                  type="button"
-                  className="p-2 rounded-lg bg-bg3 text-text border border-border cursor-pointer"
-                  aria-label="Toggle camera"
-                >
-                  <RiCameraLine className="size-4" />
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onTabChange('dashboard')}
-                className="px-4 py-2 rounded-xl bg-red text-white text-xs font-semibold hover:bg-red/90 cursor-pointer"
-              >
-                Leave Classroom
-              </button>
-            </div>
-          </div>
-        </div>
+        <StudentClassesView
+          userRole="student"
+          onTabChange={onTabChange}
+          onSelectCourse={handleOpenCourse}
+        />
       )}
 
       {/* ============================================================ */}

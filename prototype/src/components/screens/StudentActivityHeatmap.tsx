@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   RiFireLine,
+  RiFireFill,
   RiTimeLine,
   RiAwardLine,
   RiBookOpenLine,
@@ -287,7 +288,10 @@ export function StudentActivityHeatmap() {
         {/* Bottom Legend & Motivation Note */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs text-text3">
           <div className="flex items-center gap-1.5 font-medium text-text2">
-            <span className="text-amber-500 font-bold">🔥 7-day streak!</span>
+            <span className="text-amber font-bold flex items-center gap-1">
+              <RiFireFill className="size-3.5 text-amber" aria-hidden="true" />
+              7-day streak!
+            </span>
             <span>You completed 3 learning activities yesterday. Keep it going!</span>
           </div>
 

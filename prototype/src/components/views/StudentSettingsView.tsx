@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useShell } from '@/components/layout/ShellContext';
+import { useIsDarkMode, toggleThemeWithTransition } from '@/utils/theme';
 import {
   RiSettings3Line,
   RiGlobalLine,
@@ -87,13 +88,8 @@ export function StudentSettingsView({ onTabChange: _onTabChange }: StudentSettin
     return DEFAULT_SETTINGS;
   });
 
-  // ── Theme State ───────────────────────────────────────────────────────────
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof document !== 'undefined') {
-      return document.documentElement.classList.contains('dark');
-    }
-    return true;
-  });
+  // ── Theme State (Reactive via useIsDarkMode) ──────────────────────────────
+  const isDark = useIsDarkMode();
 
   // ── Password Form State ───────────────────────────────────────────────────
   const [currentPassword, setCurrentPassword] = useState('');
@@ -114,17 +110,6 @@ export function StudentSettingsView({ onTabChange: _onTabChange }: StudentSettin
     }, 3200);
   };
 
-  // ── Sync with external theme switches ─────────────────────────────────────
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-    const observer = new MutationObserver(() => {
-      setIsDark(root.classList.contains('dark'));
-    });
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-
   // ── Save Settings Helper ──────────────────────────────────────────────────
   const updateSettings = (partial: Partial<StudentSettings>, toastText?: string) => {
     const updated = { ...settings, ...partial };
@@ -138,19 +123,15 @@ export function StudentSettingsView({ onTabChange: _onTabChange }: StudentSettin
   };
 
   // ── Theme Toggle Handler ──────────────────────────────────────────────────
-  const handleToggleTheme = () => {
+  const handleToggleTheme = (e?: React.MouseEvent) => {
     const nextDark = !isDark;
-    setIsDark(nextDark);
-    const root = document.documentElement;
-    if (nextDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    try {
-      localStorage.setItem('excelearn-theme', nextDark ? 'dark' : 'light');
-    } catch {}
-    showToast(nextDark ? 'Dark Mode activated' : 'Light Mode activated', 'info');
+    void toggleThemeWithTransition({
+      event: e,
+      forceTheme: nextDark ? 'dark' : 'light',
+      onThemeChanged: (dark) => {
+        showToast(dark ? 'Dark Mode activated' : 'Light Mode activated', 'info');
+      },
+    });
   };
 
   // ── Translation Helper ────────────────────────────────────────────────────
