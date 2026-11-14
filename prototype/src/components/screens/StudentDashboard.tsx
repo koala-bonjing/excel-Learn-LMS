@@ -20,7 +20,6 @@ import {
   RiBookOpenLine,
   RiCheckboxCircleLine,
   RiAwardLine,
-  RiFileList3Line,
   RiNotification3Line,
   RiNotification3Fill,
   RiSearchLine,
@@ -447,6 +446,7 @@ export function StudentDashboard({
 
   // Student Dashboard Side A / Side B toggle state (default 'a' for Course Overview)
   const [dashboardSide, setDashboardSide] = useState<'a' | 'b'>('a');
+  const [masteryTab, setMasteryTab] = useState<'progress' | 'quizzes'>('progress');
 
   // Side A: Recently Accessed Courses carousel index
   const [recentCourseIndex, setRecentCourseIndex] = useState(0);
@@ -1455,504 +1455,401 @@ export function StudentDashboard({
           )}
 
           {/* ============================================================ */}
-          {/* SIDE B: ANALYTICS & ACTIVITY (Retains 100% existing elements) */}
+          {/* SIDE B: GAMIFIED RANK & HEATMAP FIRST BENTO FLOW             */}
           {/* ============================================================ */}
           {dashboardSide === 'b' && (
             <div className="space-y-6">
-              {/* Section Header (students/index.php lines 532-537) */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-text">
-                      Welcome back, Bryan!
-                    </h1>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25">
-                      <RiFireFill className="size-3.5 text-amber-500" />
-                      <span>7-day streak</span>
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-text2 mt-1">
-                    Keep up the momentum — Grade 11 STEM Section A · S.Y. 2026–2027
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onTabChange('tasks')}
-                    className="btn btn-primary btn-sm text-xs cursor-pointer shadow-sm hover:shadow-md"
-                  >
-                    <RiFileList3Line size={14} />
-                    Open Task Board
-                  </button>
-                </div>
-              </div>
-
-              {/* Stats Grid (students/index.php lines 538-565) */}
+              {/* Row 1: Unified Gamified Academic Pulse */}
               <div className="stats-grid">
-                <div className="stat-card blue group">
-                  <div className="stat-icon">
-                    <RiBookOpenLine size={22} />
-                  </div>
-                  <div className="stat-value">6</div>
-                  <div className="stat-label">Enrolled Courses</div>
-                  <div className="stat-change up">
-                    <span>↑ 1 new this week</span>
-                  </div>
-                </div>
-                <div className="stat-card green group">
-                  <div className="stat-icon">
-                    <RiCheckboxCircleLine size={22} />
-                  </div>
-                  <div className="stat-value">24</div>
-                  <div className="stat-label">Lessons Completed</div>
-                  <div className="stat-change up">
-                    <span>↑ 5 this week</span>
-                  </div>
-                </div>
                 <div className="stat-card amber group">
                   <div className="stat-icon">
                     <RiAwardLine size={22} />
                   </div>
                   <div className="stat-value">91.4%</div>
-                  <div className="stat-label">Average Grade</div>
+                  <div className="stat-label">Overall GWA (With Honors)</div>
                   <div className="stat-change up">
-                    <span>↑ across all subjects</span>
+                    <span>↑ +1.2% across 6 subjects</span>
                   </div>
                 </div>
+
+                <div className="stat-card blue group">
+                  <div className="stat-icon">
+                    <RiTrophyLine size={22} />
+                  </div>
+                  <div className="stat-value">Rank #2</div>
+                  <div className="stat-label">Class Standing (of 42)</div>
+                  <div className="stat-change up">
+                    <span>↑ Top 5% · 2.3% to #1</span>
+                  </div>
+                </div>
+
+                <div className="stat-card green group">
+                  <div className="stat-icon">
+                    <RiCheckboxCircleLine size={22} />
+                  </div>
+                  <div className="stat-value">24 / 28</div>
+                  <div className="stat-label">Lessons Mastery (86%)</div>
+                  <div className="stat-change up">
+                    <span>↑ 12 quizzes completed</span>
+                  </div>
+                </div>
+
                 <div className="stat-card purple group">
                   <div className="stat-icon">
-                    <RiFileList3Line size={22} />
+                    <RiFireFill size={22} />
                   </div>
-                  <div className="stat-value">12</div>
-                  <div className="stat-label">Quizzes Taken</div>
+                  <div className="stat-value">7 Days</div>
+                  <div className="stat-label">Active Study Streak</div>
                   <div className="stat-change up">
-                    <span>↑ 12 completed</span>
+                    <span>↑ 64h 20m study · Peak 14d</span>
                   </div>
                 </div>
               </div>
 
-              {/* Student Learning Activity & Contribution Heatmap (QoL feature, GitHub-style) */}
-              <StudentActivityHeatmap />
-
-              {/* Announcements Carousel on Side B */}
-              <div
-                className="card overflow-hidden"
-                onMouseEnter={() => setIsCarouselPaused(true)}
-                onMouseLeave={() => setIsCarouselPaused(false)}
-              >
-                <div className="card-header border-b border-border/50 pb-3 flex-wrap gap-2">
-                  <div className="card-title flex items-center gap-2.5">
-                    <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
-                      <RiNotification3Line size={18} />
-                    </div>
-                    <span className="font-bold text-text">Announcements</span>
-                    <span className="badge badge-blue">
-                      {announcements.filter((a) => !a.isRead).length} new notices
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {/* Link to Announcements Tab */}
-                    <button
-                      type="button"
-                      onClick={() => onTabChange('announcements')}
-                      className="text-xs font-semibold text-accent hover:text-accent2 hover:underline inline-flex items-center gap-1 cursor-pointer press-scale"
-                    >
-                      <span>View all in Announcements Tab</span>
-                      <RiArrowRightLine size={13} />
-                    </button>
-
-                    {/* Carousel Navigation Buttons */}
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={prevAnnouncement}
-                        aria-label="Previous announcement"
-                        className="p-1.5 rounded-lg border border-border bg-bg3/60 hover:bg-bg3 text-text hover:text-accent cursor-pointer press-scale transition-colors"
-                      >
-                        <RiArrowLeftSLine className="size-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={nextAnnouncement}
-                        aria-label="Next announcement"
-                        className="p-1.5 rounded-lg border border-border bg-bg3/60 hover:bg-bg3 text-text hover:text-accent cursor-pointer press-scale transition-colors"
-                      >
-                        <RiArrowRightSLine className="size-4" />
-                      </button>
-                    </div>
-                  </div>
+              {/* Row 2: Gamified Consistency & Competition */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                {/* Left: Learning Activity Heatmap */}
+                <div className="lg:col-span-8 flex flex-col">
+                  <StudentActivityHeatmap />
                 </div>
 
-                {/* Carousel Card Content */}
-                <div className="pt-2">
-                  {(() => {
-                    const currentAnn = announcements[announcementIndex % announcements.length];
-                    return (
-                      <div
-                        className={`p-4 sm:p-5 rounded-xl border transition-all duration-300 ${
-                          currentAnn.type === 'important'
-                            ? 'bg-red-500/5 border-red-500/25'
-                            : currentAnn.type === 'info'
-                            ? 'bg-blue-500/5 border-accent/25'
-                            : 'bg-purple-500/5 border-purple-500/25'
-                        }`}
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-                          <div className="flex items-center gap-2">
-                            <span className={`announce-tag ${currentAnn.type}`}>
-                              {currentAnn.type}
-                            </span>
-                            <span
-                              className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
+                {/* Right: Class Leaderboard */}
+                <div className="lg:col-span-4 flex flex-col">
+                  <div className="card h-full flex flex-col justify-between">
+                    <div>
+                      <div className="card-header pb-3 border-b border-border/40 mb-3">
+                        <div className="card-title">
+                          <div className="p-1.5 rounded-lg bg-amber/10 text-amber">
+                            <RiTrophyLine size={18} />
+                          </div>
+                          <span>Class Leaderboard</span>
+                        </div>
+                        <span className="badge badge-blue">STEM 11-A</span>
+                      </div>
+
+                      {/* Gamified Motivation Banner */}
+                      <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 mb-3 flex items-center justify-between gap-2 text-xs">
+                        <div>
+                          <span className="font-semibold text-text">Chasing #1 Spot</span>
+                          <span className="text-[11px] text-text2 block">
+                            Only <strong className="text-amber-500">2.3%</strong> behind Katrina Diaz
+                          </span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
+                          Silver Tier
+                        </span>
+                      </div>
+
+                      {/* 5 Leaderboard Rows */}
+                      <div className="space-y-1.5">
+                        {[
+                          { rank: 1, rankType: 'gold', initials: 'KD', name: 'Katrina Diaz', score: '98.5%', isMe: false },
+                          { rank: 2, rankType: 'silver', initials: 'BD', name: 'Bryan Donceras', score: '96.2%', isMe: true },
+                          { rank: 3, rankType: 'bronze', initials: 'JL', name: 'Janloyd Lotino', score: '94.8%', isMe: false },
+                          { rank: 4, rankType: 'normal', initials: 'MS', name: 'Mary Santos', score: '93.1%', isMe: false },
+                          { rank: 5, rankType: 'normal', initials: 'RA', name: 'Rafael Aquino', score: '91.5%', isMe: false },
+                        ].map((s) => (
+                          <div
+                            key={s.rank}
+                            className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${
+                              s.isMe
+                                ? 'bg-accent/10 border-2 border-accent/40 shadow-xs ring-2 ring-accent/15'
+                                : 'hover:bg-bg3/60'
+                            }`}
+                          >
+                            <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                              {s.rank === 1 && <RiTrophyFill size={18} className="text-amber-500" />}
+                              {s.rank === 2 && <RiMedalFill size={18} className="text-slate-400 dark:text-slate-300" />}
+                              {s.rank === 3 && <RiMedalLine size={18} className="text-amber-700 dark:text-amber-600" />}
+                              {s.rank > 3 && (
+                                <span className="text-xs font-bold text-text3 tabular-nums">#{s.rank}</span>
+                              )}
+                            </div>
+                            <div
+                              className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] text-white shrink-0 shadow-xs"
                               style={{
                                 background:
-                                  currentAnn.posterRole === 'admin'
-                                    ? 'rgba(239, 68, 68, 0.12)'
-                                    : 'rgba(139, 92, 246, 0.12)',
-                                color:
-                                  currentAnn.posterRole === 'admin'
-                                    ? 'var(--red)'
-                                    : 'var(--purple)',
+                                  s.rank === 1
+                                    ? 'linear-gradient(135deg, #f59e0b, #d97706)'
+                                    : s.rank === 2
+                                    ? 'linear-gradient(135deg, #06b6d4, #3b82f6)'
+                                    : s.rank === 3
+                                    ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)'
+                                    : 'linear-gradient(135deg, #10b981, #059669)',
                               }}
                             >
-                              {currentAnn.posterRole === 'admin' ? (
-                                <RiShieldCheckLine size={12} />
-                              ) : (
-                                <RiUserStarLine size={12} />
-                              )}
-                              {currentAnn.posterRole === 'admin' ? 'Admin' : 'Teacher'}: {currentAnn.posterName}
-                            </span>
-                            <span className="text-[11px] text-text3 font-medium hidden sm:inline">
-                              {currentAnn.tag}
-                            </span>
-                          </div>
-                          <span className="text-xs text-text3 font-medium">
-                            {currentAnn.timeLabel} · {currentAnn.date}
-                          </span>
-                        </div>
-
-                        <h3
-                          onClick={() => onTabChange('announcements')}
-                          className="text-base sm:text-lg font-bold text-text hover:text-accent transition-colors cursor-pointer"
-                        >
-                          {currentAnn.title}
-                        </h3>
-
-                        <p className="text-xs sm:text-sm text-text2 leading-relaxed mt-1.5">
-                          {currentAnn.message}
-                        </p>
-
-                        <div className="flex items-center justify-between pt-4 mt-3 border-t border-border/40">
-                          <div className="flex items-center gap-1.5">
-                            {announcements.map((_, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onClick={() => setAnnouncementIndex(idx)}
-                                aria-label={`Announcement slide ${idx + 1}`}
-                                className={`size-2 rounded-full transition-all cursor-pointer ${
-                                  announcementIndex % announcements.length === idx
-                                    ? 'bg-accent w-5'
-                                    : 'bg-border hover:bg-text3'
-                                }`}
-                              />
-                            ))}
-                            <span className="text-[11px] text-text3 ml-2 font-mono">
-                              {(announcementIndex % announcements.length) + 1} of {announcements.length}
-                            </span>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => onTabChange('announcements')}
-                            className="btn btn-secondary btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <span>Read in Announcements Tab</span>
-                            <RiArrowRightLine size={13} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-
-              {/* Dash Grid 1: My Subject Progress & Upcoming Deadlines (students/index.php lines 678-743) */}
-              <div className="dash-grid dash-grid-2-1">
-                {/* My Subject Progress */}
-                <div className="card">
-                  <div className="card-header">
-                    <div className="card-title">
-                      <div className="p-1.5 rounded-lg bg-green/10 text-green">
-                        <RiBarChartLine size={18} />
-                      </div>
-                      <span>My Subject Progress</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => onTabChange('courses')}
-                      className="btn btn-ghost btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
-                    >
-                      <span>View all</span>
-                      <RiArrowRightLine size={13} />
-                    </button>
-                  </div>
-                  <div className="space-y-4">
-                    {[
-                      { subject: 'General Mathematics', code: 'MATH', done: 8, total: 10, pct: 80, fill: '', color: 'var(--accent)', iconBg: 'bg-accent/10 text-accent' },
-                      { subject: 'Oral Communication in Context', code: 'ENG', done: 9, total: 10, pct: 90, fill: 'green-fill', color: 'var(--green)', iconBg: 'bg-green/10 text-green' },
-                      { subject: 'Earth and Life Science', code: 'SCI', done: 6, total: 10, pct: 60, fill: '', color: 'var(--accent)', iconBg: 'bg-purple/10 text-purple' },
-                      { subject: 'Empowerment Technologies (ICT)', code: 'ICT', done: 9, total: 10, pct: 90, fill: 'green-fill', color: 'var(--green)', iconBg: 'bg-cyan/10 text-cyan' },
-                      { subject: 'Komunikasyon at Pananaliksik', code: 'FIL', done: 7, total: 10, pct: 70, fill: '', color: 'var(--accent)', iconBg: 'bg-amber/10 text-amber' },
-                      { subject: 'Physical Education and Health 1', code: 'PEH', done: 10, total: 10, pct: 100, fill: 'green-fill', color: 'var(--green)', iconBg: 'bg-green/10 text-green' },
-                    ].map((s, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => onTabChange('courses')}
-                        className="p-2 -mx-2 rounded-xl hover:bg-bg3/60 cursor-pointer group transition-all"
-                      >
-                        <div className="flex items-center gap-3 mb-1.5">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${s.iconBg}`}>
-                            {s.code}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-semibold text-text truncate group-hover:text-accent transition-colors">
-                              {s.subject}
+                              {s.initials}
                             </div>
-                            <div className="text-[11px] text-text3 font-medium">{s.done} of {s.total} lessons completed</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-semibold text-text truncate flex items-center gap-1.5">
+                                <span>{s.name}</span>
+                                {s.isMe && (
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent text-white">
+                                    You
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-xs font-bold text-accent tabular-nums">
+                              {s.score}
+                            </div>
                           </div>
-                          <span className="text-xs font-bold tabular-nums px-2 py-0.5 rounded-md bg-bg3 border border-border/40" style={{ color: s.color }}>
-                            {s.pct}%
-                          </span>
-                        </div>
-                        <div className="progress-bar">
-                          <div className={`progress-fill ${s.fill}`} style={{ width: `${s.pct}%` }} />
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Upcoming Deadlines */}
-                <div className="card">
-                  <div className="card-header">
-                    <div className="card-title">
-                      <div className="p-1.5 rounded-lg bg-red/10 text-red">
-                        <RiTimeLine size={18} />
-                      </div>
-                      <span>Upcoming Deadlines</span>
                     </div>
-                  </div>
-                  <div className="divide-y divide-border">
-                    {[
-                      { title: 'General Mathematics — Rational Functions Quiz #3', meta: 'Quarter 2 Assessment', due: 'Today', urgency: 'urgent' },
-                      { title: 'Oral Communication — Extemporaneous Speech Recording', meta: 'Performance Task Deliverable', due: 'Tomorrow', urgency: 'soon' },
-                      { title: 'Earth and Life Science — Biogeochemical Cycles Diagram', meta: 'Module 3 Worksheet Submission', due: 'May 20, 11:59 PM', urgency: 'later' },
-                      { title: 'Empowerment Technologies — Web Portfolio Wireframe', meta: 'ICT Project Deliverable', due: 'May 24, 5:00 PM', urgency: 'later' },
-                    ].map((d, idx) => (
-                      <div key={idx} className="deadline-item py-3">
-                        <div className="relative flex items-center justify-center shrink-0">
-                          {d.urgency === 'urgent' && (
-                            <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red opacity-60" />
-                          )}
-                          <div className={`deadline-dot ${d.urgency}`} />
-                        </div>
-                        <div className="deadline-info">
-                          <div className="deadline-title font-semibold">{d.title}</div>
-                          <div className="deadline-meta">{d.meta}</div>
-                        </div>
-                        <div className={`deadline-due text-[11px] px-2.5 py-1 rounded-full font-semibold border ${
-                          d.urgency === 'urgent'
-                            ? 'bg-red-500/10 text-red border-red-500/25'
-                            : d.urgency === 'soon'
-                            ? 'bg-amber-500/10 text-amber border-amber-500/25'
-                            : 'bg-green-500/10 text-green border-green-500/25'
-                        }`}>
-                          {d.due}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
 
-              {/* Dash Grid 2: Recent Quiz Scores & Class Leaderboard (students/index.php lines 745-820) */}
-              <div className="dash-grid dash-grid-1-1">
-                {/* Recent Quiz Scores */}
-                <div className="card">
-                  <div className="card-header">
-                    <div className="card-title">
-                      <div className="p-1.5 rounded-lg bg-purple/10 text-purple">
-                        <RiFileList3Line size={18} />
-                      </div>
-                      <span>Recent Quiz Scores</span>
-                    </div>
+                    {/* Footer Button */}
                     <button
                       type="button"
                       onClick={() => onTabChange('grades')}
-                      className="btn btn-ghost btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
+                      className="mt-3 w-full py-1.5 rounded-lg bg-bg3 hover:bg-bg4 text-xs font-semibold text-text2 hover:text-text transition-colors cursor-pointer flex items-center justify-center gap-1"
                     >
-                      <span>All Scores</span>
+                      <span>View Full Academic Standing</span>
                       <RiArrowRightLine size={13} />
                     </button>
-                  </div>
-                  <div>
-                    {[
-                      { course: 'General Mathematics: Rational Functions', take: 1, score: 95, pct: 95, fill: 'green-fill', color: 'var(--green)', label: 'Excellent' },
-                      { course: 'Oral Communication: Speech Models', take: 2, score: 92, pct: 92, fill: 'green-fill', color: 'var(--green)', label: 'Excellent' },
-                      { course: 'Earth Science: Rock Formations', take: 1, score: 85, pct: 85, fill: '', color: 'var(--accent)', label: 'Good' },
-                      { course: 'Empowerment Tech: Web Principles', take: 1, score: 98, pct: 98, fill: 'green-fill', color: 'var(--green)', label: 'Excellent' },
-                      { course: 'Komunikasyon: Barayti ng Wika', take: 1, score: 76, pct: 76, fill: 'amber-fill', color: 'var(--amber)', label: 'Fair' },
-                    ].map((g, idx) => (
-                      <div key={idx} className="grade-row py-2.5">
-                        <div className="grade-course">
-                          <span className="font-medium text-text">{g.course}</span>{' '}
-                          <span className="text-[10px] text-text3 font-bold px-1.5 py-0.5 rounded bg-bg3 border border-border/50">Take #{g.take}</span>
-                        </div>
-                        <div className="grade-score font-bold tabular-nums text-sm" style={{ color: g.color }}>
-                          {g.score}%
-                        </div>
-                        <div className="grade-bar">
-                          <div className="progress-bar">
-                            <div className={`progress-fill ${g.fill}`} style={{ width: `${g.pct}%` }} />
-                          </div>
-                        </div>
-                        <div className="grade-label">
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                            g.label === 'Excellent'
-                              ? 'bg-green-500/10 text-green border border-green-500/20'
-                              : g.label === 'Good'
-                              ? 'bg-accent/10 text-accent border border-accent/20'
-                              : 'bg-amber-500/10 text-amber border border-amber-500/20'
-                          }`}>
-                            {g.label}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Class Leaderboard */}
-                <div className="card">
-                  <div className="card-header">
-                    <div className="card-title">
-                      <div className="p-1.5 rounded-lg bg-amber/10 text-amber">
-                        <RiTrophyLine size={18} />
-                      </div>
-                      <span>Class Leaderboard</span>
-                    </div>
-                    <span className="badge badge-blue">Grade 11 - STEM</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {[
-                      { rank: 1, rankType: 'gold', initials: 'KD', name: 'Katrina Diaz', score: '98.5%', isMe: false },
-                      { rank: 2, rankType: 'silver', initials: 'BD', name: 'Bryan Donceras', score: '96.2%', isMe: true },
-                      { rank: 3, rankType: 'bronze', initials: 'JL', name: 'Janloyd Lotino', score: '94.8%', isMe: false },
-                      { rank: 4, rankType: 'normal', initials: 'MS', name: 'Mary Santos', score: '93.1%', isMe: false },
-                      { rank: 5, rankType: 'normal', initials: 'RA', name: 'Rafael Aquino', score: '91.5%', isMe: false },
-                    ].map((s) => (
-                      <div
-                        key={s.rank}
-                        className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${
-                          s.isMe
-                            ? 'bg-accent/10 border-2 border-accent/40 shadow-xs ring-2 ring-accent/15'
-                            : 'hover:bg-bg3/60'
-                        }`}
-                      >
-                        <div className="w-6 h-6 flex items-center justify-center shrink-0">
-                          {s.rank === 1 && <RiTrophyFill size={18} className="text-amber-500" />}
-                          {s.rank === 2 && <RiMedalFill size={18} className="text-slate-400 dark:text-slate-300" />}
-                          {s.rank === 3 && <RiMedalLine size={18} className="text-amber-700 dark:text-amber-600" />}
-                          {s.rank > 3 && (
-                            <span className="text-xs font-bold text-text3 tabular-nums">#{s.rank}</span>
-                          )}
-                        </div>
-                        <div
-                          className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] text-white shrink-0 shadow-xs"
-                          style={{
-                            background:
-                              s.rank === 1
-                                ? 'linear-gradient(135deg, #f59e0b, #d97706)'
-                                : s.rank === 2
-                                ? 'linear-gradient(135deg, #06b6d4, #3b82f6)'
-                                : s.rank === 3
-                                ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)'
-                                : 'linear-gradient(135deg, #10b981, #059669)',
-                          }}
-                        >
-                          {s.initials}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-semibold text-text truncate flex items-center gap-1.5">
-                            <span>{s.name}</span>
-                            {s.isMe && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent text-white">
-                                You
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-xs font-bold text-accent tabular-nums">
-                          {s.score}
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* Dash Grid 3: Recent Activity (students/index.php lines 821-880) */}
-              <div className="dash-grid dash-grid-1-1">
-                <div className="card">
-                  <div className="card-header">
-                    <div className="card-title">
-                      <div className="p-1.5 rounded-lg bg-cyan/10 text-cyan">
-                        <RiHistoryLine size={18} />
+              {/* Row 3: Subject Mastery, Deadlines & Recent Activity */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                {/* Left: Unified Subject Mastery & Quiz Performance Card */}
+                <div className="lg:col-span-7">
+                  <div className="card">
+                    <div className="card-header pb-3 border-b border-border/40 flex-wrap gap-2">
+                      <div className="card-title">
+                        <div className="p-1.5 rounded-lg bg-green/10 text-green">
+                          <RiBarChartLine size={18} />
+                        </div>
+                        <span>Subject Mastery & Quiz Performance</span>
                       </div>
-                      <span>Recent Activity</span>
-                    </div>
-                  </div>
-                  <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
-                    {[
-                      { passed: true, score: '95%', quiz: 'General Mathematics Quiz #1', time: '2 hrs ago' },
-                      { passed: true, score: '92%', quiz: 'Oral Communication Speech Quiz #2', time: 'Yesterday' },
-                      { passed: true, score: '98%', quiz: 'Empowerment Technologies Unit 1 Exam', time: '2 days ago' },
-                      { passed: false, score: '68%', quiz: 'Komunikasyon at Pananaliksik Diagnostic', time: '4 days ago' },
-                    ].map((act, idx) => (
-                      <div key={idx} className="relative flex items-start gap-3 group">
-                        <div
-                          className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-bg2 shrink-0 ${
-                            act.passed
-                              ? 'bg-green text-white'
-                              : 'bg-amber text-white'
+                      <div className="inline-flex p-1 rounded-lg bg-bg3 border border-border/60 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => setMasteryTab('progress')}
+                          className={`px-3 py-1 rounded-md text-xs font-semibold cursor-pointer transition-all ${
+                            masteryTab === 'progress'
+                              ? 'bg-bg2 text-accent shadow-xs'
+                              : 'text-text3 hover:text-text'
                           }`}
                         >
-                          {act.passed ? <RiCheckLine size={12} /> : <RiCloseLine size={12} />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs text-text2 leading-snug">
-                            <span className="font-bold text-text">Scored {act.score}</span>{' '}
-                            <span className={act.passed ? 'text-green font-semibold inline-flex items-center gap-0.5' : 'text-amber font-semibold inline-flex items-center gap-0.5'}>
-                              {act.passed ? (
-                                <>
-                                  <RiCheckLine size={12} className="inline" />
-                                  <span>Passed</span>
-                                </>
-                              ) : (
-                                <>
-                                  <RiCloseLine size={12} className="inline" />
-                                  <span>Below passing</span>
-                                </>
-                              )}
-                            </span>{' '}
-                            on <span className="font-medium text-text">{act.quiz}</span>
-                          </div>
-                          <div className="text-[11px] text-text3 font-medium mt-0.5">{act.time}</div>
-                        </div>
+                          Subject Progress (6)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMasteryTab('quizzes')}
+                          className={`px-3 py-1 rounded-md text-xs font-semibold cursor-pointer transition-all ${
+                            masteryTab === 'quizzes'
+                              ? 'bg-bg2 text-accent shadow-xs'
+                              : 'text-text3 hover:text-text'
+                          }`}
+                        >
+                          Recent Quiz Scores (5)
+                        </button>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Tab 1: Subject Progress */}
+                    {masteryTab === 'progress' && (
+                      <div className="space-y-4 pt-3">
+                        {[
+                          { subject: 'General Mathematics', code: 'MATH', done: 8, total: 10, pct: 80, fill: '', color: 'var(--accent)', iconBg: 'bg-accent/10 text-accent' },
+                          { subject: 'Oral Communication in Context', code: 'ENG', done: 9, total: 10, pct: 90, fill: 'green-fill', color: 'var(--green)', iconBg: 'bg-green/10 text-green' },
+                          { subject: 'Earth and Life Science', code: 'SCI', done: 6, total: 10, pct: 60, fill: '', color: 'var(--accent)', iconBg: 'bg-purple/10 text-purple' },
+                          { subject: 'Empowerment Technologies (ICT)', code: 'ICT', done: 9, total: 10, pct: 90, fill: 'green-fill', color: 'var(--green)', iconBg: 'bg-cyan/10 text-cyan' },
+                          { subject: 'Komunikasyon at Pananaliksik', code: 'FIL', done: 7, total: 10, pct: 70, fill: '', color: 'var(--accent)', iconBg: 'bg-amber/10 text-amber' },
+                          { subject: 'Physical Education and Health 1', code: 'PEH', done: 10, total: 10, pct: 100, fill: 'green-fill', color: 'var(--green)', iconBg: 'bg-green/10 text-green' },
+                        ].map((s, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => onTabChange('courses')}
+                            className="p-2 -mx-2 rounded-xl hover:bg-bg3/60 cursor-pointer group transition-all"
+                          >
+                            <div className="flex items-center gap-3 mb-1.5">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${s.iconBg}`}>
+                                {s.code}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-semibold text-text truncate group-hover:text-accent transition-colors">
+                                  {s.subject}
+                                </div>
+                                <div className="text-[11px] text-text3 font-medium">{s.done} of {s.total} lessons completed</div>
+                              </div>
+                              <span className="text-xs font-bold tabular-nums px-2 py-0.5 rounded-md bg-bg3 border border-border/40" style={{ color: s.color }}>
+                                {s.pct}%
+                              </span>
+                            </div>
+                            <div className="progress-bar">
+                              <div className={`progress-fill ${s.fill}`} style={{ width: `${s.pct}%` }} />
+                            </div>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => onTabChange('courses')}
+                          className="mt-2 w-full py-2 rounded-lg bg-bg3/60 hover:bg-bg3 text-xs font-semibold text-accent hover:text-accent2 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <span>Open All Enrolled Subjects</span>
+                          <RiArrowRightLine size={13} />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Tab 2: Recent Quiz Scores */}
+                    {masteryTab === 'quizzes' && (
+                      <div className="pt-2">
+                        {[
+                          { course: 'General Mathematics: Rational Functions', take: 1, score: 95, pct: 95, fill: 'green-fill', color: 'var(--green)', label: 'Excellent' },
+                          { course: 'Oral Communication: Speech Models', take: 2, score: 92, pct: 92, fill: 'green-fill', color: 'var(--green)', label: 'Excellent' },
+                          { course: 'Earth Science: Rock Formations', take: 1, score: 85, pct: 85, fill: '', color: 'var(--accent)', label: 'Good' },
+                          { course: 'Empowerment Tech: Web Principles', take: 1, score: 98, pct: 98, fill: 'green-fill', color: 'var(--green)', label: 'Excellent' },
+                          { course: 'Komunikasyon: Barayti ng Wika', take: 1, score: 76, pct: 76, fill: 'amber-fill', color: 'var(--amber)', label: 'Fair' },
+                        ].map((g, idx) => (
+                          <div key={idx} className="grade-row py-2.5">
+                            <div className="grade-course">
+                              <span className="font-medium text-text">{g.course}</span>{' '}
+                              <span className="text-[10px] text-text3 font-bold px-1.5 py-0.5 rounded bg-bg3 border border-border/50">Take #{g.take}</span>
+                            </div>
+                            <div className="grade-score font-bold tabular-nums text-sm" style={{ color: g.color }}>
+                              {g.score}%
+                            </div>
+                            <div className="grade-bar">
+                              <div className="progress-bar">
+                                <div className={`progress-fill ${g.fill}`} style={{ width: `${g.pct}%` }} />
+                              </div>
+                            </div>
+                            <div className="grade-label">
+                              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                g.label === 'Excellent'
+                                  ? 'bg-green-500/10 text-green border border-green-500/20'
+                                  : g.label === 'Good'
+                                  ? 'bg-accent/10 text-accent border border-accent/20'
+                                  : 'bg-amber-500/10 text-amber border border-amber-500/20'
+                              }`}>
+                                {g.label}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => onTabChange('grades')}
+                          className="mt-3 w-full py-2 rounded-lg bg-bg3/60 hover:bg-bg3 text-xs font-semibold text-accent hover:text-accent2 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <span>View Full Gradebook & Scores</span>
+                          <RiArrowRightLine size={13} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right: Upcoming Deadlines & Recent Activity */}
+                <div className="lg:col-span-5 space-y-5">
+                  {/* Top Card: Upcoming Deadlines */}
+                  <div className="card">
+                    <div className="card-header pb-3 border-b border-border/40">
+                      <div className="card-title">
+                        <div className="p-1.5 rounded-lg bg-red/10 text-red">
+                          <RiTimeLine size={18} />
+                        </div>
+                        <span>Upcoming Deadlines</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onTabChange('tasks')}
+                        className="btn btn-ghost btn-sm text-xs cursor-pointer inline-flex items-center gap-1 text-accent hover:text-accent2"
+                      >
+                        <span>Task Board</span>
+                        <RiArrowRightLine size={13} />
+                      </button>
+                    </div>
+                    <div className="divide-y divide-border pt-1">
+                      {[
+                        { title: 'General Mathematics — Rational Functions Quiz #3', meta: 'Quarter 2 Assessment', due: 'Today', urgency: 'urgent' },
+                        { title: 'Oral Communication — Extemporaneous Speech Recording', meta: 'Performance Task Deliverable', due: 'Tomorrow', urgency: 'soon' },
+                        { title: 'Earth and Life Science — Biogeochemical Cycles Diagram', meta: 'Module 3 Worksheet Submission', due: 'May 20, 11:59 PM', urgency: 'later' },
+                        { title: 'Empowerment Technologies — Web Portfolio Wireframe', meta: 'ICT Project Deliverable', due: 'May 24, 5:00 PM', urgency: 'later' },
+                      ].map((d, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => onTabChange('tasks')}
+                          className="deadline-item py-2.5 cursor-pointer hover:bg-bg3/40 rounded-lg px-2 -mx-2 transition-colors"
+                        >
+                          <div className="relative flex items-center justify-center shrink-0">
+                            {d.urgency === 'urgent' && (
+                              <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red opacity-60" />
+                            )}
+                            <div className={`deadline-dot ${d.urgency}`} />
+                          </div>
+                          <div className="deadline-info">
+                            <div className="deadline-title font-semibold">{d.title}</div>
+                            <div className="deadline-meta">{d.meta}</div>
+                          </div>
+                          <div className={`deadline-due text-[11px] px-2.5 py-1 rounded-full font-semibold border ${
+                            d.urgency === 'urgent'
+                              ? 'bg-red-500/10 text-red border-red-500/25'
+                              : d.urgency === 'soon'
+                              ? 'bg-amber-500/10 text-amber border-amber-500/25'
+                              : 'bg-green-500/10 text-green border-green-500/25'
+                          }`}>
+                            {d.due}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Bottom Card: Recent Activity */}
+                  <div className="card">
+                    <div className="card-header pb-3 border-b border-border/40">
+                      <div className="card-title">
+                        <div className="p-1.5 rounded-lg bg-cyan/10 text-cyan">
+                          <RiHistoryLine size={18} />
+                        </div>
+                        <span>Recent Activity</span>
+                      </div>
+                    </div>
+                    <div className="relative pl-6 space-y-4 pt-3 before:absolute before:left-2.5 before:top-4 before:bottom-3 before:w-0.5 before:bg-border">
+                      {[
+                        { passed: true, score: '95%', quiz: 'General Mathematics Quiz #1', time: '2 hrs ago' },
+                        { passed: true, score: '92%', quiz: 'Oral Communication Speech Quiz #2', time: 'Yesterday' },
+                        { passed: true, score: '98%', quiz: 'Empowerment Technologies Unit 1 Exam', time: '2 days ago' },
+                        { passed: false, score: '68%', quiz: 'Komunikasyon at Pananaliksik Diagnostic', time: '4 days ago' },
+                      ].map((act, idx) => (
+                        <div key={idx} className="relative flex items-start gap-3 group">
+                          <div
+                            className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-bg2 shrink-0 ${
+                              act.passed
+                                ? 'bg-green text-white'
+                                : 'bg-amber text-white'
+                            }`}
+                          >
+                            {act.passed ? <RiCheckLine size={12} /> : <RiCloseLine size={12} />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs text-text2 leading-snug">
+                              <span className="font-bold text-text">Scored {act.score}</span>{' '}
+                              <span className={act.passed ? 'text-green font-semibold inline-flex items-center gap-0.5' : 'text-amber font-semibold inline-flex items-center gap-0.5'}>
+                                {act.passed ? (
+                                  <>
+                                    <RiCheckLine size={12} className="inline" />
+                                    <span>Passed</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <RiCloseLine size={12} className="inline" />
+                                    <span>Below passing</span>
+                                  </>
+                                )}
+                              </span>{' '}
+                              on <span className="font-medium text-text">{act.quiz}</span>
+                            </div>
+                            <div className="text-[11px] text-text3 font-medium mt-0.5">{act.time}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

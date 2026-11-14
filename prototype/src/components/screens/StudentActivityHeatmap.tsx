@@ -1,11 +1,5 @@
 import { useState, useMemo } from 'react';
-import {
-  RiFireLine,
-  RiFireFill,
-  RiTimeLine,
-  RiAwardLine,
-  RiBookOpenLine,
-} from '@remixicon/react';
+import { RiFireFill } from '@remixicon/react';
 
 interface DayActivity {
   date: string; // YYYY-MM-DD
@@ -145,66 +139,74 @@ export function StudentActivityHeatmap() {
 
   const dayLabels = ['Mon', '', 'Wed', '', 'Fri', '', 'Sun'];
 
+  // Month positions for the header row above week columns
+  const monthPositions = useMemo(() => {
+    const labels: { colIndex: number; month: string }[] = [];
+    let lastMonth = '';
+    weeks.forEach((w, idx) => {
+      if (!w[0]) return;
+      const m = new Date(w[0].date).toLocaleDateString('en-US', { month: 'short' });
+      if (m !== lastMonth) {
+        labels.push({ colIndex: idx, month: m });
+        lastMonth = m;
+      }
+    });
+    return labels;
+  }, [weeks]);
+
+  // Dynamic scale configurations based on viewMode so the card has a balanced, elegant size
+  const viewConfig = useMemo(() => {
+    if (viewMode === 'weekly') {
+      return {
+        cellClass: 'w-[36px] h-[28px] sm:w-[48px] sm:h-[32px] lg:w-[58px] lg:h-[36px] rounded-md sm:rounded-lg',
+        labelHeightClass: 'h-[28px] sm:h-[32px] lg:h-[36px]',
+        gapClass: 'gap-2 sm:gap-2.5',
+      };
+    }
+    if (viewMode === 'monthly') {
+      return {
+        cellClass: 'w-[22px] h-[22px] sm:w-[26px] sm:h-[26px] lg:w-[30px] lg:h-[30px] rounded-[5px] sm:rounded-md',
+        labelHeightClass: 'h-[22px] sm:h-[26px] lg:h-[30px]',
+        gapClass: 'gap-1.5 sm:gap-2',
+      };
+    }
+    // Yearly: 28 weeks, balanced ~19-20px crisp squares (sweet spot: not tiny dots, not bulky)
+    return {
+      cellClass: 'w-[15px] h-[15px] sm:w-[17px] sm:h-[17px] lg:w-[19px] lg:h-[19px] xl:w-[20px] xl:h-[20px] rounded-[3.5px] sm:rounded-[4px]',
+      labelHeightClass: 'h-[15px] sm:h-[17px] lg:h-[19px] xl:h-[20px]',
+      gapClass: 'gap-1.5 sm:gap-[6px]',
+    };
+  }, [viewMode]);
+
   return (
-    <div className="card relative overflow-visible">
-      {/* Top Section: Header & KPI Tiles */}
-      <div className="space-y-4">
-        {/* Title + Total Contributions Header (matches image 2) */}
+    <div className="card h-full flex flex-col justify-between relative overflow-visible p-4 sm:p-5">
+      {/* Top Bar: Title & Total Contributions on left + Segmented Control on right */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/50">
         <div>
           <div className="text-xs font-semibold text-text3 uppercase tracking-wider mb-1">
-            Contributions this school year
+            Study Activity & Contributions
           </div>
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-text tabular-nums">
+          <div className="flex flex-wrap items-baseline gap-3">
+            <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text tabular-nums">
               {totalContributions || 348}
             </span>
             <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
               +14.8%
             </span>
+            <span className="text-xs text-text3 font-medium hidden md:inline">
+              · Active school year consistency ({viewMode} overview)
+            </span>
           </div>
         </div>
 
-        {/* 4 Mini Stat Tiles Row (matches image 2) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 rounded-xl bg-bg3 border border-border/60">
-            <div className="text-base sm:text-lg font-bold text-text tabular-nums flex items-center gap-1.5">
-              <RiTimeLine size={16} className="text-accent shrink-0" />
-              <span>64h 20m</span>
-            </div>
-            <div className="text-[11px] text-text3 font-medium mt-0.5">Total study time</div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-bg3 border border-border/60">
-            <div className="text-base sm:text-lg font-bold text-text tabular-nums flex items-center gap-1.5">
-              <RiBookOpenLine size={16} className="text-green shrink-0" />
-              <span>24 / 28</span>
-            </div>
-            <div className="text-[11px] text-text3 font-medium mt-0.5">Lessons completed</div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-bg3 border border-border/60">
-            <div className="text-base sm:text-lg font-bold text-text tabular-nums flex items-center gap-1.5">
-              <RiAwardLine size={16} className="text-amber shrink-0" />
-              <span>98.5%</span>
-            </div>
-            <div className="text-[11px] text-text3 font-medium mt-0.5">Peak quiz score</div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-bg3 border border-border/60">
-            <div className="text-base sm:text-lg font-bold text-text tabular-nums flex items-center gap-1.5">
-              <RiFireLine size={16} className="text-amber-500 shrink-0" />
-              <span>7 days</span>
-            </div>
-            <div className="text-[11px] text-text3 font-medium mt-0.5">Active streak (Top: 14d)</div>
-          </div>
-        </div>
-
-        {/* Filter Bar Row: "Activity" on left + "Weekly | Monthly | Yearly" segmented pills on right */}
-        <div className="flex items-center justify-between pt-1 border-t border-border/40">
-          <div className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
-            <span>Activity</span>
-            <span className="text-[11px] text-text3 font-normal capitalize">
-              ({viewMode} overview)
+        {/* Right: Quick metric chip + Segmented Control */}
+        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto flex-wrap">
+          <div className="hidden xl:flex items-center gap-2 text-xs font-medium text-text3">
+            <span className="px-2 py-1 rounded-lg bg-bg3 border border-border/60 text-text2">
+              <strong>64h 20m</strong> Study
+            </span>
+            <span className="px-2 py-1 rounded-lg bg-bg3 border border-border/60 text-text2">
+              <strong>24/28</strong> Lessons
             </span>
           </div>
 
@@ -245,23 +247,50 @@ export function StudentActivityHeatmap() {
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Contribution Grid Container */}
-        <div className="relative overflow-x-auto pb-2 no-scrollbar">
-          <div className="inline-flex gap-2">
-            {/* Day of Week Labels */}
-            <div className="flex flex-col justify-between py-1 text-[10px] text-text3 font-semibold h-[108px] pr-1 select-none">
+      {/* Main Contribution Heatmap Grid (Balanced sweet-spot sizing) */}
+      <div className="py-2.5 my-auto overflow-x-auto no-scrollbar">
+        <div className="inline-flex items-start gap-2.5 min-w-full justify-start lg:justify-center">
+          {/* Day of Week Labels (Pixel-aligned with rows) */}
+          <div className="flex flex-col shrink-0 select-none pt-6 pr-1">
+            <div className={`flex flex-col ${viewConfig.gapClass}`}>
               {dayLabels.map((label, idx) => (
-                <div key={idx} className="h-3 flex items-center">
+                <div
+                  key={idx}
+                  className={`${viewConfig.labelHeightClass} flex items-center justify-end text-[10px] sm:text-[11px] font-semibold text-text3`}
+                >
                   {label}
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Weeks Columns with Month Header Strip */}
+          <div className="flex flex-col">
+            {/* Month Headers aligned above the week columns */}
+            <div className={`flex ${viewConfig.gapClass} mb-2 h-4 select-none relative`}>
+              {weeks.map((_, colIdx) => {
+                const monthItem = monthPositions.find((m) => m.colIndex === colIdx);
+                return (
+                  <div
+                    key={colIdx}
+                    className={`${viewConfig.cellClass.split(' ')[0]} shrink-0 relative overflow-visible`}
+                  >
+                    {monthItem && (
+                      <span className="absolute left-0 top-0 text-[11px] sm:text-xs font-bold text-text2 tracking-tight whitespace-nowrap">
+                        {monthItem.month}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
 
             {/* Weeks Columns */}
-            <div className="flex gap-1.5 items-center">
+            <div className={`flex ${viewConfig.gapClass} items-center`}>
               {weeks.map((week, wIdx) => (
-                <div key={wIdx} className="flex flex-col gap-1.5">
+                <div key={wIdx} className={`flex flex-col ${viewConfig.gapClass}`}>
                   {week.map((day, dIdx) => (
                     <div
                       key={dIdx}
@@ -274,7 +303,7 @@ export function StudentActivityHeatmap() {
                         });
                       }}
                       onMouseLeave={() => setHoveredDay(null)}
-                      className={`w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 rounded-[3px] cursor-pointer transition-transform duration-150 hover:scale-135 hover:z-20 hover:ring-2 hover:ring-accent ${getLevelClass(
+                      className={`${viewConfig.cellClass} cursor-pointer transition-transform duration-150 hover:scale-125 hover:z-20 hover:ring-2 hover:ring-accent ${getLevelClass(
                         day.level
                       )}`}
                     />
@@ -284,29 +313,29 @@ export function StudentActivityHeatmap() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Legend & Motivation Note */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs text-text3">
-          <div className="flex items-center gap-1.5 font-medium text-text2">
-            <span className="text-amber font-bold flex items-center gap-1">
-              <RiFireFill className="size-3.5 text-amber" aria-hidden="true" />
-              7-day streak!
-            </span>
-            <span>You completed 3 learning activities yesterday. Keep it going!</span>
-          </div>
+      {/* Bottom Legend & Motivation Note */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 border-t border-border/50 text-xs text-text3">
+        <div className="flex items-center gap-1.5 font-medium text-text2">
+          <span className="text-amber font-bold flex items-center gap-1">
+            <RiFireFill className="size-3.5 text-amber" aria-hidden="true" />
+            7-day streak!
+          </span>
+          <span>You completed 3 learning activities yesterday. Keep it going!</span>
+        </div>
 
-          {/* GitHub-style Less/More Legend */}
-          <div className="flex items-center gap-1.5 self-end sm:self-auto font-medium">
-            <span>Less</span>
-            <div className="flex gap-1 items-center">
-              <span className="w-2.5 h-2.5 rounded-[2px] bg-slate-200/80 dark:bg-bg4 border border-border/40" />
-              <span className="w-2.5 h-2.5 rounded-[2px] bg-purple-300 dark:bg-purple-950 border border-purple-400/30" />
-              <span className="w-2.5 h-2.5 rounded-[2px] bg-purple-400 dark:bg-purple-700 border border-purple-400/50" />
-              <span className="w-2.5 h-2.5 rounded-[2px] bg-purple-600 dark:bg-purple-500 border border-purple-500/60" />
-              <span className="w-2.5 h-2.5 rounded-[2px] bg-purple-800 dark:bg-purple-400 border border-purple-400/80" />
-            </div>
-            <span>More</span>
+        {/* GitHub-style Less/More Legend */}
+        <div className="flex items-center gap-1.5 self-end sm:self-auto font-medium">
+          <span>Less</span>
+          <div className="flex gap-1.5 items-center">
+            <span className="size-3 rounded-[3px] bg-slate-200/80 dark:bg-bg4 border border-border/40" />
+            <span className="size-3 rounded-[3px] bg-purple-300 dark:bg-purple-950 border border-purple-400/30" />
+            <span className="size-3 rounded-[3px] bg-purple-400 dark:bg-purple-700 border border-purple-400/50" />
+            <span className="size-3 rounded-[3px] bg-purple-600 dark:bg-purple-500 border border-purple-500/60" />
+            <span className="size-3 rounded-[3px] bg-purple-800 dark:bg-purple-400 border border-purple-400/80" />
           </div>
+          <span>More</span>
         </div>
       </div>
 
