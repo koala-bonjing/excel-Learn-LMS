@@ -5,6 +5,8 @@ import { AboutView } from '@/components/views/AboutView';
 import { TeacherProfileView } from '@/components/views/TeacherProfileView';
 import { TeacherSettingsView } from '@/components/views/TeacherSettingsView';
 import { StudentClassesView } from '@/components/views/StudentClassesView';
+import { CourseSectionView } from '@/components/views/CourseSectionView';
+import { getCourseData, type CourseItemType } from '@/data/courseOutlineData';
 import {
   RiVideoChatLine,
   RiCheckLine,
@@ -33,6 +35,14 @@ import {
   RiSparklingLine,
   RiAttachmentLine,
   RiErrorWarningLine,
+  RiEyeLine,
+  RiEyeOffLine,
+  RiArrowDownSLine,
+  RiYoutubeFill,
+  RiGlobalLine,
+  RiPresentationLine,
+  RiCheckDoubleLine,
+  RiRefreshLine,
 } from '@remixicon/react';
 
 interface TeacherClassHandled {
@@ -155,6 +165,156 @@ const TEACHER_CLASSES_HANDLED: TeacherClassHandled[] = [
     isLiveNow: false,
     nextTopic: 'Module 9: Simple & Compound Interest Annuities',
     accentColor: 'amber',
+  },
+];
+
+type TeacherSubjectKey = 'ORAL-COMM' | 'GEN-MATH' | 'EARTH-SCI' | 'EMP-TECH';
+
+interface TeacherSectionOffering {
+  offeringId: string;
+  section: string;
+  students: number;
+  schedule: string;
+  room: string;
+  enrollCode: string;
+  currentModule: string;
+  completionRate: number;
+  avgGrade: number;
+  ungradedCount: number;
+}
+
+interface TeacherMasterSubject {
+  key: TeacherSubjectKey;
+  courseId: string;
+  code: string;
+  title: string;
+  trackType: string;
+  hoursPerSem: number;
+  depedCompetency: string;
+  accentColor: 'blue' | 'emerald' | 'purple' | 'cyan';
+  offerings: TeacherSectionOffering[];
+}
+
+const TEACHER_MASTER_SUBJECTS: TeacherMasterSubject[] = [
+  {
+    key: 'ORAL-COMM',
+    courseId: 'c-oral-comm',
+    code: 'ORAL-COMM-11',
+    title: 'Oral Communication in Context',
+    trackType: 'Core Subject',
+    hoursPerSem: 80,
+    depedCompetency: 'EN11/12OC-Ia-1',
+    accentColor: 'blue',
+    offerings: [
+      {
+        offeringId: 'tc-1',
+        section: 'STEM 11-A',
+        students: 38,
+        schedule: 'MWF 08:00–09:00 AM',
+        room: 'Room 302',
+        enrollCode: 'EXL-OC-11A',
+        currentModule: 'Module 5',
+        completionRate: 89,
+        avgGrade: 91.2,
+        ungradedCount: 3,
+      },
+      {
+        offeringId: 'tc-3',
+        section: 'HUMSS 11-A',
+        students: 36,
+        schedule: 'MWF 10:00–11:00 AM',
+        room: 'Room 204',
+        enrollCode: 'EXL-OC-H1A',
+        currentModule: 'Module 5',
+        completionRate: 84,
+        avgGrade: 90.5,
+        ungradedCount: 1,
+      },
+    ],
+  },
+  {
+    key: 'GEN-MATH',
+    courseId: 'c-gen-math',
+    code: 'GEN-MATH-11',
+    title: 'General Mathematics',
+    trackType: 'Core Subject',
+    hoursPerSem: 80,
+    depedCompetency: 'M11GM-Ia-1',
+    accentColor: 'emerald',
+    offerings: [
+      {
+        offeringId: 'tc-2',
+        section: 'STEM 11-A',
+        students: 42,
+        schedule: 'TTh 09:30–11:00 AM',
+        room: 'Math Lab 2',
+        enrollCode: 'EXL-GM-11A',
+        currentModule: 'Module 6',
+        completionRate: 92,
+        avgGrade: 89.8,
+        ungradedCount: 2,
+      },
+      {
+        offeringId: 'tc-6',
+        section: 'ABM 11-B',
+        students: 34,
+        schedule: 'TTh 04:00–05:00 PM',
+        room: 'Room 305',
+        enrollCode: 'EXL-GM-A1B',
+        currentModule: 'Module 5',
+        completionRate: 81,
+        avgGrade: 88.9,
+        ungradedCount: 0,
+      },
+    ],
+  },
+  {
+    key: 'EARTH-SCI',
+    courseId: 'c-earth-sci',
+    code: 'EARTH-SCI-11',
+    title: 'Earth and Life Science',
+    trackType: 'Core Subject',
+    hoursPerSem: 80,
+    depedCompetency: 'S11/12ES-Ia-e-1',
+    accentColor: 'purple',
+    offerings: [
+      {
+        offeringId: 'tc-4',
+        section: 'ABM 11-B',
+        students: 35,
+        schedule: 'MWF 01:00–02:00 PM',
+        room: 'SciLab 1',
+        enrollCode: 'EXL-ES-A1B',
+        currentModule: 'Module 4',
+        completionRate: 76,
+        avgGrade: 88.4,
+        ungradedCount: 0,
+      },
+    ],
+  },
+  {
+    key: 'EMP-TECH',
+    courseId: 'c-emp-tech',
+    code: 'EMP-TECH-11',
+    title: 'Empowerment Technologies (ICT)',
+    trackType: 'Applied Subject',
+    hoursPerSem: 80,
+    depedCompetency: 'CS_ICT11/12-ICTPT-Ia-b-1',
+    accentColor: 'cyan',
+    offerings: [
+      {
+        offeringId: 'tc-5',
+        section: 'ICT 11-A',
+        students: 27,
+        schedule: 'TTh 02:00–03:30 PM',
+        room: 'CompLab 3',
+        enrollCode: 'EXL-ET-I1A',
+        currentModule: 'Module 5',
+        completionRate: 94,
+        avgGrade: 92.5,
+        ungradedCount: 2,
+      },
+    ],
   },
 ];
 
@@ -299,6 +459,32 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
   const [gradingModalSubmission, setGradingModalSubmission] = useState<StudentSubmission | null>(null);
+
+  // Teacher Subjects & Syllabus Tab State
+  const [selectedSubjectKey, setSelectedSubjectKey] = useState<TeacherSubjectKey>('ORAL-COMM');
+  const [selectedSectionName, setSelectedSectionName] = useState<string>('STEM 11-A');
+  const [syncAllSections, setSyncAllSections] = useState<boolean>(true);
+  const [isStudentPreviewMode, setIsStudentPreviewMode] = useState<boolean>(false);
+  const [collapsedTeacherModules, setCollapsedTeacherModules] = useState<Record<string, boolean>>({});
+  const [modulePublishState, setModulePublishState] = useState<Record<string, 'published' | 'draft'>>({});
+
+  const handleSelectSubject = (key: TeacherSubjectKey, sectionName?: string) => {
+    setSelectedSubjectKey(key);
+    const subj = TEACHER_MASTER_SUBJECTS.find((s) => s.key === key);
+    if (sectionName) {
+      setSelectedSectionName(sectionName);
+    } else if (subj && !subj.offerings.some((o) => o.section === selectedSectionName)) {
+      setSelectedSectionName(subj.offerings[0]?.section || '');
+    }
+  };
+
+  const activeSubject =
+    TEACHER_MASTER_SUBJECTS.find((s) => s.key === selectedSubjectKey) ||
+    TEACHER_MASTER_SUBJECTS[0];
+
+  const activeOffering =
+    activeSubject.offerings.find((o) => o.section === selectedSectionName) ||
+    activeSubject.offerings[0];
 
   // Create Quiz form state (matching teacher_quizzes.php)
   const [quizLesson, setQuizLesson] = useState('Oral Communication — Module 5');
@@ -693,7 +879,12 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
-                              onClick={() => onTabChange('courses')}
+                              onClick={() => {
+                                setSelectedSubjectKey(c.code as TeacherSubjectKey);
+                                setSelectedSectionName(c.section);
+                                setIsStudentPreviewMode(false);
+                                onTabChange('courses');
+                              }}
                               className="px-2 py-1 rounded-lg text-xs font-semibold text-text2 hover:text-text hover:bg-bg3 transition-colors cursor-pointer"
                               title="Modules & Syllabus"
                             >
@@ -718,7 +909,16 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                           </div>
                           <button
                             type="button"
-                            onClick={() => onTabChange(c.isLiveNow ? 'live' : 'courses')}
+                            onClick={() => {
+                              if (c.isLiveNow) {
+                                onTabChange('live');
+                              } else {
+                                setSelectedSubjectKey(c.code as TeacherSubjectKey);
+                                setSelectedSectionName(c.section);
+                                setIsStudentPreviewMode(false);
+                                onTabChange('courses');
+                              }
+                            }}
                             className={`btn btn-sm text-xs cursor-pointer inline-flex items-center gap-1 ${
                               c.isLiveNow ? 'btn-primary' : 'bg-bg3 hover:bg-bg4 text-text border border-border'
                             }`}
@@ -1623,91 +1823,664 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
       {/* 2. COURSES & MODULES (teachers/teacher_courses.php)           */}
       {/* ============================================================ */}
       {activeTab === 'courses' && (
-        <div className="p-5 rounded-xl bg-bg2 border border-border space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-lg font-bold text-text font-serif">Assigned Teaching Loads & Modules</h4>
-              <p className="text-xs text-text2">Syllabus builder and downloadable PDF handouts.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsAddCourseOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-school-orange text-[#0e0f14] text-xs font-semibold hover:brightness-105 cursor-pointer shadow-xs flex items-center gap-1.5"
-            >
-              <RiAddLine className="size-4" />
-              <span>Add Course / Lesson</span>
-            </button>
-          </div>
+        <div className="space-y-5">
+          {isStudentPreviewMode ? (
+            <div className="space-y-4">
+              {/* Sticky Top Banner for Student View Preview */}
+              <div className="sticky top-2 z-30 p-3 sm:px-4 rounded-xl bg-bg2/95 backdrop-blur-md border border-accent/40 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="size-8 rounded-lg bg-accent/15 text-accent flex items-center justify-center shrink-0">
+                    <RiEyeLine className="size-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-text truncate">
+                        Student View Preview: {activeSubject.code} — {selectedSectionName}
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+                        Interactive Preview Mode
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-text3 truncate">
+                      Showing the exact interactive CourseSectionView experience your students see.
+                    </p>
+                  </div>
+                </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-bg3 text-text3 uppercase tracking-wider border-b border-border">
-                <tr>
-                  <th className="py-2.5 px-3 font-semibold">Subject Title</th>
-                  <th className="py-2.5 px-3 font-semibold">Section</th>
-                  <th className="py-2.5 px-3 font-semibold">Active Module</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Class Progress</th>
-                  <th className="py-2.5 px-3 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                <tr>
-                  <td className="py-3 px-3">
-                    <span className="font-bold text-text">ORAL-COMM-11</span>
-                    <div className="text-[11px] text-text3">Oral Communication in Context</div>
-                  </td>
-                  <td className="py-3 px-3 text-text2">STEM 11-A (38 students)</td>
-                  <td className="py-3 px-3 text-text">Module 5: Types of Speech Context</td>
-                  <td className="py-3 px-3 text-center font-bold text-green tabular-nums">78%</td>
-                  <td className="py-3 px-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => alert('Opening module editor...')}
-                      className="text-accent hover:underline font-medium"
-                    >
-                      Edit Lessons
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-3 px-3">
-                    <span className="font-bold text-text">ORAL-COMM-11</span>
-                    <div className="text-[11px] text-text3">Oral Communication in Context</div>
-                  </td>
-                  <td className="py-3 px-3 text-text2">STEM 11-B (36 students)</td>
-                  <td className="py-3 px-3 text-text">Module 5: Types of Speech Context</td>
-                  <td className="py-3 px-3 text-center font-bold text-accent tabular-nums">72%</td>
-                  <td className="py-3 px-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => alert('Opening module editor...')}
-                      className="text-accent hover:underline font-medium"
-                    >
-                      Edit Lessons
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="py-3 px-3">
-                    <span className="font-bold text-text">READ-WRITE-11</span>
-                    <div className="text-[11px] text-text3">Reading and Writing Skills</div>
-                  </td>
-                  <td className="py-3 px-3 text-text2">HUMSS 11-A (34 students)</td>
-                  <td className="py-3 px-3 text-text">Module 4: Patterns of Development</td>
-                  <td className="py-3 px-3 text-center font-bold text-purple tabular-nums">85%</td>
-                  <td className="py-3 px-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => alert('Opening module editor...')}
-                      className="text-accent hover:underline font-medium"
-                    >
-                      Edit Lessons
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  {/* Section Switcher Pills */}
+                  <div className="flex items-center gap-1 bg-bg3/80 p-1 rounded-lg border border-border">
+                    <span className="text-[11px] font-semibold text-text3 px-1.5 hidden md:inline">
+                      Section:
+                    </span>
+                    {activeSubject.offerings.map((off) => (
+                      <button
+                        key={off.offeringId}
+                        type="button"
+                        onClick={() => setSelectedSectionName(off.section)}
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                          selectedSectionName === off.section
+                            ? 'bg-accent text-white shadow-xs'
+                            : 'text-text2 hover:text-text hover:bg-bg4'
+                        }`}
+                      >
+                        {off.section}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsStudentPreviewMode(false)}
+                    className="px-3 py-1.5 rounded-lg bg-bg3 hover:bg-bg4 text-text border border-border text-xs font-semibold cursor-pointer shadow-xs inline-flex items-center gap-1.5 transition-colors"
+                  >
+                    <RiEyeOffLine className="size-3.5" />
+                    <span>Exit Student Preview</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Interactive Student CourseSectionView */}
+              <CourseSectionView
+                courseData={{
+                  ...getCourseData(activeSubject.courseId),
+                  fullTitle: `${activeSubject.title} (AY 2025-26 ${selectedSectionName})`,
+                  term: `${selectedSectionName} · ${activeOffering.schedule} · ${activeOffering.room}`,
+                  instructor: 'Ms. Juna Velarde, LPT',
+                }}
+                onBackToCourses={() => setIsStudentPreviewMode(false)}
+                onNavigateToLive={() => onTabChange('live')}
+                onNavigateToTasks={() => onTabChange('tasks')}
+              />
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {/* Top Header Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-bg2 border border-border shadow-xs">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-text font-serif">
+                    Subjects, Class Sections & Syllabus Builder
+                  </h3>
+                  <p className="text-xs text-text2 mt-0.5">
+                    Master curriculum shared across sections with per-class pacing, DepEd competencies, and student telemetry.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsStudentPreviewMode(true)}
+                    className="px-3 py-1.5 rounded-xl bg-bg3 hover:bg-bg4 text-text border border-border text-xs font-semibold cursor-pointer shadow-xs inline-flex items-center gap-1.5 transition-colors"
+                  >
+                    <RiEyeLine className="size-3.5 text-accent" />
+                    <span>Preview as Student</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddCourseOpen(true)}
+                    className="px-3.5 py-1.5 rounded-xl bg-school-orange text-[#0e0f14] text-xs font-semibold hover:brightness-105 cursor-pointer shadow-xs inline-flex items-center gap-1.5 transition-all"
+                  >
+                    <RiAddLine className="size-4" />
+                    <span>+ Add Module / Material</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Main 12-Column Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                {/* Left Rail (4 cols): Master Subjects & Assigned Class Sections */}
+                <div className="lg:col-span-4 space-y-3.5">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center gap-1.5">
+                      <RiBookOpenLine className="size-4 text-accent" />
+                      <span className="text-xs font-bold text-text uppercase tracking-wider">
+                        4 Master Subjects · 6 Class Offerings
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-semibold text-text3">
+                      AY 2025–2026
+                    </span>
+                  </div>
+
+                  {/* Master Subjects List */}
+                  <div className="space-y-2.5">
+                    {TEACHER_MASTER_SUBJECTS.map((subj) => {
+                      const isSubjectActive = subj.key === selectedSubjectKey;
+                      const subjAccent = {
+                        blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                        emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                        purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+                        cyan: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
+                      }[subj.accentColor];
+
+                      return (
+                        <div
+                          key={subj.key}
+                          onClick={() => handleSelectSubject(subj.key)}
+                          className={`p-3.5 sm:p-4 rounded-2xl bg-bg2 border transition-all cursor-pointer shadow-xs hover:shadow-md ${
+                            isSubjectActive
+                              ? 'border-accent/60 bg-accent/5 ring-1 ring-accent/30'
+                              : 'border-border hover:border-border/80'
+                          }`}
+                        >
+                          {/* Subject Header */}
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${subjAccent}`}>
+                              {subj.code}
+                            </span>
+                            <div className="flex items-center gap-1.5 text-[11px] text-text3">
+                              <span className="font-medium">{subj.trackType}</span>
+                              <span>·</span>
+                              <span>{subj.hoursPerSem}h/sem</span>
+                            </div>
+                          </div>
+
+                          <h4 className="text-xs sm:text-sm font-bold text-text line-clamp-1 mb-1">
+                            {subj.title}
+                          </h4>
+
+                          <p className="text-[11px] text-text3 font-mono truncate mb-3">
+                            DepEd CG: {subj.depedCompetency}
+                          </p>
+
+                          {/* Class Section Pills */}
+                          <div className="space-y-1.5 pt-2 border-t border-border/50">
+                            <div className="text-[10px] font-semibold text-text3 uppercase tracking-wider">
+                              Assigned Class Sections:
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {subj.offerings.map((off) => {
+                                const isSectionActive =
+                                  isSubjectActive && selectedSectionName === off.section;
+                                return (
+                                  <button
+                                    key={off.offeringId}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectSubject(subj.key, off.section);
+                                    }}
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                      isSectionActive
+                                        ? 'bg-accent text-white border-accent shadow-xs'
+                                        : 'bg-bg3 hover:bg-bg4 text-text2 hover:text-text border-border'
+                                    }`}
+                                  >
+                                    <span>{off.section}</span>
+                                    <span className={`ml-1 text-[11px] ${isSectionActive ? 'text-white/80' : 'text-text3'}`}>
+                                      ({off.students})
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Backend Sync Mode Card */}
+                  <div className="p-3.5 rounded-xl bg-bg2 border border-border shadow-xs space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <RiRefreshLine className={`size-4 ${syncAllSections ? 'text-emerald-500' : 'text-text3'}`} />
+                        <span className="text-xs font-bold text-text">Sync Across Sections</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={syncAllSections}
+                          onChange={(e) => setSyncAllSections(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-bg3 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500" />
+                      </label>
+                    </div>
+                    <p className="text-[11px] text-text3 leading-relaxed">
+                      {syncAllSections ? (
+                        <>
+                          <strong className="text-emerald-500 font-semibold">Master Sync Enabled:</strong> Uploading a module or item once shares it across all sections of <span className="font-semibold text-text">{activeSubject.code}</span>. Deadlines and publish toggles can be overridden per section.
+                        </>
+                      ) : (
+                        <>
+                          <strong className="text-amber-500 font-semibold">Per-Section Mode:</strong> Changes currently apply only to section <span className="font-semibold text-text">{selectedSectionName}</span> without modifying other sections.
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right Workspace (8 cols): Active Subject + Class Section Outline */}
+                <div className="lg:col-span-8 space-y-4">
+                  {/* 1. Class Offering Context & Relational Metadata Card */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-bg2 border border-border shadow-xs space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+                            {activeSubject.code}
+                          </span>
+                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-bg3 text-text border border-border">
+                            {selectedSectionName}
+                          </span>
+                          <span className="text-[11px] font-medium text-text3">
+                            {activeSubject.trackType}
+                          </span>
+                        </div>
+                        <h3 className="text-base sm:text-lg font-bold text-text font-serif">
+                          {activeSubject.title}
+                        </h3>
+                      </div>
+
+                      {/* Quick Navigation Links */}
+                      <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => onTabChange('grades')}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-bg3 hover:bg-bg4 text-text2 hover:text-text border border-border transition-colors cursor-pointer inline-flex items-center gap-1"
+                          title="View Section Gradebook"
+                        >
+                          <RiBarChartLine size={13} className="text-accent" />
+                          <span>Gradebook</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onTabChange('students')}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-bg3 hover:bg-bg4 text-text2 hover:text-text border border-border transition-colors cursor-pointer inline-flex items-center gap-1"
+                          title="View Class Roster"
+                        >
+                          <RiUserStarLine size={13} className="text-purple-500" />
+                          <span>Roster ({activeOffering.students})</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onTabChange('live')}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 transition-colors cursor-pointer inline-flex items-center gap-1"
+                          title="Launch Live Classroom"
+                        >
+                          <RiLiveLine size={13} />
+                          <span>Live Room</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Metric Chips Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-border/60">
+                      <div className="p-2.5 rounded-xl bg-bg3/60 border border-border/50">
+                        <div className="text-[10px] font-semibold text-text3 uppercase tracking-wider">Schedule & Room</div>
+                        <div className="text-xs font-bold text-text mt-0.5 truncate">{activeOffering.schedule}</div>
+                        <div className="text-[11px] text-text3 truncate">{activeOffering.room}</div>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-bg3/60 border border-border/50">
+                        <div className="text-[10px] font-semibold text-text3 uppercase tracking-wider">Enrollment Code</div>
+                        <div className="text-xs font-mono font-bold text-accent mt-0.5">{activeOffering.enrollCode}</div>
+                        <div className="text-[11px] text-text3 truncate">{activeOffering.students} active learners</div>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-bg3/60 border border-border/50">
+                        <div className="text-[10px] font-semibold text-text3 uppercase tracking-wider">DepEd Competency</div>
+                        <div className="text-xs font-mono font-bold text-text mt-0.5 truncate">{activeSubject.depedCompetency}</div>
+                        <div className="text-[11px] text-text3">Curriculum standard</div>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-bg3/60 border border-border/50">
+                        <div className="text-[10px] font-semibold text-text3 uppercase tracking-wider">Pacing & Standing</div>
+                        <div className="text-xs font-bold text-emerald-500 mt-0.5">
+                          {activeOffering.completionRate}% Done · Avg {activeOffering.avgGrade}%
+                        </div>
+                        <div className="text-[11px] text-text3 truncate">
+                          {activeOffering.currentModule}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Expandable Module & Item Outline */}
+                  {(() => {
+                    const activeCourseSections = getCourseData(activeSubject.courseId).sections;
+                    const allModulesCollapsed =
+                      activeCourseSections.length > 0 &&
+                      activeCourseSections.every((sec) => collapsedTeacherModules[sec.id]);
+
+                    const toggleCollapseAllModules = () => {
+                      if (allModulesCollapsed) {
+                        setCollapsedTeacherModules({});
+                      } else {
+                        const next: Record<string, boolean> = {};
+                        activeCourseSections.forEach((sec) => {
+                          next[sec.id] = true;
+                        });
+                        setCollapsedTeacherModules(next);
+                      }
+                    };
+
+                    const getItemTypeMeta = (type: CourseItemType) => {
+                      switch (type) {
+                        case 'ppt':
+                          return {
+                            label: 'PPT',
+                            icon: RiPresentationLine,
+                            styles: 'bg-amber-500/10 text-amber-500 border-amber-500/25',
+                          };
+                        case 'pdf':
+                          return {
+                            label: 'PDF',
+                            icon: RiFilePdfLine,
+                            styles: 'bg-red-500/10 text-red-500 border-red-500/25',
+                          };
+                        case 'yt':
+                          return {
+                            label: 'VIDEO',
+                            icon: RiYoutubeFill,
+                            styles: 'bg-rose-500/10 text-rose-500 border-rose-500/25',
+                          };
+                        case 'link':
+                          return {
+                            label: 'LINK',
+                            icon: RiGlobalLine,
+                            styles: 'bg-sky-500/10 text-sky-500 border-sky-500/25',
+                          };
+                        case 'quiz':
+                          return {
+                            label: 'QUIZ',
+                            icon: RiQuestionLine,
+                            styles: 'bg-purple-500/10 text-purple-500 border-purple-500/25',
+                          };
+                        case 'submission':
+                          return {
+                            label: 'TASK',
+                            icon: RiFileList3Line,
+                            styles: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/25',
+                          };
+                        case 'announcement':
+                        default:
+                          return {
+                            label: 'NOTICE',
+                            icon: RiMegaphoneLine,
+                            styles: 'bg-blue-500/10 text-blue-500 border-blue-500/25',
+                          };
+                      }
+                    };
+
+                    return (
+                      <div className="space-y-3.5">
+                        {/* Outline Toolbar */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={toggleCollapseAllModules}
+                              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-bg3 hover:bg-bg4 text-text2 hover:text-text border border-border transition-colors cursor-pointer inline-flex items-center gap-1"
+                            >
+                              {allModulesCollapsed ? (
+                                <>
+                                  <RiArrowRightSLine className="size-3.5" />
+                                  <span>Expand All Modules</span>
+                                </>
+                              ) : (
+                                <>
+                                  <RiArrowDownSLine className="size-3.5" />
+                                  <span>Collapse All Modules</span>
+                                </>
+                              )}
+                            </button>
+                            <div className="text-xs px-2.5 py-1 rounded-lg bg-bg3/80 text-text3 border border-border flex items-center gap-1.5">
+                              <span className="size-1.5 rounded-full bg-emerald-500" />
+                              <span>
+                                Sync Mode: <strong className="text-text font-semibold">{syncAllSections ? 'All Sections' : `${selectedSectionName} Only`}</strong>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setIsCreateQuizOpen(true)}
+                              className="px-2.5 py-1 rounded-lg bg-bg3 hover:bg-bg4 text-purple-500 border border-purple-500/30 text-xs font-semibold cursor-pointer inline-flex items-center gap-1 transition-colors"
+                            >
+                              <RiAddLine size={13} />
+                              <span>+ Quiz</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIsCreateTaskOpen(true)}
+                              className="px-2.5 py-1 rounded-lg bg-bg3 hover:bg-bg4 text-emerald-500 border border-emerald-500/30 text-xs font-semibold cursor-pointer inline-flex items-center gap-1 transition-colors"
+                            >
+                              <RiAddLine size={13} />
+                              <span>+ Performance Task</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Modules Accordions */}
+                        <div className="space-y-3">
+                          {activeCourseSections.map((sec) => {
+                            const isCollapsed = Boolean(collapsedTeacherModules[sec.id]);
+                            const pubState = modulePublishState[sec.id] || 'published';
+
+                            return (
+                              <div
+                                key={sec.id}
+                                className="rounded-2xl bg-bg2 border border-border shadow-xs overflow-hidden transition-all"
+                              >
+                                {/* Module Header */}
+                                <div
+                                  className="p-3.5 sm:p-4 bg-bg3/40 hover:bg-bg3/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer border-b border-border/50 select-none"
+                                  onClick={() => {
+                                    setCollapsedTeacherModules((prev) => ({
+                                      ...prev,
+                                      [sec.id]: !prev[sec.id],
+                                    }));
+                                  }}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="p-1 rounded-md text-text3 hover:text-text hover:bg-bg3">
+                                      {isCollapsed ? (
+                                        <RiArrowRightSLine className="size-4" />
+                                      ) : (
+                                        <RiArrowDownSLine className="size-4" />
+                                      )}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <h4 className="text-xs sm:text-sm font-bold text-text truncate">
+                                        {sec.title}
+                                      </h4>
+                                      <p className="text-[11px] text-text3 truncate">
+                                        {sec.items.length} materials & activities
+                                        {sec.itemCountDescription ? ` · ${sec.itemCountDescription}` : ''}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {/* Right Controls */}
+                                  <div
+                                    className="flex items-center gap-2 shrink-0 self-end sm:self-center"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {/* Telemetry Pill */}
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-bg3 text-text2 border border-border">
+                                      {Math.round(activeOffering.students * (activeOffering.completionRate / 100))}/{activeOffering.students} completed · {activeOffering.completionRate}%
+                                    </span>
+
+                                    {/* Interactive Publish / Draft Badge Button */}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setModulePublishState((prev) => ({
+                                          ...prev,
+                                          [sec.id]: prev[sec.id] === 'draft' ? 'published' : 'draft',
+                                        }));
+                                      }}
+                                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                                        pubState === 'published'
+                                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/20'
+                                          : 'bg-amber-500/10 text-amber-500 border-amber-500/30 hover:bg-amber-500/20'
+                                      }`}
+                                      title="Click to toggle module publish state"
+                                    >
+                                      <span
+                                        className={`size-1.5 rounded-full ${
+                                          pubState === 'published' ? 'bg-emerald-500' : 'bg-amber-500'
+                                        }`}
+                                      />
+                                      <span>
+                                        {pubState === 'published'
+                                          ? `Published to ${syncAllSections ? 'All Sections' : selectedSectionName}`
+                                          : 'Draft · Hidden'}
+                                      </span>
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Module Items List */}
+                                {!isCollapsed && (
+                                  <div className="divide-y divide-border/50">
+                                    {sec.items.map((item) => {
+                                      const meta = getItemTypeMeta(item.type);
+                                      const viewCount = Math.max(1, activeOffering.students - 2);
+                                      const quizTakers = Math.max(1, activeOffering.students - 6);
+                                      const quizAvg = Math.round(activeOffering.avgGrade - 2);
+
+                                      return (
+                                        <div
+                                          key={item.id}
+                                          className="p-3 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:bg-bg3/30 transition-colors"
+                                        >
+                                          <div className="flex items-start sm:items-center gap-3 min-w-0">
+                                            {/* Type Badge */}
+                                            <span
+                                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border shrink-0 inline-flex items-center gap-1 ${meta.styles}`}
+                                            >
+                                              <meta.icon size={12} />
+                                              <span>{meta.label}</span>
+                                            </span>
+
+                                            <div className="min-w-0">
+                                              <div className="flex items-center gap-2">
+                                                <h5 className="text-xs font-semibold text-text truncate">
+                                                  {item.title}
+                                                </h5>
+                                                {item.badge && (
+                                                  <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-bg3 text-text3 border border-border hidden md:inline">
+                                                    {item.badge}
+                                                  </span>
+                                                )}
+                                              </div>
+                                              {item.subtitle && (
+                                                <p className="text-[11px] text-text3 truncate max-w-xl">
+                                                  {item.subtitle}
+                                                </p>
+                                              )}
+                                            </div>
+                                          </div>
+
+                                          {/* Telemetry & Action Buttons */}
+                                          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                                            {/* Completion Rule Pill */}
+                                            <span className="text-[10px] font-semibold text-text3 px-2 py-0.5 rounded-md bg-bg3/60 border border-border/50 hidden md:inline-flex items-center gap-1">
+                                              {item.completionType === 'automatic' ? (
+                                                <>
+                                                  <RiCheckDoubleLine size={11} className="text-emerald-500" />
+                                                  <span>Auto</span>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <RiCheckboxCircleLine size={11} className="text-text3" />
+                                                  <span>Manual</span>
+                                                </>
+                                              )}
+                                            </span>
+
+                                            {/* Telemetry & Actions by Item Type */}
+                                            {item.type === 'quiz' ? (
+                                              <>
+                                                <span className="text-[11px] text-text3 font-medium">
+                                                  {quizTakers}/{activeOffering.students} taken · Avg {quizAvg}%
+                                                </span>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setIsCreateQuizOpen(true)}
+                                                  className="px-2 py-1 rounded-md text-[11px] font-semibold text-purple-500 hover:text-purple-400 hover:bg-purple-500/10 border border-purple-500/30 inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                                >
+                                                  <RiEditLine size={12} />
+                                                  <span>Edit Quiz</span>
+                                                </button>
+                                              </>
+                                            ) : item.type === 'submission' ? (
+                                              <>
+                                                {activeOffering.ungradedCount > 0 ? (
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      if (pendingSubmissions.length > 0) {
+                                                        setGradingModalSubmission(pendingSubmissions[0]);
+                                                      } else {
+                                                        onTabChange('tasks');
+                                                      }
+                                                    }}
+                                                    className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500/25 transition-colors cursor-pointer inline-flex items-center gap-1"
+                                                    title="Open grading modal for pending submissions"
+                                                  >
+                                                    <RiTimeLine size={11} />
+                                                    <span>{activeOffering.ungradedCount} to grade</span>
+                                                  </button>
+                                                ) : (
+                                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 inline-flex items-center gap-1">
+                                                    <RiCheckLine size={11} />
+                                                    <span>All Graded</span>
+                                                  </span>
+                                                )}
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setIsCreateTaskOpen(true)}
+                                                  className="px-2 py-1 rounded-md text-[11px] font-semibold text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                                >
+                                                  <RiEditLine size={12} />
+                                                  <span>Task Settings</span>
+                                                </button>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <span className="text-[11px] text-text3 font-medium">
+                                                  {viewCount}/{activeOffering.students} viewed
+                                                </span>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setIsStudentPreviewMode(true)}
+                                                  className="px-2 py-1 rounded-md text-[11px] font-semibold text-text2 hover:text-text hover:bg-bg3 border border-border inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                                >
+                                                  <RiEyeLine size={12} className="text-accent" />
+                                                  <span>Preview</span>
+                                                </button>
+                                              </>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+
+                                    {/* Footer inside each module */}
+                                    <div className="p-3 bg-bg3/20 flex items-center justify-center">
+                                      <button
+                                        type="button"
+                                        onClick={() => setIsAddCourseOpen(true)}
+                                        className="text-xs font-semibold text-accent hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <RiAddLine size={13} />
+                                        <span>Add Lesson, Handout, Quiz, or Submission Bin to {sec.title}</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
