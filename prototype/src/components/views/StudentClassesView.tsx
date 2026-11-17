@@ -63,8 +63,10 @@ const MONTH_NAMES = [
   'December',
 ];
 
-// Reference simulated prototype date: Saturday, Nov 14, 2026
-const SIMULATED_TODAY = new Date(2026, 10, 14);
+const isSameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
 
 export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
   onTabChange,
@@ -77,16 +79,22 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
   // Active view: 'calendar' (monthly view) | 'week' (timetable block view) | 'catalog' (list of subjects)
   const [viewMode, setViewMode] = useState<'calendar' | 'week' | 'catalog'>('calendar');
 
-  // Filter: 'all' | 'virtual' | 'physical'
+  // Filters: delivery mode, time-of-day window, selected-date toggle, and search
   const [deliveryFilter, setDeliveryFilter] = useState<'all' | 'virtual' | 'physical'>('all');
-
-  // Search filter
+  const [timeSlotFilter, setTimeSlotFilter] = useState<'all' | 'morning' | 'afternoon'>('all');
+  const [filterBySelectedDate, setFilterBySelectedDate] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Calendar date state - defaulting to November 2026 (matching system timestamp 2026-11-14)
-  const [currentYear, setCurrentYear] = useState(2026);
-  const [currentMonth, setCurrentMonth] = useState(10); // 0-indexed: 10 = November
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date(2026, 10, 14));
+  // Real-time current date/time and calendar navigation state
+  const [now, setNow] = useState<Date>(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
 
   // Active class for Board UI Popover card
   const [activePopupClass, setActivePopupClass] = useState<ClassSession | null>(null);
@@ -177,9 +185,29 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
 
   const handleJumpToToday = () => {
     setActivePopupClass(null);
-    setCurrentYear(2026);
-    setCurrentMonth(10);
-    setSelectedDate(new Date(2026, 10, 14));
+    const today = new Date();
+    setNow(today);
+    setCurrentYear(today.getFullYear());
+    setCurrentMonth(today.getMonth());
+    setSelectedDate(today);
+  };
+
+  const handleMonthYearChange = (nextYear: number, nextMonth: number) => {
+    setActivePopupClass(null);
+    setCurrentYear(nextYear);
+    setCurrentMonth(nextMonth);
+    const maxDay = new Date(nextYear, nextMonth + 1, 0).getDate();
+    setSelectedDate(new Date(nextYear, nextMonth, Math.min(selectedDate.getDate(), maxDay)));
+  };
+
+  const handleDateInputChange = (value: string) => {
+    if (!value) return;
+    const [y, m, d] = value.split('-').map(Number);
+    if (!y || !m || !d) return;
+    setActivePopupClass(null);
+    setCurrentYear(y);
+    setCurrentMonth(m - 1);
+    setSelectedDate(new Date(y, m - 1, d));
   };
 
   // Calendar matrix calculation
@@ -204,10 +232,7 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
         dayNumber: dayNum,
         date: d,
         isCurrentMonth: false,
-        isToday:
-          d.getFullYear() === SIMULATED_TODAY.getFullYear() &&
-          d.getMonth() === SIMULATED_TODAY.getMonth() &&
-          d.getDate() === SIMULATED_TODAY.getDate(),
+        isToday: isSameDay(d, now),
         dayOfWeek: d.getDay(),
       });
     }
@@ -219,10 +244,7 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
         dayNumber: i,
         date: d,
         isCurrentMonth: true,
-        isToday:
-          currentYear === SIMULATED_TODAY.getFullYear() &&
-          currentMonth === SIMULATED_TODAY.getMonth() &&
-          i === SIMULATED_TODAY.getDate(),
+        isToday: isSameDay(d, now),
         dayOfWeek: d.getDay(),
       });
     }
@@ -236,22 +258,21 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
         dayNumber: i,
         date: d,
         isCurrentMonth: false,
-        isToday:
-          d.getFullYear() === SIMULATED_TODAY.getFullYear() &&
-          d.getMonth() === SIMULATED_TODAY.getMonth() &&
-          d.getDate() === SIMULATED_TODAY.getDate(),
+        isToday: isSameDay(d, now),
         dayOfWeek: d.getDay(),
       });
     }
 
     return matrix;
-  }, [currentYear, currentMonth]);
+  }, [currentYear, currentMonth, now]);
 
-  // Filtered classes by delivery mode and search
+  // Filtered classes by delivery mode, time-of-day window, and search
   const filteredClasses = useMemo(() => {
     return classesList.filter((cls) => {
       if (deliveryFilter === 'virtual' && cls.deliveryMode !== 'virtual') return false;
       if (deliveryFilter === 'physical' && cls.deliveryMode !== 'physical') return false;
+      if (timeSlotFilter === 'morning' && !cls.startTime.includes('AM')) return false;
+      if (timeSlotFilter === 'afternoon' && !cls.startTime.includes('PM')) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = cls.subjectName.toLowerCase().includes(q);
@@ -262,7 +283,7 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
       }
       return true;
     });
-  }, [classesList, deliveryFilter, searchQuery]);
+  }, [classesList, deliveryFilter, timeSlotFilter, searchQuery]);
 
   // Check if a day has classes
   const getClassesForDay = (dayOfWeek: number) => {
@@ -280,6 +301,19 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
     const anchorEl = (targetEl.closest('[role="button"]') as HTMLElement) || targetEl;
     triggerRef.current = anchorEl;
     setActivePopupClass(cls);
+  };
+
+  // Switch from catalog view to calendar and select a matching day for the class
+  const openClassOnCalendar = (cls: ClassSession, targetEl: HTMLElement) => {
+    if (cls.scheduleDays.length > 0 && !cls.scheduleDays.includes(selectedDate.getDay())) {
+      const target = new Date(selectedDate);
+      target.setDate(selectedDate.getDate() + (cls.scheduleDays[0] - selectedDate.getDay()));
+      setSelectedDate(target);
+      setCurrentMonth(target.getMonth());
+      setCurrentYear(target.getFullYear());
+    }
+    setViewMode('calendar');
+    handleOpenPopover(cls, targetEl);
   };
 
   // Select day handler that smoothly transitions month and opens popover if classes exist
@@ -369,6 +403,24 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
     ],
     [totalClassesCount, virtualClassesCount, physicalClassesCount],
   );
+
+  // Options for Time-of-Day Filter Combobox
+  const timeSlotFilterOptions: HoverComboboxOption<'all' | 'morning' | 'afternoon'>[] = useMemo(
+    () => [
+      { value: 'all', label: 'All Times', icon: RiTimeLine },
+      { value: 'morning', label: 'Morning (AM)', icon: RiTimeLine },
+      { value: 'afternoon', label: 'Afternoon (PM)', icon: RiTimeLine },
+    ],
+    [],
+  );
+
+  const formattedSelectedDate = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+  const isSelectedToday = isSameDay(selectedDate, now);
+  const yearOptions = useMemo(
+    () => Array.from(new Set([2025, 2026, 2027, 2028, now.getFullYear(), currentYear])).sort((a, b) => a - b),
+    [now, currentYear],
+  );
+  const catalogClasses = filterBySelectedDate ? classesOnSelectedDate : filteredClasses;
 
   // Render Link Type Icon
   const renderLinkIcon = (type: TeacherResourceLink['type']) => {
@@ -708,6 +760,10 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                 <RiCalendarEventFill className="size-3.5" />
                 STEM 11-A · AY 2026–2027 (1st Sem)
               </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-amber-bg text-amber border border-amber/25 text-xs font-semibold flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-green animate-pulse" aria-hidden="true" />
+                Live: {now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} · {now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+              </span>
             </div>
             <h2 className="text-2xl font-bold font-serif text-text tracking-tight">
               {userRole === 'teacher' ? 'Faculty Classes & Timetable' : 'Classes & Schedule'}
@@ -763,7 +819,7 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
             buttonClassName="bg-bg3 hover:bg-bg4"
           />
 
-          {/* Controls: Delivery Filter Combobox & Search */}
+          {/* Controls: Delivery Mode, Time Window, Date Picker & Search */}
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Delivery Filter Hoverable Combobox */}
             <HoverCombobox
@@ -789,6 +845,54 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                     : 'bg-bg3 hover:bg-bg4 text-text border-border'
               }
             />
+
+            {/* Time-of-Day Window Hoverable Combobox */}
+            <HoverCombobox
+              value={timeSlotFilter}
+              onChange={(val) => setTimeSlotFilter(val)}
+              options={timeSlotFilterOptions}
+              title="Time Window"
+              align="right"
+              menuWidthClassName="w-48"
+              activeVariant={timeSlotFilter !== 'all' ? 'amber' : 'default'}
+              buttonClassName={
+                timeSlotFilter !== 'all'
+                  ? 'bg-amber-bg text-amber border-amber/40 shadow-xs ring-1 ring-amber/20'
+                  : 'bg-bg3 hover:bg-bg4 text-text border-border'
+              }
+            />
+
+            {/* Native Date Picker (Jump / Filter to Exact Date) */}
+            <input
+              type="date"
+              value={formattedSelectedDate}
+              onChange={(e) => handleDateInputChange(e.target.value)}
+              aria-label="Jump to or filter by exact date"
+              title="Jump to exact date"
+              className="px-2.5 py-1.5 rounded-xl bg-bg3 border border-border text-xs font-medium text-text outline-none focus:border-accent focus:ring-1 focus:ring-accent cursor-pointer"
+            />
+
+            {/* Selected Date Filter Toggle (filters All Classes List by selected day) */}
+            {viewMode === 'catalog' && (
+              <button
+                type="button"
+                onClick={() => setFilterBySelectedDate((prev) => !prev)}
+                aria-pressed={filterBySelectedDate}
+                className={`px-3 py-1.5 rounded-xl border text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 ${
+                  filterBySelectedDate
+                    ? 'bg-accent/15 text-accent border-accent/40 ring-1 ring-accent/20'
+                    : 'bg-bg3 hover:bg-bg4 text-text2 border-border'
+                }`}
+                title="Toggle filtering All Classes List to the selected date's weekday"
+              >
+                <RiCalendarLine className="size-3.5" />
+                <span>
+                  {filterBySelectedDate
+                    ? `Only ${selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`
+                    : 'Filter by Selected Date'}
+                </span>
+              </button>
+            )}
 
             {/* Quick Search */}
             <div className="relative min-w-[180px]">
@@ -837,7 +941,34 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Month & Year Quick Selectors */}
+              <select
+                value={currentMonth}
+                onChange={(e) => handleMonthYearChange(currentYear, Number(e.target.value))}
+                aria-label="Select month"
+                className="px-2.5 py-1.5 rounded-xl bg-bg3 hover:bg-bg4 border border-border text-xs font-semibold text-text outline-none focus:border-accent cursor-pointer"
+              >
+                {MONTH_NAMES.map((name, idx) => (
+                  <option key={name} value={idx}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={currentYear}
+                onChange={(e) => handleMonthYearChange(Number(e.target.value), currentMonth)}
+                aria-label="Select year"
+                className="px-2.5 py-1.5 rounded-xl bg-bg3 hover:bg-bg4 border border-border text-xs font-semibold text-text outline-none focus:border-accent cursor-pointer"
+              >
+                {yearOptions.map((yr) => (
+                  <option key={yr} value={yr}>
+                    {yr}
+                  </option>
+                ))}
+              </select>
+
               <button
                 type="button"
                 onClick={handleJumpToToday}
@@ -866,6 +997,72 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
             </div>
           </div>
 
+          {/* Selected Date Agenda Strip */}
+          <div className="p-3 rounded-xl bg-bg3/70 border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              <span className="text-xs font-bold text-text">
+                Schedule for{' '}
+                {selectedDate.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </span>
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-bg2 border border-border text-text2">
+                {classesOnSelectedDate.length}{' '}
+                {classesOnSelectedDate.length === 1 ? 'class' : 'classes'} matching time filter
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              {classesOnSelectedDate.length === 0 ? (
+                <span className="text-xs text-text3">No scheduled classes on this day</span>
+              ) : (
+                classesOnSelectedDate.map((cls) => {
+                  const isVirtual = cls.deliveryMode === 'virtual';
+                  return (
+                    <button
+                      key={cls.id}
+                      type="button"
+                      onClick={(e) => {
+                        if (isVirtual && e.shiftKey) {
+                          setActiveLiveClass(cls);
+                        } else {
+                          handleOpenPopover(cls, e.currentTarget);
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition-colors flex items-center gap-1.5 ${
+                        isVirtual
+                          ? 'bg-cyan-bg/80 hover:bg-cyan-bg text-cyan border-cyan/30'
+                          : 'bg-bg2 hover:bg-bg4 text-text border-border'
+                      }`}
+                      title={`${cls.subjectName} (${cls.timeRange})`}
+                    >
+                      {isVirtual ? (
+                        <RiVideoLine className="size-3 shrink-0" />
+                      ) : (
+                        <RiBuildingLine className="size-3 shrink-0 text-green" />
+                      )}
+                      <span>{cls.subjectCode}</span>
+                      <span className="text-[10px] opacity-75 font-mono">{cls.startTime}</span>
+                    </button>
+                  );
+                })
+              )}
+
+              {!isSelectedToday && (
+                <button
+                  type="button"
+                  onClick={handleJumpToToday}
+                  className="px-2.5 py-1 rounded-lg bg-amber-bg hover:bg-amber/20 text-amber border border-amber/30 text-[11px] font-bold cursor-pointer transition-colors"
+                >
+                  Today
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Days of week header */}
           <div className="grid grid-cols-7 gap-2 text-center font-bold text-xs text-text3 pb-2 border-b border-border/80">
             {DAYS_OF_WEEK.map((day) => (
@@ -880,10 +1077,7 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
             {calendarDays.map((cell, idx) => {
               const dayClasses = getClassesForDay(cell.dayOfWeek);
               const hasVirtual = dayClasses.some((c) => c.deliveryMode === 'virtual');
-              const isSelected =
-                selectedDate.getFullYear() === cell.date.getFullYear() &&
-                selectedDate.getMonth() === cell.date.getMonth() &&
-                selectedDate.getDate() === cell.date.getDate();
+              const isSelected = isSameDay(selectedDate, cell.date);
 
               return (
                 <div
@@ -1452,8 +1646,12 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                           <div
                             key={cls.id}
                             onClick={(e) => {
+                              const target = new Date(selectedDate);
+                              target.setDate(selectedDate.getDate() + (dayNum - selectedDate.getDay()));
+                              setSelectedDate(target);
+                              setCurrentMonth(target.getMonth());
+                              setCurrentYear(target.getFullYear());
                               setViewMode('calendar');
-                              setSelectedDate(new Date(2026, 10, 14 + (dayNum - 6)));
                               handleOpenPopover(cls, e.currentTarget);
                             }}
                             className={`p-3 rounded-xl border transition-all cursor-pointer group ${isVirtual
@@ -1522,9 +1720,29 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
       {/* ------------------------------------------------------------- */}
       {viewMode === 'catalog' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredClasses.map((cls) => {
-              const isVirtual = cls.deliveryMode === 'virtual';
+          {catalogClasses.length === 0 ? (
+            <div className="p-8 rounded-2xl bg-bg2 border border-dashed border-border text-center space-y-2">
+              <p className="text-sm font-semibold text-text">
+                No classes match the active filters
+                {filterBySelectedDate
+                  ? ` on ${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}`
+                  : ''}
+                .
+              </p>
+              {filterBySelectedDate && (
+                <button
+                  type="button"
+                  onClick={() => setFilterBySelectedDate(false)}
+                  className="px-3 py-1.5 rounded-xl bg-accent/10 hover:bg-accent/20 text-accent text-xs font-semibold cursor-pointer transition-colors"
+                >
+                  Show All Days
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {catalogClasses.map((cls) => {
+                const isVirtual = cls.deliveryMode === 'virtual';
 
               return (
                 <div
@@ -1647,11 +1865,7 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                     ) : (
                       <button
                         type="button"
-                        onClick={(e) => {
-                          setViewMode('calendar');
-                          setSelectedDate(new Date(2026, 10, 14));
-                          handleOpenPopover(cls, e.currentTarget);
-                        }}
+                        onClick={(e) => openClassOnCalendar(cls, e.currentTarget)}
                         className="flex-1 py-2 px-3 rounded-xl bg-bg3 text-text text-xs font-semibold hover:bg-bg4 border border-border cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         <RiInformationLine className="size-4 text-text3" />
@@ -1661,11 +1875,7 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
 
                     <button
                       type="button"
-                      onClick={(e) => {
-                        setViewMode('calendar');
-                        setSelectedDate(new Date(2026, 10, 14));
-                        handleOpenPopover(cls, e.currentTarget);
-                      }}
+                      onClick={(e) => openClassOnCalendar(cls, e.currentTarget)}
                       className="p-2 rounded-xl bg-bg3 hover:bg-bg4 text-text border border-border cursor-pointer text-xs font-semibold"
                       title="All details & links"
                       aria-label="View details"
@@ -1676,7 +1886,8 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                 </div>
               );
             })}
-          </div>
+            </div>
+          )}
         </div>
       )}
 

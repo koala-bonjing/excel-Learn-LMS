@@ -6,7 +6,9 @@ import { TeacherProfileView } from '@/components/views/TeacherProfileView';
 import { TeacherSettingsView } from '@/components/views/TeacherSettingsView';
 import { StudentClassesView } from '@/components/views/StudentClassesView';
 import { CourseSectionView } from '@/components/views/CourseSectionView';
-import { getCourseData, type CourseItemType } from '@/data/courseOutlineData';
+import { CurriculumStudio } from '@/components/views/CurriculumStudio';
+import { TeacherPerformanceTasksView } from '@/components/views/TeacherPerformanceTasksView';
+import { getCourseData, type CourseItemType, type CourseOutlineItem } from '@/data/courseOutlineData';
 import {
   RiVideoChatLine,
   RiCheckLine,
@@ -467,6 +469,20 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
   const [isStudentPreviewMode, setIsStudentPreviewMode] = useState<boolean>(false);
   const [collapsedTeacherModules, setCollapsedTeacherModules] = useState<Record<string, boolean>>({});
   const [modulePublishState, setModulePublishState] = useState<Record<string, 'published' | 'draft'>>({});
+
+  // Full-Page Combobox Curriculum Studio States
+  const [studioOpen, setStudioOpen] = useState<boolean>(false);
+  const [studioType, setStudioType] = useState<'quiz' | 'lesson' | 'submission'>('quiz');
+  const [studioTargetModuleId, setStudioTargetModuleId] = useState<string>('sec-general');
+  const [customAddedItems, setCustomAddedItems] = useState<Record<string, CourseOutlineItem[]>>({});
+
+  const handlePublishStudioItem = (item: CourseOutlineItem, targetModuleId: string) => {
+    const key = `${activeSubject.courseId}__${targetModuleId}`;
+    setCustomAddedItems((prev) => ({
+      ...prev,
+      [key]: [...(prev[key] || []), item],
+    }));
+  };
 
   const handleSelectSubject = (key: TeacherSubjectKey, sectionName?: string) => {
     setSelectedSubjectKey(key);
@@ -968,8 +984,11 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                       <button
                         type="button"
                         onClick={() => {
-                          if (curriculumTab === 'lessons') setIsAddCourseOpen(true);
-                          else setIsCreateQuizOpen(true);
+                          onTabChange('courses');
+                          const defaultModId = getCourseData(activeSubject.courseId).sections[0]?.id || 'sec-general';
+                          setStudioTargetModuleId(defaultModId);
+                          setStudioType(curriculumTab === 'lessons' ? 'lesson' : 'quiz');
+                          setStudioOpen(true);
                         }}
                         className="btn btn-primary btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
                       >
@@ -1639,7 +1658,11 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
               <button
                 type="button"
                 onClick={() => {
-                  setIsCreateQuizOpen(true);
+                  onTabChange('courses');
+                  const defaultModId = getCourseData(activeSubject.courseId).sections[0]?.id || 'sec-general';
+                  setStudioTargetModuleId(defaultModId);
+                  setStudioType('quiz');
+                  setStudioOpen(true);
                   setIsQuickActionsOpen(false);
                 }}
                 className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-1.5 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-amber-500/50 hover:bg-bg3 shadow-lg hover:shadow-xl hover:-translate-x-1 transition-all cursor-pointer text-xs font-semibold text-text"
@@ -1656,7 +1679,11 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
               <button
                 type="button"
                 onClick={() => {
-                  setIsCreateTaskOpen(true);
+                  onTabChange('courses');
+                  const defaultModId = getCourseData(activeSubject.courseId).sections[0]?.id || 'sec-general';
+                  setStudioTargetModuleId(defaultModId);
+                  setStudioType('submission');
+                  setStudioOpen(true);
                   setIsQuickActionsOpen(false);
                 }}
                 className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-1.5 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-amber-500/50 hover:bg-bg3 shadow-lg hover:shadow-xl hover:-translate-x-1 transition-all cursor-pointer text-xs font-semibold text-text"
@@ -1673,7 +1700,11 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
               <button
                 type="button"
                 onClick={() => {
-                  setIsAddCourseOpen(true);
+                  onTabChange('courses');
+                  const defaultModId = getCourseData(activeSubject.courseId).sections[0]?.id || 'sec-general';
+                  setStudioTargetModuleId(defaultModId);
+                  setStudioType('lesson');
+                  setStudioOpen(true);
                   setIsQuickActionsOpen(false);
                 }}
                 className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-1.5 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-amber-500/50 hover:bg-bg3 shadow-lg hover:shadow-xl hover:-translate-x-1 transition-all cursor-pointer text-xs font-semibold text-text"
@@ -1824,7 +1855,19 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
       {/* ============================================================ */}
       {activeTab === 'courses' && (
         <div className="space-y-5">
-          {isStudentPreviewMode ? (
+          {studioOpen ? (
+            <CurriculumStudio
+              activeSubject={activeSubject}
+              selectedSectionName={selectedSectionName}
+              studioType={studioType}
+              onStudioTypeChange={setStudioType}
+              studioTargetModuleId={studioTargetModuleId}
+              onTargetModuleIdChange={setStudioTargetModuleId}
+              onClose={() => setStudioOpen(false)}
+              onPublishItem={handlePublishStudioItem}
+              onNavigateToProfile={() => onTabChange('profile')}
+            />
+          ) : isStudentPreviewMode ? (
             <div className="space-y-4">
               {/* Sticky Top Banner for Student View Preview */}
               <div className="sticky top-2 z-30 p-3 sm:px-4 rounded-xl bg-bg2/95 backdrop-blur-md border border-accent/40 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1882,12 +1925,22 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
 
               {/* Interactive Student CourseSectionView */}
               <CourseSectionView
-                courseData={{
-                  ...getCourseData(activeSubject.courseId),
-                  fullTitle: `${activeSubject.title} (AY 2025-26 ${selectedSectionName})`,
-                  term: `${selectedSectionName} · ${activeOffering.schedule} · ${activeOffering.room}`,
-                  instructor: 'Ms. Juna Velarde, LPT',
-                }}
+                courseData={(() => {
+                  const base = getCourseData(activeSubject.courseId);
+                  return {
+                    ...base,
+                    fullTitle: `${activeSubject.title} (AY 2025-26 ${selectedSectionName})`,
+                    term: `${selectedSectionName} · ${activeOffering.schedule} · ${activeOffering.room}`,
+                    instructor: 'Ms. Juna Velarde, LPT',
+                    sections: base.sections.map((sec) => ({
+                      ...sec,
+                      items: [
+                        ...sec.items,
+                        ...(customAddedItems[`${activeSubject.courseId}__${sec.id}`] || []),
+                      ],
+                    })),
+                  };
+                })()}
                 onBackToCourses={() => setIsStudentPreviewMode(false)}
                 onNavigateToLive={() => onTabChange('live')}
                 onNavigateToTasks={() => onTabChange('tasks')}
@@ -1916,7 +1969,12 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIsAddCourseOpen(true)}
+                    onClick={() => {
+                      const defaultModId = getCourseData(activeSubject.courseId).sections[0]?.id || 'sec-general';
+                      setStudioTargetModuleId(defaultModId);
+                      setStudioType('lesson');
+                      setStudioOpen(true);
+                    }}
                     className="px-3.5 py-1.5 rounded-xl bg-school-orange text-[#0e0f14] text-xs font-semibold hover:brightness-105 cursor-pointer shadow-xs inline-flex items-center gap-1.5 transition-all"
                   >
                     <RiAddLine className="size-4" />
@@ -2233,7 +2291,12 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => setIsCreateQuizOpen(true)}
+                              onClick={() => {
+                                const defaultModId = activeCourseSections[0]?.id || 'sec-general';
+                                setStudioTargetModuleId(defaultModId);
+                                setStudioType('quiz');
+                                setStudioOpen(true);
+                              }}
                               className="px-2.5 py-1 rounded-lg bg-bg3 hover:bg-bg4 text-purple-500 border border-purple-500/30 text-xs font-semibold cursor-pointer inline-flex items-center gap-1 transition-colors"
                             >
                               <RiAddLine size={13} />
@@ -2241,7 +2304,12 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                             </button>
                             <button
                               type="button"
-                              onClick={() => setIsCreateTaskOpen(true)}
+                              onClick={() => {
+                                const defaultModId = activeCourseSections[0]?.id || 'sec-general';
+                                setStudioTargetModuleId(defaultModId);
+                                setStudioType('submission');
+                                setStudioOpen(true);
+                              }}
                               className="px-2.5 py-1 rounded-lg bg-bg3 hover:bg-bg4 text-emerald-500 border border-emerald-500/30 text-xs font-semibold cursor-pointer inline-flex items-center gap-1 transition-colors"
                             >
                               <RiAddLine size={13} />
@@ -2255,6 +2323,8 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                           {activeCourseSections.map((sec) => {
                             const isCollapsed = Boolean(collapsedTeacherModules[sec.id]);
                             const pubState = modulePublishState[sec.id] || 'published';
+                            const customItems = customAddedItems[`${activeSubject.courseId}__${sec.id}`] || [];
+                            const allSectionItems = [...sec.items, ...customItems];
 
                             return (
                               <div
@@ -2284,7 +2354,7 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                                         {sec.title}
                                       </h4>
                                       <p className="text-[11px] text-text3 truncate">
-                                        {sec.items.length} materials & activities
+                                        {allSectionItems.length} materials & activities
                                         {sec.itemCountDescription ? ` · ${sec.itemCountDescription}` : ''}
                                       </p>
                                     </div>
@@ -2333,7 +2403,7 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                                 {/* Module Items List */}
                                 {!isCollapsed && (
                                   <div className="divide-y divide-border/50">
-                                    {sec.items.map((item) => {
+                                    {allSectionItems.map((item) => {
                                       const meta = getItemTypeMeta(item.type);
                                       const viewCount = Math.max(1, activeOffering.students - 2);
                                       const quizTakers = Math.max(1, activeOffering.students - 6);
@@ -2397,7 +2467,11 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                                                 </span>
                                                 <button
                                                   type="button"
-                                                  onClick={() => setIsCreateQuizOpen(true)}
+                                                  onClick={() => {
+                                                    setStudioTargetModuleId(sec.id);
+                                                    setStudioType('quiz');
+                                                    setStudioOpen(true);
+                                                  }}
                                                   className="px-2 py-1 rounded-md text-[11px] font-semibold text-purple-500 hover:text-purple-400 hover:bg-purple-500/10 border border-purple-500/30 inline-flex items-center gap-1 cursor-pointer transition-colors"
                                                 >
                                                   <RiEditLine size={12} />
@@ -2430,7 +2504,11 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                                                 )}
                                                 <button
                                                   type="button"
-                                                  onClick={() => setIsCreateTaskOpen(true)}
+                                                  onClick={() => {
+                                                    setStudioTargetModuleId(sec.id);
+                                                    setStudioType('submission');
+                                                    setStudioOpen(true);
+                                                  }}
                                                   className="px-2 py-1 rounded-md text-[11px] font-semibold text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-1 cursor-pointer transition-colors"
                                                 >
                                                   <RiEditLine size={12} />
@@ -2461,7 +2539,11 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                                     <div className="p-3 bg-bg3/20 flex items-center justify-center">
                                       <button
                                         type="button"
-                                        onClick={() => setIsAddCourseOpen(true)}
+                                        onClick={() => {
+                                          setStudioTargetModuleId(sec.id);
+                                          setStudioType('lesson');
+                                          setStudioOpen(true);
+                                        }}
                                         className="text-xs font-semibold text-accent hover:underline inline-flex items-center gap-1 cursor-pointer"
                                       >
                                         <RiAddLine size={13} />
@@ -2496,7 +2578,13 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
             </div>
             <button
               type="button"
-              onClick={() => setIsCreateQuizOpen(true)}
+              onClick={() => {
+                onTabChange('courses');
+                const defaultModId = getCourseData(activeSubject.courseId).sections[0]?.id || 'sec-general';
+                setStudioTargetModuleId(defaultModId);
+                setStudioType('quiz');
+                setStudioOpen(true);
+              }}
               className="px-3 py-1.5 rounded-lg bg-school-orange text-[#0e0f14] text-xs font-semibold hover:brightness-105 cursor-pointer shadow-xs flex items-center gap-1.5"
             >
               <RiAddLine className="size-4" />
@@ -2533,7 +2621,13 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
               <div className="pt-2 flex justify-end">
                 <button
                   type="button"
-                  onClick={() => setIsCreateQuizOpen(true)}
+                  onClick={() => {
+                    onTabChange('courses');
+                    const defaultModId = getCourseData(activeSubject.courseId).sections[0]?.id || 'sec-general';
+                    setStudioTargetModuleId(defaultModId);
+                    setStudioType('quiz');
+                    setStudioOpen(true);
+                  }}
                   className="text-xs text-accent hover:underline font-semibold"
                 >
                   Edit Questions &rarr;
@@ -2548,90 +2642,22 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
       {/* 4. PERFORMANCE TASKS & GRADING (teacher_performance_tasks.php)*/}
       {/* ============================================================ */}
       {activeTab === 'tasks' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-lg font-bold text-text font-serif">Performance Tasks & Rubric Evaluation</h4>
-              <p className="text-xs text-text2">Evaluate student video recordings and assign rubric ratings.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsCreateTaskOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-school-orange text-[#0e0f14] text-xs font-semibold hover:brightness-105 cursor-pointer shadow-xs flex items-center gap-1.5"
-            >
-              <RiAddLine className="size-4" />
-              <span>+ New Performance Task</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            {submissions.map((subm) => {
-              const isGraded = subm.status === 'graded';
-
-              return (
-                <div
-                  key={subm.id}
-                  className={`p-4 sm:p-5 rounded-xl border transition-all ${
-                    isGraded
-                      ? 'bg-bg2/60 border-border opacity-85'
-                      : 'bg-bg2 border-border hover:border-school-orange/40 shadow-xs'
-                  }`}
-                >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-1 max-w-lg">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-text">{subm.studentName}</span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-bg3 text-text3 font-mono">
-                          {subm.studentId}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            isGraded ? 'bg-green-bg text-green' : 'bg-amber-bg text-amber'
-                          }`}
-                        >
-                          {isGraded ? 'Graded' : 'Pending Evaluation'}
-                        </span>
-                      </div>
-
-                      <div className="text-xs font-medium text-text2">{subm.taskTitle}</div>
-
-                      <div className="flex items-center gap-3 text-xs text-text3 pt-1">
-                        <span className="flex items-center gap-1">
-                          <RiTimeLine className="size-3.5" aria-hidden="true" />
-                          {subm.submittedTime}
-                        </span>
-                        <span className="flex items-center gap-1 text-accent font-medium">
-                          <RiFilePdfLine className="size-3.5" aria-hidden="true" />
-                          {subm.fileAttachment} ({subm.fileSize})
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 shrink-0">
-                      {isGraded ? (
-                        <div className="text-right">
-                          <div className="text-xs text-text3">Final Score</div>
-                          <div className="text-xl font-bold text-green tabular-nums">
-                            {subm.score} / {subm.maxScore}
-                          </div>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setGradingModalSubmission(subm)}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green text-[#0e0f14] font-semibold text-xs hover:brightness-105 active:scale-95 transition-all cursor-pointer shadow-xs"
-                        >
-                          <RiCheckLine className="size-4" aria-hidden="true" />
-                          <span>Score & Feedback</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <TeacherPerformanceTasksView
+          submissions={submissions}
+          onUpdateSubmissions={setSubmissions}
+          gradingScores={gradingScores}
+          onUpdateGradingScores={setGradingScores}
+          feedbackRemarks={feedbackRemarks}
+          onUpdateFeedbackRemarks={setFeedbackRemarks}
+          customAddedItems={customAddedItems}
+          onOpenNewTaskStudio={() => {
+            onTabChange('courses');
+            const defaultModId = getCourseData(activeSubject.courseId).sections[0]?.id || 'sec-general';
+            setStudioTargetModuleId(defaultModId);
+            setStudioType('submission');
+            setStudioOpen(true);
+          }}
+        />
       )}
 
       {/* ============================================================ */}

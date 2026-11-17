@@ -17,10 +17,230 @@ import {
   RiGroupLine,
   RiAwardLine,
   RiLogoutBoxRLine,
+  RiSparklingLine,
+  RiDownload2Line,
+  RiFileCopyLine,
+  RiArrowDownSLine,
+  RiArrowUpSLine,
+  RiFileCodeLine,
 } from '@remixicon/react';
 
 export interface TeacherProfileViewProps {
   onTabChange?: (tabId: string) => void;
+}
+
+const EXAM_CONVERTER_SKILL = `---
+name: excelearn-exam-converter
+description: Converts any uploaded exam, quiz, questionnaire, or test bank (PDF, DOCX, or text) into the deterministic EXCELEARN EXAM V1 character markup supporting 6 question modes for ExceLearn LMS.
+---
+
+# ExceLearn Exam Converter Skill (BYO-AI)
+You are an expert DepEd Assessment & Exam Text Formatter for ExceLearn LMS.
+
+## CRITICAL SYSTEM RULE (FOR GOOGLE GEMINI, CHATGPT & CLAUDE)
+1. DO NOT invoke, call, or output any built-in quiz widget, interactive quiz tool, Canvas tool, or XML tag such as \`<quiz_tool:generate_quiz ... />\`.
+2. NEVER use \`<quiz_tool:...>\` or any native learning plugin. The user needs RAW PLAIN TEXT to copy-paste into an external LMS parser.
+3. You MUST print the entire converted questionnaire directly in your chat response inside a single raw \`\`\`text code block starting with \`=== EXCELEARN EXAM V1 ===\` and ending with \`=== END EXAM ===\`.
+
+## Header Syntax
+Every output block must begin with:
+\`\`\`text
+=== EXCELEARN EXAM V1 ===
+TITLE: [Exam Title]
+TIER: Formative Quiz — Written Work 25% | Unit Assessment — Written Work 25% | Quarterly Exam — Quarterly Assessment 25%
+DURATION: [Duration in minutes, e.g. 30, 45, 60]
+PASSING: [Passing percentage integer, e.g. 75]
+\`\`\`
+
+## Question Formatting (All 6 Modes Supported)
+
+### 1. Multiple Choice Single-Select (MCQ)
+[Q1 | MCQ | 2pts]
+Which speech style is characterized by a complete absence of public interaction and used in private conversations?
+*A) Intimate
+B) Casual
+C) Consultative
+D) Frozen
+@EXP: Intimate speech style takes place between people with very close relationships such as family and couples.
+
+### 2. Multi-Select Checkboxes (MULTI)
+[Q2 | MULTI | 3pts]
+Select all models of communication that are linear or one-way in nature:
+*[x] Aristotle's Rhetoric Model
+[ ] Schramm's Interactive Model
+*[x] Shannon-Weaver Mathematical Model
+[ ] Berlo's SMCR Dynamic Model
+@EXP: Both Aristotle's and Shannon-Weaver models represent linear, one-way transmission without dynamic feedback loops.
+
+### 3. True or False (TF)
+[Q3 | TF | 1pt]
+Dyadic communication always requires at least three participants to be present.
+@ANS: FALSE
+@EXP: Dyadic communication specifically occurs between exactly two individuals.
+
+### 4. Identification / Fill in the Blank (ID)
+[Q4 | ID | 2pts]
+What speech act refers to the actual utterance and its ostensible grammatical meaning?
+@ANS: Locutionary | Locutionary Act | Locution
+@EXP: J.L. Austin defines the locutionary act as the phonetic and grammatical act of producing a meaningful expression.
+
+### 5. Matching Type (MATCH)
+[Q5 | MATCH | 4pts]
+Match each communicative competence dimension with its primary competency indicator:
+Grammatical Competence => Mastery of lexical items, syntax, and phonological rules
+Sociolinguistic Competence => Appropriate register and polite word choice according to social setting
+Discourse Competence => Cohesion and coherence in combining phrases into unified discourse
+Strategic Competence => Compensation strategies for verbal breakdown and paraphrasing
+@EXP: Canale and Swain's four dimensions of communicative competence.
+
+### 6. Essay / Situational Analysis (ESSAY)
+[Q6 | ESSAY | 10pts]
+Analyze a workplace scenario where nonverbal kinesics contradict the spoken message. Explain how the receiver resolves this ambiguity.
+@RUBRIC: Nonverbal Theory Analysis (4pts) | Resolution Mechanics (4pts) | Clarity & Tone (2pts)
+@EXP: Albert Mehrabian's nonverbal primacy effect establishes that visual cues override conflicting verbal statements.
+
+=== END EXAM ===
+
+---
+USER INSTRUCTION: Convert my attached PDF/text or topic below into the raw \`=== EXCELEARN EXAM V1 ===\` plain-text block above. Remember: DO NOT call \`<quiz_tool:generate_quiz>\` or any interactive widget—print only the raw text block:
+`;
+
+const LESSON_OUTLINER_SKILL = `---
+name: excelearn-lesson-outliner
+description: Converts DepEd Senior High School syllabus guides, lesson plans, or textbook chapters into interactive EXCELEARN LESSON V1 micro-lesson slide decks with speaker notes.
+---
+
+# ExceLearn Lesson Slide Outliner Skill (BYO-AI)
+You are an instructional design expert converting DepEd syllabus guides, lesson plans, or textbook chapters into interactive ExceLearn micro-lesson slide decks.
+
+## Output Format
+Always output inside a single raw \`\`\`text code block:
+\`\`\`text
+=== EXCELEARN LESSON V1 ===
+TITLE: [Lesson Title]
+MODULE: [Target Module Name or Number]
+COMPLETION: Automatic | Manual
+
+[SLIDE 1]
+@TITLE: Introduction to Intercultural Communication
+* Communication across diverse cultural backgrounds and traditions
+* High-context vs. Low-context cultures (Edward T. Hall framework)
+* Overcoming ethnocentrism and cultural stereotypes in public discourse
+@NOTES: Emphasize that non-verbal body language varies significantly between Eastern and Western cultures.
+
+[SLIDE 2]
+@TITLE: Hofstede's Cultural Dimensions in Education
+* Individualism vs. Collectivism in classroom group dynamics
+* Power Distance Index (PDI) between instructors and students
+* Uncertainty Avoidance and structured curriculum preferences
+@NOTES: Remind students of the Masbate Senior High School communicative norms.
+
+=== END LESSON ===
+\`\`\`
+`;
+
+const RUBRIC_BUILDER_SKILL = `---
+name: excelearn-rubric-builder
+description: Converts any DepEd Senior High School performance task description or activity sheet into an EXCELEARN RUBRIC V1 submission bin specification with analytical grading criteria.
+---
+
+# ExceLearn Rubric Builder Skill (BYO-AI)
+You are a DepEd Senior High School authentic assessment designer. Convert any performance task description or activity sheet into an ExceLearn submission bin specification with an analytical rubric.
+
+## Output Format
+Always output inside a single raw \`\`\`text code block:
+\`\`\`text
+=== EXCELEARN RUBRIC V1 ===
+TASK: [Performance Task Title]
+FORMAT: PDF Document | MP4 Video | PPTX Slides | ZIP Archive
+MAX_POINTS: 100
+DUE_DAYS: 7
+
+@CRITERIA: Content & Competence Mastery | 35pts | Depth of research, factual accuracy, and alignment with DepEd competencies.
+@CRITERIA: Vocal Modulation & Delivery | 25pts | Clear articulation, appropriate pitch, tempo, and confident projection.
+@CRITERIA: Organization & Coherence | 20pts | Structured introduction, smooth transitions, and definitive concluding call-to-action.
+@CRITERIA: Technical Execution & Media | 20pts | High-definition video/audio clarity, clean slides, and proper APA citations.
+
+=== END RUBRIC ===
+\`\`\`
+`;
+
+/**
+ * Builds a valid standard ZIP archive in memory containing a single `SKILL.md` file (Store mode, zero dependencies).
+ * Compatible with both Google Gemini Skills and Anthropic Claude Skills uploaders.
+ */
+function createSkillZipBlob(content: string): Blob {
+  const encoder = new TextEncoder();
+  const fileData = encoder.encode(content);
+  const fileNameBytes = encoder.encode('SKILL.md');
+
+  // Compute standard CRC-32
+  let crc = 0xffffffff;
+  for (let i = 0; i < fileData.length; i++) {
+    crc ^= fileData[i];
+    for (let j = 0; j < 8; j++) {
+      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+    }
+  }
+  crc = (crc ^ 0xffffffff) >>> 0;
+
+  const localHeaderSize = 30 + fileNameBytes.length;
+  const centralDirSize = 46 + fileNameBytes.length;
+  const endCentralSize = 22;
+  const totalSize = localHeaderSize + fileData.length + centralDirSize + endCentralSize;
+
+  const buf = new ArrayBuffer(totalSize);
+  const view = new DataView(buf);
+  const bytes = new Uint8Array(buf);
+
+  // 1. Local File Header
+  let offset = 0;
+  view.setUint32(offset, 0x04034b50, true); offset += 4; // Signature
+  view.setUint16(offset, 20, true); offset += 2;         // Version needed (2.0)
+  view.setUint16(offset, 0x0800, true); offset += 2;     // UTF-8 flag
+  view.setUint16(offset, 0, true); offset += 2;          // Compression (0 = Store)
+  view.setUint16(offset, 0, true); offset += 2;          // Mod time
+  view.setUint16(offset, 0, true); offset += 2;          // Mod date
+  view.setUint32(offset, crc, true); offset += 4;        // CRC-32
+  view.setUint32(offset, fileData.length, true); offset += 4; // Compressed size
+  view.setUint32(offset, fileData.length, true); offset += 4; // Uncompressed size
+  view.setUint16(offset, fileNameBytes.length, true); offset += 2; // Filename length
+  view.setUint16(offset, 0, true); offset += 2;          // Extra field length
+  bytes.set(fileNameBytes, offset); offset += fileNameBytes.length;
+  bytes.set(fileData, offset); offset += fileData.length;
+
+  // 2. Central Directory Header
+  const centralDirOffset = offset;
+  view.setUint32(offset, 0x02014b50, true); offset += 4; // Signature
+  view.setUint16(offset, 20, true); offset += 2;         // Version made by
+  view.setUint16(offset, 20, true); offset += 2;         // Version needed
+  view.setUint16(offset, 0x0800, true); offset += 2;     // UTF-8 flag
+  view.setUint16(offset, 0, true); offset += 2;          // Compression (0 = Store)
+  view.setUint16(offset, 0, true); offset += 2;          // Mod time
+  view.setUint16(offset, 0, true); offset += 2;          // Mod date
+  view.setUint32(offset, crc, true); offset += 4;        // CRC-32
+  view.setUint32(offset, fileData.length, true); offset += 4; // Compressed size
+  view.setUint32(offset, fileData.length, true); offset += 4; // Uncompressed size
+  view.setUint16(offset, fileNameBytes.length, true); offset += 2; // Filename length
+  view.setUint16(offset, 0, true); offset += 2;          // Extra field length
+  view.setUint16(offset, 0, true); offset += 2;          // Comment length
+  view.setUint16(offset, 0, true); offset += 2;          // Disk number
+  view.setUint16(offset, 0, true); offset += 2;          // Internal attrs
+  view.setUint32(offset, 0, true); offset += 4;          // External attrs
+  view.setUint32(offset, 0, true); offset += 4;          // Relative offset of local header
+  bytes.set(fileNameBytes, offset); offset += fileNameBytes.length;
+
+  // 3. End of Central Directory Record
+  view.setUint32(offset, 0x06054b50, true); offset += 4; // Signature
+  view.setUint16(offset, 0, true); offset += 2;          // Disk number
+  view.setUint16(offset, 0, true); offset += 2;          // Central dir start disk
+  view.setUint16(offset, 1, true); offset += 2;          // Entries on disk
+  view.setUint16(offset, 1, true); offset += 2;          // Total entries
+  view.setUint32(offset, centralDirSize, true); offset += 4; // Size of central dir
+  view.setUint32(offset, centralDirOffset, true); offset += 4; // Offset of central dir
+  view.setUint16(offset, 0, true);                       // Comment length
+
+  return new Blob([buf], { type: 'application/zip' });
 }
 
 export function TeacherProfileView({ onTabChange }: TeacherProfileViewProps) {
@@ -81,12 +301,49 @@ export function TeacherProfileView({ onTabChange }: TeacherProfileViewProps) {
 
   // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showSyntaxCheatSheet, setShowSyntaxCheatSheet] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage((cur) => (cur === msg ? null : cur));
     }, 3200);
+  };
+
+  const handleDownloadSkill = (skillSlug: string, content: string, asZip = false) => {
+    try {
+      const blob = asZip
+        ? createSkillZipBlob(content)
+        : new Blob([content], { type: 'text/markdown;charset=utf-8' });
+      const downloadName = asZip ? `${skillSlug}.zip` : 'SKILL.md';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = downloadName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(
+        asZip
+          ? `Downloaded ${downloadName} (contains SKILL.md with YAML frontmatter)!`
+          : `Downloaded SKILL.md (${skillSlug}) — ready to upload to Gemini or Claude!`
+      );
+    } catch {
+      showToast(`Failed to trigger download for ${skillSlug}`);
+    }
+  };
+
+  const handleCopySkill = (title: string, content: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(content).then(() => {
+        showToast(`Copied ${title} prompt to clipboard!`);
+      }).catch(() => {
+        showToast('Clipboard access denied.');
+      });
+    } else {
+      showToast('Clipboard not supported in this browser.');
+    }
   };
 
   const displayName = `${profile.firstName} ${profile.middleName ? profile.middleName[0] + '. ' : ''}${profile.lastName}`;
@@ -739,6 +996,271 @@ export function TeacherProfileView({ onTabChange }: TeacherProfileViewProps) {
             >
               {emailNotificationsEnabled ? 'Enabled' : 'Disabled'}
             </button>
+          </div>
+
+          {/* Subsection: BYO-AI Curriculum & Exam Converter Skills ($0 Server AI) */}
+          <div className="pt-4 border-t border-border space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="p-1 rounded-md bg-amber-500/15 text-amber-500">
+                  <RiSparklingLine className="size-4" />
+                </span>
+                <span className="font-bold text-text text-sm">
+                  BYO-AI Curriculum & Exam Converter Skills ($0 Server AI)
+                </span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-bg text-green border border-green/20 self-start sm:self-auto">
+                100% Client-Side · $0 AI Cost · Zero Data Leak
+              </span>
+            </div>
+
+            <p className="text-text3 text-xs leading-relaxed">
+              Download official ExceLearn formatting skills for your preferred AI provider (ChatGPT, Claude, or Gemini). Upload your raw PDF/Word exams to your AI with this skill to convert them into ExceLearn&apos;s deterministic character format (<code className="px-1.5 py-0.5 rounded bg-bg4 text-text font-mono text-[11px]">=== EXCELEARN EXAM V1 ===</code>) for instant offline parsing.
+            </p>
+
+            {/* 3 Downloadable Skill Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              {/* Card 1: Exam Converter Skill */}
+              <div className="p-4 rounded-xl bg-bg3 border border-border flex flex-col justify-between gap-3 hover:border-accent/40 transition-colors">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400">
+                      <RiFileCodeLine className="size-4" />
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-400 border border-purple-500/25">
+                      YAML + SKILL.md Ready
+                    </span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-text text-xs">excelearn-exam-converter</div>
+                    <div className="text-[10px] font-mono text-text3 mt-0.5">File: SKILL.md (kebab-case YAML)</div>
+                  </div>
+                  <p className="text-[11px] text-text3 leading-normal">
+                    Converts test questions or test banks into character tags (<code className="text-text2">*A)</code>, <code className="text-text2">*[x]</code>, <code className="text-text2">@ANS:</code>, <code className="text-text2">=&gt;</code>, <code className="text-text2">@EXP:</code>, <code className="text-text2">@RUBRIC:</code>).
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/60">
+                  <button
+                    type="button"
+                    onClick={() => handleCopySkill('Exam Converter Skill', EXAM_CONVERTER_SKILL)}
+                    className="py-1.5 px-2.5 rounded-lg bg-bg2 hover:bg-bg4 border border-border text-text font-semibold text-[11px] inline-flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    title="Copy full SKILL.md text to clipboard"
+                  >
+                    <RiFileCopyLine className="size-3.5" />
+                    <span>Copy</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSkill('excelearn-exam-converter', EXAM_CONVERTER_SKILL, false)}
+                    className="flex-1 py-1.5 px-2 rounded-lg bg-accent text-white hover:bg-accent/90 text-[11px] font-semibold inline-flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-xs"
+                    title="Downloads literally as SKILL.md for Gemini & Claude"
+                  >
+                    <RiDownload2Line className="size-3.5" />
+                    <span>SKILL.md</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSkill('excelearn-exam-converter', EXAM_CONVERTER_SKILL, true)}
+                    className="py-1.5 px-2.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-400 font-semibold text-[11px] inline-flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    title="Downloads excelearn-exam-converter.zip containing SKILL.md"
+                  >
+                    <RiDownload2Line className="size-3.5" />
+                    <span>.zip</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 2: Lesson Slide Outliner Skill */}
+              <div className="p-4 rounded-xl bg-bg3 border border-border flex flex-col justify-between gap-3 hover:border-accent/40 transition-colors">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                      <RiBookOpenLine className="size-4" />
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/25">
+                      YAML + SKILL.md Ready
+                    </span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-text text-xs">excelearn-lesson-outliner</div>
+                    <div className="text-[10px] font-mono text-text3 mt-0.5">File: SKILL.md (kebab-case YAML)</div>
+                  </div>
+                  <p className="text-[11px] text-text3 leading-normal">
+                    Converts DepEd curriculum guides or PDF chapters into micro-lesson slide blocks (<code className="text-text2">[SLIDE 1]</code>, <code className="text-text2">@TITLE:</code>, <code className="text-text2">* Bullet</code>, <code className="text-text2">@NOTES:</code>).
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/60">
+                  <button
+                    type="button"
+                    onClick={() => handleCopySkill('Lesson Slide Outliner Skill', LESSON_OUTLINER_SKILL)}
+                    className="py-1.5 px-2.5 rounded-lg bg-bg2 hover:bg-bg4 border border-border text-text font-semibold text-[11px] inline-flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    title="Copy full SKILL.md text to clipboard"
+                  >
+                    <RiFileCopyLine className="size-3.5" />
+                    <span>Copy</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSkill('excelearn-lesson-outliner', LESSON_OUTLINER_SKILL, false)}
+                    className="flex-1 py-1.5 px-2 rounded-lg bg-accent text-white hover:bg-accent/90 text-[11px] font-semibold inline-flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-xs"
+                    title="Downloads literally as SKILL.md for Gemini & Claude"
+                  >
+                    <RiDownload2Line className="size-3.5" />
+                    <span>SKILL.md</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSkill('excelearn-lesson-outliner', LESSON_OUTLINER_SKILL, true)}
+                    className="py-1.5 px-2.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 font-semibold text-[11px] inline-flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    title="Downloads excelearn-lesson-outliner.zip containing SKILL.md"
+                  >
+                    <RiDownload2Line className="size-3.5" />
+                    <span>.zip</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 3: Rubric Builder Skill */}
+              <div className="p-4 rounded-xl bg-bg3 border border-border flex flex-col justify-between gap-3 hover:border-accent/40 transition-colors">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                      <RiAwardLine className="size-4" />
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                      YAML + SKILL.md Ready
+                    </span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-text text-xs">excelearn-rubric-builder</div>
+                    <div className="text-[10px] font-mono text-text3 mt-0.5">File: SKILL.md (kebab-case YAML)</div>
+                  </div>
+                  <p className="text-[11px] text-text3 leading-normal">
+                    Generates analytical rubrics (<code className="text-text2">@CRITERIA: Vocal Modulation | 35pts</code>) for Performance Task Submission Bins.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/60">
+                  <button
+                    type="button"
+                    onClick={() => handleCopySkill('Rubric Builder Skill', RUBRIC_BUILDER_SKILL)}
+                    className="py-1.5 px-2.5 rounded-lg bg-bg2 hover:bg-bg4 border border-border text-text font-semibold text-[11px] inline-flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    title="Copy full SKILL.md text to clipboard"
+                  >
+                    <RiFileCopyLine className="size-3.5" />
+                    <span>Copy</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSkill('excelearn-rubric-builder', RUBRIC_BUILDER_SKILL, false)}
+                    className="flex-1 py-1.5 px-2 rounded-lg bg-accent text-white hover:bg-accent/90 text-[11px] font-semibold inline-flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-xs"
+                    title="Downloads literally as SKILL.md for Gemini & Claude"
+                  >
+                    <RiDownload2Line className="size-3.5" />
+                    <span>SKILL.md</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSkill('excelearn-rubric-builder', RUBRIC_BUILDER_SKILL, true)}
+                    className="py-1.5 px-2.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 font-semibold text-[11px] inline-flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    title="Downloads excelearn-rubric-builder.zip containing SKILL.md"
+                  >
+                    <RiDownload2Line className="size-3.5" />
+                    <span>.zip</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Collapsible Syntax Cheat Sheet Accordion */}
+            <div className="rounded-xl border border-border bg-bg3 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowSyntaxCheatSheet(!showSyntaxCheatSheet)}
+                className="w-full p-3.5 flex items-center justify-between text-left hover:bg-bg4/50 cursor-pointer transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-text">
+                    View Character Syntax Cheat Sheet
+                  </span>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-bg2 text-text3 border border-border">
+                    Deterministic Delimiters
+                  </span>
+                </div>
+                {showSyntaxCheatSheet ? (
+                  <RiArrowUpSLine className="size-4 text-text2" />
+                ) : (
+                  <RiArrowDownSLine className="size-4 text-text2" />
+                )}
+              </button>
+
+              {showSyntaxCheatSheet && (
+                <div className="p-4 pt-1 border-t border-border space-y-3 text-[11px] bg-bg2/40">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    <div className="p-2.5 rounded-lg bg-bg3 border border-border space-y-1">
+                      <div className="font-bold text-accent">1. Single Choice (MCQ)</div>
+                      <code className="block font-mono text-[10px] text-text2 bg-bg2 p-1.5 rounded">
+                        [Q1 | MCQ | 2pts]<br />
+                        Question stem text?<br />
+                        *A) Correct answer<br />
+                        B) Distractor choice<br />
+                        @EXP: Rationale text
+                      </code>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-bg3 border border-border space-y-1">
+                      <div className="font-bold text-accent">2. Multi-Select (MULTI)</div>
+                      <code className="block font-mono text-[10px] text-text2 bg-bg2 p-1.5 rounded">
+                        [Q2 | MULTI | 3pts]<br />
+                        Select all that apply:<br />
+                        *[x] Correct option 1<br />
+                        [ ] Distractor option<br />
+                        *[x] Correct option 2
+                      </code>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-bg3 border border-border space-y-1">
+                      <div className="font-bold text-accent">3. True or False (TF)</div>
+                      <code className="block font-mono text-[10px] text-text2 bg-bg2 p-1.5 rounded">
+                        [Q3 | TF | 1pt]<br />
+                        Statement to evaluate.<br />
+                        @ANS: TRUE (or FALSE)<br />
+                        @EXP: Verification note
+                      </code>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-bg3 border border-border space-y-1">
+                      <div className="font-bold text-accent">4. Identification (ID)</div>
+                      <code className="block font-mono text-[10px] text-text2 bg-bg2 p-1.5 rounded">
+                        [Q4 | ID | 2pts]<br />
+                        Question prompt?<br />
+                        @ANS: answer1 | answer2<br />
+                        @EXP: Case-insensitive match
+                      </code>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-bg3 border border-border space-y-1">
+                      <div className="font-bold text-accent">5. Matching Type (MATCH)</div>
+                      <code className="block font-mono text-[10px] text-text2 bg-bg2 p-1.5 rounded">
+                        [Q5 | MATCH | 4pts]<br />
+                        Premise A =&gt; Target A<br />
+                        Premise B =&gt; Target B<br />
+                        Premise C =&gt; Target C
+                      </code>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-bg3 border border-border space-y-1">
+                      <div className="font-bold text-accent">6. Essay / Rubric (ESSAY)</div>
+                      <code className="block font-mono text-[10px] text-text2 bg-bg2 p-1.5 rounded">
+                        [Q6 | ESSAY | 10pts]<br />
+                        Situational prompt?<br />
+                        @RUBRIC: Thesis (5pts) | Analysis (5pts)<br />
+                        @EXP: Scoring guide
+                      </code>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
