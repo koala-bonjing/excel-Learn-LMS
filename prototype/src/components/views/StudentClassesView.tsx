@@ -3,8 +3,10 @@ import {
   RiCalendarEventFill,
   RiCalendarLine,
   RiCalendar2Line,
+  RiCalendarScheduleLine,
   RiVideoLine,
   RiVideoChatLine,
+  RiVideoAddLine,
   RiBuildingLine,
   RiTimeLine,
   RiUserLine,
@@ -38,12 +40,15 @@ import {
 import { INITIAL_CLASSES } from '@/data/classesData';
 import { Popover, Dialog } from '@/components/base/popover';
 import { HoverCombobox, type HoverComboboxOption } from '@/components/base/combobox';
+import { DatePicker } from '@/components/base/date-picker';
 import type { ClassSession, TeacherResourceLink } from '@/types';
 
 export interface StudentClassesViewProps {
   onTabChange?: (tab: string) => void;
   onSelectCourse?: (courseId: string) => void;
   userRole?: 'student' | 'teacher';
+  initialOpenScheduler?: boolean;
+  onSchedulerClosed?: () => void;
 }
 
 // Helpers for calendar calculation
@@ -72,8 +77,10 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
   onTabChange,
   onSelectCourse,
   userRole = 'student',
+  initialOpenScheduler = false,
+  onSchedulerClosed,
 }) => {
-  // Classes state (allows teacher or student to add additional links dynamically)
+  // Classes state (allows teacher or student to add additional links or new schedules dynamically)
   const [classesList, setClassesList] = useState<ClassSession[]>(INITIAL_CLASSES);
 
   // Active view: 'calendar' (monthly view) | 'week' (timetable block view) | 'catalog' (list of subjects)
@@ -112,6 +119,18 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Global Toast notification for scheduling actions
+  const [toastNotification, setToastNotification] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToastNotification = (msg: string) => {
+    setToastNotification(msg);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastNotification(null);
+    }, 3500);
+  };
+
   // Options for Schedule Layout View Combobox
   const viewModeOptions: HoverComboboxOption<'calendar' | 'week' | 'catalog'>[] = useMemo(
     () => [
@@ -121,6 +140,98 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
     ],
     [],
   );
+
+  // "Schedule Class Session / Virtual Meeting" modal state for teachers
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(initialOpenScheduler);
+  const [scheduleSubjectPreset, setScheduleSubjectPreset] = useState<'oral' | 'math' | 'consult' | 'review' | 'custom'>('oral');
+  const [scheduleSubjectCode, setScheduleSubjectCode] = useState('ORAL-COMM-11');
+  const [scheduleSubjectName, setScheduleSubjectName] = useState('Oral Communication in Context');
+  const [scheduleCourseId, setScheduleCourseId] = useState('c-oral-comm');
+  const [scheduleDelivery, setScheduleDelivery] = useState<'virtual' | 'physical'>('virtual');
+  const [scheduleDate, setScheduleDate] = useState<Date>(() => new Date());
+  const [scheduleStartTime, setScheduleStartTime] = useState('10:00 AM');
+  const [scheduleEndTime, setScheduleEndTime] = useState('11:30 AM');
+  const [scheduleRecurrence, setScheduleRecurrence] = useState<'once' | 'weekly'>('once');
+  const [scheduleSelectedDays, setScheduleSelectedDays] = useState<number[]>(() => [new Date().getDay()]);
+  const [scheduleTopic, setScheduleTopic] = useState('Synchronous Speech Drill & Peer Evaluation');
+  const [scheduleRoom, setScheduleRoom] = useState('Virtual Room A · WebRTC Low-Latency Studio');
+  const [scheduleStrand, setScheduleStrand] = useState('Grade 11 STEM Section A');
+  const [scheduleMeetingId, setScheduleMeetingId] = useState('EXCL-OC-901');
+  const [schedulePasscode, setSchedulePasscode] = useState('SPEECH2026');
+  const [scheduleMeetingUrl, setScheduleMeetingUrl] = useState('https://meet.excelearn.edu/live/oral-comm-11');
+  const [scheduleTeacherNotes, setScheduleTeacherNotes] = useState('');
+
+  const handleCloseScheduler = () => {
+    setIsScheduleModalOpen(false);
+    onSchedulerClosed?.();
+  };
+
+  // Sync initialOpenScheduler prop
+  const prevSchedulerPropRef = useRef(initialOpenScheduler);
+  useEffect(() => {
+    if (initialOpenScheduler !== prevSchedulerPropRef.current) {
+      prevSchedulerPropRef.current = initialOpenScheduler;
+      setIsScheduleModalOpen(initialOpenScheduler);
+    }
+  }, [initialOpenScheduler]);
+
+  const handlePresetChange = (preset: 'oral' | 'math' | 'consult' | 'review' | 'custom') => {
+    setScheduleSubjectPreset(preset);
+    if (preset === 'oral') {
+      setScheduleSubjectCode('ORAL-COMM-11');
+      setScheduleSubjectName('Oral Communication in Context');
+      setScheduleCourseId('c-oral-comm');
+      setScheduleDelivery('virtual');
+      setScheduleTopic('Synchronous Speech Drill & Peer Evaluation');
+      setScheduleRoom('Virtual Room A · WebRTC Studio');
+      setScheduleMeetingId('EXCL-OC-901');
+      setSchedulePasscode('SPEECH2026');
+      setScheduleMeetingUrl('https://meet.excelearn.edu/live/oral-comm-11');
+    } else if (preset === 'math') {
+      setScheduleSubjectCode('GEN-MATH-11');
+      setScheduleSubjectName('General Mathematics');
+      setScheduleCourseId('c-gen-math');
+      setScheduleDelivery('physical');
+      setScheduleTopic('Rational Functions & Limits Problem-Solving Lab');
+      setScheduleRoom('Room 304, STEM Academic Building');
+    } else if (preset === 'consult') {
+      setScheduleSubjectCode('STEM-CONSULT');
+      setScheduleSubjectName('Faculty Consultation & Office Hours');
+      setScheduleCourseId('c-oral-comm');
+      setScheduleDelivery('virtual');
+      setScheduleTopic('One-on-One Performance Task Coaching & Remediation');
+      setScheduleRoom('Virtual Faculty Consultation Suite');
+      setScheduleMeetingId('EXCL-CONSULT-01');
+      setSchedulePasscode('FACULTY2026');
+      setScheduleMeetingUrl('https://meet.excelearn.edu/live/consultation');
+    } else if (preset === 'review') {
+      setScheduleSubjectCode('MIDTERM-REV');
+      setScheduleSubjectName('Midterm Examination Review Session');
+      setScheduleCourseId('c-oral-comm');
+      setScheduleDelivery('virtual');
+      setScheduleTopic('Comprehensive Q&A and Mock Examination Review');
+      setScheduleRoom('Virtual Auditorium WebRTC 1');
+      setScheduleMeetingId('EXCL-REV-2026');
+      setSchedulePasscode('REVIEW2026');
+      setScheduleMeetingUrl('https://meet.excelearn.edu/live/review-hall');
+    } else {
+      setScheduleSubjectCode('');
+      setScheduleSubjectName('');
+      setScheduleCourseId('');
+      setScheduleTopic('');
+      setScheduleRoom('');
+    }
+  };
+
+  const toggleScheduleDay = (day: number) => {
+    setScheduleSelectedDays((prev) => {
+      if (prev.includes(day)) {
+        if (prev.length === 1) return prev;
+        return prev.filter((d) => d !== day);
+      }
+      return [...prev, day].sort();
+    });
+  };
 
   // "Add Teacher Resource Link" modal state
   const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false);
@@ -133,18 +244,23 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
   // Global Escape key listener to dismiss open modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isAddLinkModalOpen) {
-        setIsAddLinkModalOpen(false);
+      if (e.key === 'Escape') {
+        if (isAddLinkModalOpen) setIsAddLinkModalOpen(false);
+        if (isScheduleModalOpen) {
+          setIsScheduleModalOpen(false);
+          onSchedulerClosed?.();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAddLinkModalOpen]);
+  }, [isAddLinkModalOpen, isScheduleModalOpen, onSchedulerClosed]);
 
   // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     };
   }, []);
 
@@ -198,16 +314,6 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
     setCurrentMonth(nextMonth);
     const maxDay = new Date(nextYear, nextMonth + 1, 0).getDate();
     setSelectedDate(new Date(nextYear, nextMonth, Math.min(selectedDate.getDate(), maxDay)));
-  };
-
-  const handleDateInputChange = (value: string) => {
-    if (!value) return;
-    const [y, m, d] = value.split('-').map(Number);
-    if (!y || !m || !d) return;
-    setActivePopupClass(null);
-    setCurrentYear(y);
-    setCurrentMonth(m - 1);
-    setSelectedDate(new Date(y, m - 1, d));
   };
 
   // Calendar matrix calculation
@@ -388,6 +494,80 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
     );
   };
 
+  // Schedule class session / virtual meeting handler (Faculty)
+  const handleScheduleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scheduleSubjectCode.trim() || !scheduleSubjectName.trim()) return;
+
+    const dayOfWeek = scheduleDate.getDay();
+    const finalScheduleDays = scheduleRecurrence === 'weekly' ? scheduleSelectedDays : [dayOfWeek];
+
+    const dayName = scheduleDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const scheduleDaysText =
+      scheduleRecurrence === 'weekly'
+        ? finalScheduleDays.map((d) => DAYS_OF_WEEK[d]).join(', ')
+        : `Special Session: ${dayName}`;
+
+    const newClassSession: ClassSession = {
+      id: `cls-sched-${Date.now()}`,
+      subjectCode: scheduleSubjectCode.trim(),
+      subjectName: scheduleSubjectName.trim(),
+      courseId: scheduleCourseId || 'c-oral-comm',
+      teacher: {
+        name: 'Ms. Juna Velarde',
+        role: 'Senior High Faculty Lead',
+        department: 'Languages & Oral Communication',
+        initials: 'JV',
+      },
+      scheduleDays: finalScheduleDays,
+      scheduleDaysText,
+      startTime: scheduleStartTime,
+      endTime: scheduleEndTime,
+      timeRange: `${scheduleStartTime} – ${scheduleEndTime}`,
+      durationMinutes: 90,
+      deliveryMode: scheduleDelivery,
+      room: scheduleDelivery === 'virtual' ? 'Virtual Room · WebRTC HD Studio' : scheduleRoom || 'Room 304, STEM Academic Building',
+      strand: scheduleStrand,
+      semester: '1st Semester AY 2026–2027',
+      topic: scheduleTopic.trim() || 'Curriculum Module Discussion',
+      description: `Synchronous session scheduled by faculty for ${scheduleStrand}.`,
+      color: scheduleDelivery === 'virtual' ? 'cyan' : 'accent',
+      addedByTeacher: true,
+      virtualDetails: scheduleDelivery === 'virtual' ? {
+        meetingUrl: scheduleMeetingUrl.trim() || `https://meet.excelearn.edu/live/room-${Date.now().toString(36)}`,
+        platform: 'ExceLearn WebRTC HD Broadcast Studio',
+        meetingId: scheduleMeetingId.trim() || `EXCL-${Math.floor(100 + Math.random() * 900)}`,
+        passcode: schedulePasscode.trim() || 'EXCEL2026',
+        serverRegion: 'PH-MNL-01 (DepEd Region V Edge Relay)',
+        videoQuality: 'HD 1080p 60fps · WebRTC Low-Latency Signaling',
+        attendanceRequirement: 'DepEd SF2 automated attendance registered upon room connection',
+        isLiveNow: false,
+        recordingArchived: true,
+      } : undefined,
+      additionalLinks: [],
+      teacherNotes: scheduleTeacherNotes.trim() || undefined,
+    };
+
+    setClassesList((prev) => [newClassSession, ...prev]);
+
+    // Jump calendar to the scheduled date immediately
+    setSelectedDate(scheduleDate);
+    setCurrentMonth(scheduleDate.getMonth());
+    setCurrentYear(scheduleDate.getFullYear());
+
+    showToastNotification(`Successfully scheduled ${scheduleDelivery === 'virtual' ? 'virtual meeting' : 'class session'} for ${scheduleSubjectCode}!`);
+    handleCloseScheduler();
+  };
+
+  // Remove teacher created class session
+  const handleDeleteSession = (classId: string, subjectCode: string) => {
+    setClassesList((prev) => prev.filter((c) => c.id !== classId));
+    if (activePopupClass?.id === classId) {
+      setActivePopupClass(null);
+    }
+    showToastNotification(`Removed schedule for ${subjectCode}.`);
+  };
+
   // Statistics
   const totalClassesCount = classesList.length;
   const virtualClassesCount = classesList.filter((c) => c.deliveryMode === 'virtual').length;
@@ -414,7 +594,6 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
     [],
   );
 
-  const formattedSelectedDate = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
   const isSelectedToday = isSameDay(selectedDate, now);
   const yearOptions = useMemo(
     () => Array.from(new Set([2025, 2026, 2027, 2028, now.getFullYear(), currentYear])).sort((a, b) => a - b),
@@ -862,15 +1041,26 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
               }
             />
 
-            {/* Native Date Picker (Jump / Filter to Exact Date) */}
-            <input
-              type="date"
-              value={formattedSelectedDate}
-              onChange={(e) => handleDateInputChange(e.target.value)}
-              aria-label="Jump to or filter by exact date"
-              title="Jump to exact date"
-              className="px-2.5 py-1.5 rounded-xl bg-bg3 border border-border text-xs font-medium text-text outline-none focus:border-accent focus:ring-1 focus:ring-accent cursor-pointer"
+            {/* Board UI DatePicker (Jump / Filter to Exact Date) */}
+            <DatePicker
+              value={selectedDate}
+              onChange={(d) => handleSelectCalendarCell(d)}
+              placeholder="Jump to date..."
+              align="right"
+              buttonClassName="bg-bg3 hover:bg-bg4"
             />
+
+            {/* Teacher "+ Schedule Class / Meeting" Action Button */}
+            {userRole === 'teacher' && (
+              <button
+                type="button"
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs hover:shadow-sm cursor-pointer transition-all shrink-0"
+              >
+                <RiCalendarEventFill className="size-3.5" />
+                <span>+ Schedule Class / Meeting</span>
+              </button>
+            )}
 
             {/* Selected Date Filter Toggle (filters All Classes List by selected day) */}
             {viewMode === 'catalog' && (
@@ -1049,6 +1239,21 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                     </button>
                   );
                 })
+              )}
+
+              {userRole === 'teacher' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setScheduleDate(selectedDate);
+                    setIsScheduleModalOpen(true);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-accent/15 hover:bg-accent/25 text-accent border border-accent/30 text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1"
+                  title="Schedule a session for this date"
+                >
+                  <RiAddLine className="size-3" />
+                  <span>Schedule on this Date</span>
+                </button>
               )}
 
               {!isSelectedToday && (
@@ -1563,33 +1768,65 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
 
                 {/* Popover Footer Action Buttons */}
                 <div className="p-2.5 bg-bg3/60 border-t border-border/60 flex items-center justify-between gap-2">
-                  {onSelectCourse && activePopupClass.courseId ? (
+                  <div className="flex items-center gap-1.5">
+                    {onSelectCourse && activePopupClass.courseId ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const cId = activePopupClass.courseId!;
+                          setActivePopupClass(null);
+                          onSelectCourse(cId);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-accent/15 text-accent hover:bg-accent hover:text-white border border-accent/30 text-[10px] font-semibold cursor-pointer flex items-center gap-1 transition-colors"
+                      >
+                        <RiBookOpenLine className="size-3" />
+                        <span>Modules</span>
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-text3">
+                        DepEd Curriculum
+                      </span>
+                    )}
+
+                    {userRole === 'teacher' && activePopupClass.addedByTeacher && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteSession(activePopupClass.id, activePopupClass.subjectCode)}
+                        className="p-1 rounded-lg text-red/80 hover:text-red hover:bg-red/10 cursor-pointer transition-colors"
+                        title="Cancel this scheduled session"
+                        aria-label="Cancel session"
+                      >
+                        <RiDeleteBinLine className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {userRole === 'teacher' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScheduleSubjectCode(activePopupClass.subjectCode);
+                          setScheduleSubjectName(activePopupClass.subjectName);
+                          setScheduleCourseId(activePopupClass.courseId || 'c-oral-comm');
+                          setScheduleDelivery(activePopupClass.deliveryMode);
+                          setScheduleDate(selectedDate);
+                          setIsScheduleModalOpen(true);
+                          setActivePopupClass(null);
+                        }}
+                        className="px-2 py-1 rounded-lg bg-accent text-white text-[10px] font-semibold hover:bg-accent/90 cursor-pointer transition-colors"
+                      >
+                        + Add Session
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={() => {
-                        const cId = activePopupClass.courseId!;
-                        setActivePopupClass(null);
-                        onSelectCourse(cId);
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-accent/15 text-accent hover:bg-accent hover:text-white border border-accent/30 text-[10px] font-semibold cursor-pointer flex items-center gap-1 transition-colors"
+                      onClick={() => setActivePopupClass(null)}
+                      className="px-2.5 py-1 rounded-lg bg-bg2 text-text border border-border text-[10px] font-semibold hover:bg-bg4 cursor-pointer transition-colors"
                     >
-                      <RiBookOpenLine className="size-3" />
-                      <span>Subject Modules</span>
-                      <RiArrowRightLine className="size-3" />
+                      Close
                     </button>
-                  ) : (
-                    <span className="text-[10px] text-text3">
-                      DepEd Curriculum
-                    </span>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => setActivePopupClass(null)}
-                    className="px-3 py-1 rounded-lg bg-bg2 text-text border border-border text-[10px] font-semibold hover:bg-bg4 cursor-pointer transition-colors"
-                  >
-                    Close
-                  </button>
+                  </div>
                 </div>
               </Dialog>
             </Popover>
@@ -2012,6 +2249,434 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
               </div>
             </form>
           </div>
+        </div>
+      )}
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL 3: TEACHER SCHEDULE CLASS SESSION & MEETING MODAL        */}
+      {/* ------------------------------------------------------------- */}
+      {isScheduleModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="schedule-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleCloseScheduler();
+            }
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
+        >
+          <div className="w-full max-w-xl max-h-[90vh] bg-bg2 rounded-2xl border border-border shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="p-5 bg-bg3 border-b border-border flex items-center justify-between shrink-0">
+              <div>
+                <h4 id="schedule-modal-title" className="text-base font-bold text-text flex items-center gap-2">
+                  <RiCalendarScheduleLine className="size-5 text-accent" />
+                  <span>Schedule Class Session & Meeting</span>
+                </h4>
+                <p className="text-xs text-text3 mt-0.5">
+                  Publish synchronous virtual meetings, on-campus classes, or consultation hours to the faculty timetable.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseScheduler}
+                className="p-1.5 rounded-lg text-text3 hover:text-text hover:bg-bg4 cursor-pointer transition-colors"
+                aria-label="Close dialog"
+              >
+                <RiCloseLine className="size-5" />
+              </button>
+            </div>
+
+            {/* Form Scroll Body */}
+            <form onSubmit={handleScheduleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
+              {/* Quick Subject Presets */}
+              <div>
+                <label className="block text-xs font-semibold text-text2 mb-1.5">
+                  Quick Subject Preset
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { id: 'oral', label: 'Oral Communication', code: 'ORAL-COMM-11' },
+                    { id: 'math', label: 'General Mathematics', code: 'GEN-MATH-11' },
+                    { id: 'consult', label: 'Faculty Consultation', code: 'STEM-CONSULT' },
+                    { id: 'review', label: 'Exam Review', code: 'MIDTERM-REV' },
+                    { id: 'custom', label: 'Custom Class', code: 'CUSTOM' },
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => handlePresetChange(p.id as any)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-all border ${
+                        scheduleSubjectPreset === p.id
+                          ? 'bg-accent/15 text-accent border-accent/40 ring-1 ring-accent/20'
+                          : 'bg-bg3 hover:bg-bg4 text-text2 border-border'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Subject Code & Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-text2 mb-1.5">
+                    Subject Code *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. ORAL-COMM-11"
+                    value={scheduleSubjectCode}
+                    onChange={(e) => setScheduleSubjectCode(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-bg3 border border-border text-xs text-text placeholder:text-text3 outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-text2 mb-1.5">
+                    Subject Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Oral Communication in Context"
+                    value={scheduleSubjectName}
+                    onChange={(e) => setScheduleSubjectName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-bg3 border border-border text-xs text-text placeholder:text-text3 outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+              </div>
+
+              {/* Target Section / Strand */}
+              <div>
+                <label className="block text-xs font-semibold text-text2 mb-1.5">
+                  Target Student Section / Class Handled *
+                </label>
+                <select
+                  value={scheduleStrand}
+                  onChange={(e) => setScheduleStrand(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-bg3 border border-border text-xs text-text outline-none focus:border-accent cursor-pointer"
+                >
+                  <option value="Grade 11 STEM Section A">Grade 11 STEM Section A (Advisory Class)</option>
+                  <option value="Grade 11 STEM Section B">Grade 11 STEM Section B</option>
+                  <option value="Grade 11 HUMSS Section A">Grade 11 HUMSS Section A</option>
+                  <option value="Grade 11 ABM Section A">Grade 11 ABM Section A</option>
+                  <option value="Grade 12 STEM Section A">Grade 12 STEM Section A</option>
+                  <option value="All Assigned Sections">All Assigned Sections (Combined Hall)</option>
+                </select>
+              </div>
+
+              {/* Delivery Modality Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-text2 mb-1.5">
+                  Delivery Modality *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScheduleDelivery('virtual');
+                      if (!scheduleRoom.includes('WebRTC')) {
+                        setScheduleRoom('Virtual Room A · WebRTC Low-Latency Studio');
+                      }
+                    }}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-2.5 ${
+                      scheduleDelivery === 'virtual'
+                        ? 'bg-cyan-bg/30 border-cyan text-cyan ring-1 ring-cyan/40 shadow-xs'
+                        : 'bg-bg3 hover:bg-bg4 text-text2 border-border'
+                    }`}
+                  >
+                    <RiVideoLine className="size-5 shrink-0 text-cyan" />
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-text">Virtual Class (WebRTC)</div>
+                      <div className="text-[10px] text-text3">Live HD Broadcast & Studio</div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScheduleDelivery('physical');
+                      if (scheduleRoom.includes('WebRTC') || scheduleRoom.includes('Virtual')) {
+                        setScheduleRoom('Room 304, STEM Academic Building');
+                      }
+                    }}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-2.5 ${
+                      scheduleDelivery === 'physical'
+                        ? 'bg-green-bg/30 border-green text-green ring-1 ring-green/40 shadow-xs'
+                        : 'bg-bg3 hover:bg-bg4 text-text2 border-border'
+                    }`}
+                  >
+                    <RiBuildingLine className="size-5 shrink-0 text-green" />
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-text">On-Campus Physical</div>
+                      <div className="text-[10px] text-text3">Classroom or Laboratory</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Date & Time with Board UI DatePicker */}
+              <div className="p-3.5 rounded-xl bg-bg3/60 border border-border space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-text3 flex items-center gap-1.5">
+                  <RiTimeLine className="size-3.5 text-accent" />
+                  <span>Session Date & Time</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                  {/* Board UI DatePicker */}
+                  <div>
+                    <label className="block text-xs font-semibold text-text2 mb-1.5">
+                      Session Date *
+                    </label>
+                    <DatePicker
+                      value={scheduleDate}
+                      onChange={(date) => {
+                        setScheduleDate(date);
+                        if (scheduleRecurrence === 'once') {
+                          setScheduleSelectedDays([date.getDay()]);
+                        }
+                      }}
+                      placeholder="Choose session date..."
+                      buttonClassName="w-full bg-bg2 hover:bg-bg3 text-xs"
+                      showPresets
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-text2 mb-1.5">
+                      Start Time *
+                    </label>
+                    <select
+                      value={scheduleStartTime}
+                      onChange={(e) => setScheduleStartTime(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-bg2 border border-border text-xs text-text outline-none focus:border-accent cursor-pointer"
+                    >
+                      <option value="07:30 AM">07:30 AM</option>
+                      <option value="08:00 AM">08:00 AM</option>
+                      <option value="08:30 AM">08:30 AM</option>
+                      <option value="09:00 AM">09:00 AM</option>
+                      <option value="09:30 AM">09:30 AM</option>
+                      <option value="10:00 AM">10:00 AM</option>
+                      <option value="10:30 AM">10:30 AM</option>
+                      <option value="11:00 AM">11:00 AM</option>
+                      <option value="01:00 PM">01:00 PM</option>
+                      <option value="01:30 PM">01:30 PM</option>
+                      <option value="02:00 PM">02:00 PM</option>
+                      <option value="02:30 PM">02:30 PM</option>
+                      <option value="03:00 PM">03:00 PM</option>
+                      <option value="04:00 PM">04:00 PM</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-text2 mb-1.5">
+                      End Time *
+                    </label>
+                    <select
+                      value={scheduleEndTime}
+                      onChange={(e) => setScheduleEndTime(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-bg2 border border-border text-xs text-text outline-none focus:border-accent cursor-pointer"
+                    >
+                      <option value="09:00 AM">09:00 AM</option>
+                      <option value="09:30 AM">09:30 AM</option>
+                      <option value="10:00 AM">10:00 AM</option>
+                      <option value="10:30 AM">10:30 AM</option>
+                      <option value="11:00 AM">11:00 AM</option>
+                      <option value="11:30 AM">11:30 AM</option>
+                      <option value="12:00 PM">12:00 PM</option>
+                      <option value="02:00 PM">02:00 PM</option>
+                      <option value="02:30 PM">02:30 PM</option>
+                      <option value="03:00 PM">03:00 PM</option>
+                      <option value="03:30 PM">03:30 PM</option>
+                      <option value="04:00 PM">04:00 PM</option>
+                      <option value="05:00 PM">05:00 PM</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Recurrence Selection */}
+                <div className="pt-2 border-t border-border/60">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-text2">Recurrence Pattern</span>
+                    <div className="inline-flex rounded-lg bg-bg2 p-0.5 border border-border text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setScheduleRecurrence('once')}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-semibold cursor-pointer transition-colors ${
+                          scheduleRecurrence === 'once'
+                            ? 'bg-accent text-white shadow-xs'
+                            : 'text-text3 hover:text-text'
+                        }`}
+                      >
+                        One-Time
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setScheduleRecurrence('weekly')}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-semibold cursor-pointer transition-colors ${
+                          scheduleRecurrence === 'weekly'
+                            ? 'bg-accent text-white shadow-xs'
+                            : 'text-text3 hover:text-text'
+                        }`}
+                      >
+                        Weekly Repeat
+                      </button>
+                    </div>
+                  </div>
+
+                  {scheduleRecurrence === 'weekly' && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] text-text3 mr-1">Repeat On:</span>
+                      {DAYS_OF_WEEK.map((day, idx) => {
+                        const isSelected = scheduleSelectedDays.includes(idx);
+                        return (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => toggleScheduleDay(idx)}
+                            className={`size-8 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                              isSelected
+                                ? 'bg-accent text-white border-accent shadow-xs'
+                                : 'bg-bg2 hover:bg-bg3 text-text3 border-border'
+                            }`}
+                          >
+                            {day[0]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Virtual Meeting Details (if virtual) */}
+              {scheduleDelivery === 'virtual' && (
+                <div className="p-3.5 rounded-xl bg-cyan-bg/20 border border-cyan/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-cyan flex items-center gap-1.5 uppercase tracking-wider">
+                      <RiVideoAddLine className="size-3.5" />
+                      WebRTC Studio Credentials
+                    </span>
+                    <span className="text-[10px] text-cyan/80 font-mono font-semibold">
+                      Auto-Configured
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-text2 mb-1">
+                        Meeting ID
+                      </label>
+                      <input
+                        type="text"
+                        value={scheduleMeetingId}
+                        onChange={(e) => setScheduleMeetingId(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-bg2 border border-border text-xs font-mono font-semibold text-text"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-text2 mb-1">
+                        Access Passcode
+                      </label>
+                      <input
+                        type="text"
+                        value={schedulePasscode}
+                        onChange={(e) => setSchedulePasscode(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-bg2 border border-border text-xs font-mono font-semibold text-accent"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-text2 mb-1">
+                      WebRTC Broadcast Link
+                    </label>
+                    <input
+                      type="url"
+                      value={scheduleMeetingUrl}
+                      onChange={(e) => setScheduleMeetingUrl(e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-bg2 border border-border text-xs font-mono text-cyan"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Physical Location (if physical) */}
+              {scheduleDelivery === 'physical' && (
+                <div>
+                  <label className="block text-xs font-semibold text-text2 mb-1.5">
+                    Classroom / Campus Location *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Room 304, STEM Academic Building"
+                    value={scheduleRoom}
+                    onChange={(e) => setScheduleRoom(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-bg3 border border-border text-xs text-text placeholder:text-text3 outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+              )}
+
+              {/* Topic & Agenda */}
+              <div>
+                <label className="block text-xs font-semibold text-text2 mb-1.5">
+                  Lesson Topic / Agenda *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Module 7: Interactive Debate & Speech Delivery Practice"
+                  value={scheduleTopic}
+                  onChange={(e) => setScheduleTopic(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-bg3 border border-border text-xs text-text placeholder:text-text3 outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                />
+              </div>
+
+              {/* Teacher Notes / Prep instructions */}
+              <div>
+                <label className="block text-xs font-semibold text-text2 mb-1.5">
+                  Instructions for Students (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Kindly test your microphone and prepare 2-minute spontaneous delivery outlines..."
+                  value={scheduleTeacherNotes}
+                  onChange={(e) => setScheduleTeacherNotes(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-bg3 border border-border text-xs text-text placeholder:text-text3 outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+                />
+              </div>
+
+              {/* Footer Buttons */}
+              <div className="pt-3 border-t border-border flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleCloseScheduler}
+                  className="px-4 py-2 rounded-xl bg-bg3 text-text border border-border text-xs font-semibold hover:bg-bg4 cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-accent text-white text-xs font-bold hover:bg-accent/90 cursor-pointer shadow-xs flex items-center gap-1.5 transition-all"
+                >
+                  <RiCheckLine className="size-4" />
+                  <span>Confirm & Add Schedule</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastNotification && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-900/95 dark:bg-bg2/95 text-white dark:text-text border border-accent/40 shadow-2xl flex items-center gap-2 text-xs font-semibold animate-in fade-in slide-in-from-bottom-2">
+          <RiCheckLine className="size-4 text-green" />
+          <span>{toastNotification}</span>
         </div>
       )}
     </div>

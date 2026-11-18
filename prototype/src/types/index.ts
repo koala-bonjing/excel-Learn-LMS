@@ -143,5 +143,6 @@ export interface ClassSession {
   };
   additionalLinks: TeacherResourceLink[];
   teacherNotes?: string;
+  addedByTeacher?: boolean;
 }
 

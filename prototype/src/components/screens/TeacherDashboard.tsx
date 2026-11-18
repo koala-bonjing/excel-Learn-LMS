@@ -29,6 +29,7 @@ import {
   RiFileTextLine,
   RiQuestionLine,
   RiCalendarEventLine,
+  RiCalendarEventFill,
   RiStackLine,
   RiMegaphoneLine,
   RiArrowLeftSLine,
@@ -460,6 +461,7 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
   const [isCreateQuizOpen, setIsCreateQuizOpen] = useState(false);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
+  const [openSchedulerOnLive, setOpenSchedulerOnLive] = useState(false);
   const [gradingModalSubmission, setGradingModalSubmission] = useState<StudentSubmission | null>(null);
 
   // Teacher Subjects & Syllabus Tab State
@@ -760,14 +762,27 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                     <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span>LIVE NOW: Oral Comm · STEM 11-A · Rm 302</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => onTabChange('live')}
-                    className="btn btn-primary btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
-                  >
-                    <RiLiveLine size={14} />
-                    <span>Launch Class →</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpenSchedulerOnLive(true);
+                        onTabChange('live');
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-bg3 hover:bg-bg4 border border-border text-xs font-semibold text-text cursor-pointer inline-flex items-center gap-1.5 transition-colors"
+                    >
+                      <RiCalendarEventFill className="size-3.5 text-accent" />
+                      <span>+ Schedule Session</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onTabChange('live')}
+                      className="btn btn-primary btn-sm text-xs cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <RiLiveLine size={14} />
+                      <span>Launch Class →</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1621,13 +1636,13 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
           {/* FLOATING QUICK ACTIONS SPEED-DIAL BUTTON (Nav Items Theme)   */}
           {/* ============================================================ */}
           <div
-            className="fixed bottom-6 right-6 z-40 select-none"
+            className="fixed bottom-6 right-6 z-40 select-none group/fab"
             onMouseEnter={() => setIsQuickActionsOpen(true)}
             onMouseLeave={() => setIsQuickActionsOpen(false)}
           >
             {/* Pop-up Action Items (Positioned absolutely above the button) */}
             <div
-              className={`absolute bottom-full right-0 pb-2.5 flex flex-col items-end gap-2 transition-all duration-200 ease-out ${
+              className={`absolute bottom-full right-0 pb-3 flex flex-col items-end gap-2.5 transition-all duration-200 ease-out ${
                 isQuickActionsOpen
                   ? 'opacity-100 translate-y-0 pointer-events-auto visible'
                   : 'opacity-0 translate-y-2 pointer-events-none invisible'
@@ -1644,7 +1659,7 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                   }
                   setIsQuickActionsOpen(false);
                 }}
-                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-1.5 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-amber-500/50 hover:bg-bg3 shadow-lg hover:shadow-xl hover:-translate-x-1 transition-all cursor-pointer text-xs font-semibold text-text"
+                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-2 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-[var(--sidebar-active-border)] hover:bg-bg3 shadow-lg hover:shadow-[0_4px_16px_rgba(247,151,30,0.22)] hover:-translate-x-1.5 transition-all cursor-pointer text-xs font-semibold text-text"
               >
                 <span className="text-text2 group-hover:text-text transition-colors">
                   Grade Pending Queue ({pendingSubmissions.length})
@@ -1665,12 +1680,12 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                   setStudioOpen(true);
                   setIsQuickActionsOpen(false);
                 }}
-                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-1.5 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-amber-500/50 hover:bg-bg3 shadow-lg hover:shadow-xl hover:-translate-x-1 transition-all cursor-pointer text-xs font-semibold text-text"
+                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-2 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-[var(--sidebar-active-border)] hover:bg-bg3 shadow-lg hover:shadow-[0_4px_16px_rgba(247,151,30,0.22)] hover:-translate-x-1.5 transition-all cursor-pointer text-xs font-semibold text-text"
               >
                 <span className="text-text2 group-hover:text-text transition-colors">
                   Create Interactive Quiz
                 </span>
-                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-amber-500/15 group-hover:text-amber-500 border border-border group-hover:border-amber-500/40 shadow-xs transition-colors">
+                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-[var(--sidebar-active-border)]/15 group-hover:text-[var(--sidebar-active-border)] border border-border group-hover:border-[var(--sidebar-active-border)]/40 shadow-xs transition-colors">
                   <RiQuestionLine className="size-3.5" />
                 </span>
               </button>
@@ -1686,12 +1701,12 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                   setStudioOpen(true);
                   setIsQuickActionsOpen(false);
                 }}
-                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-1.5 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-amber-500/50 hover:bg-bg3 shadow-lg hover:shadow-xl hover:-translate-x-1 transition-all cursor-pointer text-xs font-semibold text-text"
+                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-2 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-[var(--sidebar-active-border)] hover:bg-bg3 shadow-lg hover:shadow-[0_4px_16px_rgba(247,151,30,0.22)] hover:-translate-x-1.5 transition-all cursor-pointer text-xs font-semibold text-text"
               >
                 <span className="text-text2 group-hover:text-text transition-colors">
                   New Performance Task
                 </span>
-                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-amber-500/15 group-hover:text-amber-500 border border-border group-hover:border-amber-500/40 shadow-xs transition-colors">
+                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-[var(--sidebar-active-border)]/15 group-hover:text-[var(--sidebar-active-border)] border border-border group-hover:border-[var(--sidebar-active-border)]/40 shadow-xs transition-colors">
                   <RiFileList3Line className="size-3.5" />
                 </span>
               </button>
@@ -1707,12 +1722,12 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                   setStudioOpen(true);
                   setIsQuickActionsOpen(false);
                 }}
-                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-1.5 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-amber-500/50 hover:bg-bg3 shadow-lg hover:shadow-xl hover:-translate-x-1 transition-all cursor-pointer text-xs font-semibold text-text"
+                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-2 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-[var(--sidebar-active-border)] hover:bg-bg3 shadow-lg hover:shadow-[0_4px_16px_rgba(247,151,30,0.22)] hover:-translate-x-1.5 transition-all cursor-pointer text-xs font-semibold text-text"
               >
                 <span className="text-text2 group-hover:text-text transition-colors">
                   Add Course / Module
                 </span>
-                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-amber-500/15 group-hover:text-amber-500 border border-border group-hover:border-amber-500/40 shadow-xs transition-colors">
+                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-[var(--sidebar-active-border)]/15 group-hover:text-[var(--sidebar-active-border)] border border-border group-hover:border-[var(--sidebar-active-border)]/40 shadow-xs transition-colors">
                   <RiBookOpenLine className="size-3.5" />
                 </span>
               </button>
@@ -1724,57 +1739,106 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
                   setIsPostAnnounceOpen(true);
                   setIsQuickActionsOpen(false);
                 }}
-                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-1.5 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-amber-500/50 hover:bg-bg3 shadow-lg hover:shadow-xl hover:-translate-x-1 transition-all cursor-pointer text-xs font-semibold text-text"
+                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-2 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-[var(--sidebar-active-border)] hover:bg-bg3 shadow-lg hover:shadow-[0_4px_16px_rgba(247,151,30,0.22)] hover:-translate-x-1.5 transition-all cursor-pointer text-xs font-semibold text-text"
               >
                 <span className="text-text2 group-hover:text-text transition-colors">
                   Post Announcement
                 </span>
-                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-amber-500/15 group-hover:text-amber-500 border border-border group-hover:border-amber-500/40 shadow-xs transition-colors">
+                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-[var(--sidebar-active-border)]/15 group-hover:text-[var(--sidebar-active-border)] border border-border group-hover:border-[var(--sidebar-active-border)]/40 shadow-xs transition-colors">
                   <RiNotification3Line className="size-3.5" />
                 </span>
               </button>
 
-              {/* 6. Launch Virtual Class */}
+              {/* 6. Schedule Meeting / Class Session */}
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenSchedulerOnLive(true);
+                  onTabChange('live');
+                  setIsQuickActionsOpen(false);
+                }}
+                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-2 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-[var(--sidebar-active-border)] hover:bg-bg3 shadow-lg hover:shadow-[0_4px_16px_rgba(247,151,30,0.22)] hover:-translate-x-1.5 transition-all cursor-pointer text-xs font-semibold text-text"
+              >
+                <span className="text-text2 group-hover:text-text transition-colors">
+                  Schedule Meeting / Class
+                </span>
+                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-[var(--sidebar-active-border)]/15 group-hover:text-[var(--sidebar-active-border)] border border-border group-hover:border-[var(--sidebar-active-border)]/40 shadow-xs transition-colors">
+                  <RiCalendarEventFill className="size-3.5" />
+                </span>
+              </button>
+
+              {/* 7. Launch Virtual Class */}
               <button
                 type="button"
                 onClick={() => {
                   onTabChange('live');
                   setIsQuickActionsOpen(false);
                 }}
-                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-1.5 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-amber-500/50 hover:bg-bg3 shadow-lg hover:shadow-xl hover:-translate-x-1 transition-all cursor-pointer text-xs font-semibold text-text"
+                className="group flex items-center gap-2.5 py-1.5 pl-3.5 pr-2 rounded-full bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-border hover:border-[var(--sidebar-active-border)] hover:bg-bg3 shadow-lg hover:shadow-[0_4px_16px_rgba(247,151,30,0.22)] hover:-translate-x-1.5 transition-all cursor-pointer text-xs font-semibold text-text"
               >
                 <span className="text-text2 group-hover:text-text transition-colors">
                   Launch Virtual Class
                 </span>
-                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-amber-500/15 group-hover:text-amber-500 border border-border group-hover:border-amber-500/40 shadow-xs transition-colors">
+                <span className="size-7 rounded-full flex items-center justify-center bg-bg3 text-text2 group-hover:bg-[var(--sidebar-active-border)]/15 group-hover:text-[var(--sidebar-active-border)] border border-border group-hover:border-[var(--sidebar-active-border)]/40 shadow-xs transition-colors">
                   <RiLiveLine className="size-3.5" />
                 </span>
               </button>
             </div>
 
-            {/* Main Trigger Button (ExceLearn Nav Items Theme) */}
-            <button
-              type="button"
-              onClick={() => setIsQuickActionsOpen((prev) => !prev)}
-              aria-label="Toggle Quick Actions Speed-Dial"
-              aria-expanded={isQuickActionsOpen}
-              className="group inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full excelearn-nav-pill active border-2 border-[var(--sidebar-active-border)] text-[var(--sidebar-active-text)] font-semibold text-xs sm:text-sm shadow-xl hover:shadow-2xl hover:brightness-105 active:scale-95 transition-all cursor-pointer"
-            >
-              <RiSparklingLine className="size-4 sm:size-4.5 animate-pulse text-[var(--sidebar-active-text)]" aria-hidden="true" />
-              <span className="text-[var(--sidebar-active-text)]">Quick Actions</span>
-              {pendingSubmissions.length > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[var(--sidebar-active-border)] text-slate-950 leading-none shadow-xs">
-                  {pendingSubmissions.length}
-                </span>
-              )}
-              <span
-                className={`size-6 rounded-full bg-white/20 flex items-center justify-center transition-transform duration-300 ${
-                  isQuickActionsOpen ? 'rotate-[135deg]' : 'rotate-0'
+            {/* Main Trigger Button: Intuitive Circular FAB with System Theme & Hover Animation */}
+            <div className="relative flex items-center justify-end">
+              {/* Intuitive Tooltip / Label on Hover (Floats smoothly to the left) */}
+              <div
+                className={`absolute right-full mr-3.5 px-3 py-1.5 rounded-xl bg-bg2/95 dark:bg-[#151d2a]/95 backdrop-blur-md border border-[var(--sidebar-active-border)]/40 text-text text-xs font-bold tracking-wide whitespace-nowrap shadow-xl pointer-events-none transition-all duration-300 flex items-center gap-1.5 ${
+                  isQuickActionsOpen
+                    ? 'opacity-0 translate-x-2'
+                    : 'opacity-0 -translate-x-1 group-hover/fab:opacity-100 group-hover/fab:translate-x-0'
                 }`}
               >
-                <RiAddLine className="size-4 text-[var(--sidebar-active-text)]" />
-              </span>
-            </button>
+                <RiSparklingLine className="size-3.5 text-[var(--sidebar-active-border)] animate-pulse" aria-hidden="true" />
+                <span>Quick Actions</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsQuickActionsOpen((prev) => !prev)}
+                aria-label={isQuickActionsOpen ? "Close Quick Actions Speed-Dial" : "Open Quick Actions Speed-Dial"}
+                aria-expanded={isQuickActionsOpen}
+                title="Quick Actions"
+                className={`group/btn relative size-13 sm:size-14 rounded-full excelearn-nav-pill active border-2 border-[var(--sidebar-active-border)] text-[var(--sidebar-active-text)] flex items-center justify-center shadow-xl hover:shadow-[0_0_24px_rgba(247,151,30,0.5)] hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer focus:outline-none ring-4 ${
+                  isQuickActionsOpen
+                    ? 'ring-[var(--sidebar-active-border)]/40 scale-105'
+                    : 'ring-[var(--sidebar-active-border)]/15 hover:ring-[var(--sidebar-active-border)]/35'
+                }`}
+              >
+                {/* Subtle Ambient Pulse Ring when closed */}
+                {!isQuickActionsOpen && (
+                  <span
+                    className="absolute inset-0 rounded-full bg-[var(--sidebar-active-border)]/30 animate-ping pointer-events-none opacity-40 group-hover/fab:opacity-0"
+                    aria-hidden="true"
+                  />
+                )}
+
+                {/* Rotating Action Icon (+ morphs smoothly to × at 135deg) */}
+                <span
+                  className={`flex items-center justify-center transition-transform duration-300 ease-out ${
+                    isQuickActionsOpen ? 'rotate-[135deg] scale-110' : 'rotate-0 group-hover/fab:rotate-90'
+                  }`}
+                >
+                  <RiAddLine className="size-6 sm:size-7 text-[var(--sidebar-active-text)]" />
+                </span>
+
+                {/* Pending Submissions Badge Pinned to Top-Right */}
+                {pendingSubmissions.length > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full font-bold text-[10px] sm:text-xs flex items-center justify-center bg-[var(--sidebar-active-border)] text-slate-950 shadow-md ring-2 ring-bg1 animate-pulse"
+                    title={`${pendingSubmissions.length} pending submissions`}
+                  >
+                    {pendingSubmissions.length}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -2755,6 +2819,8 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
         <StudentClassesView
           userRole="teacher"
           onTabChange={onTabChange}
+          initialOpenScheduler={openSchedulerOnLive}
+          onSchedulerClosed={() => setOpenSchedulerOnLive(false)}
         />
       )}
 
