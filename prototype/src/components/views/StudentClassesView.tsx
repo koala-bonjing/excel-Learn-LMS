@@ -308,14 +308,6 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
     setSelectedDate(today);
   };
 
-  const handleMonthYearChange = (nextYear: number, nextMonth: number) => {
-    setActivePopupClass(null);
-    setCurrentYear(nextYear);
-    setCurrentMonth(nextMonth);
-    const maxDay = new Date(nextYear, nextMonth + 1, 0).getDate();
-    setSelectedDate(new Date(nextYear, nextMonth, Math.min(selectedDate.getDate(), maxDay)));
-  };
-
   // Calendar matrix calculation
   const calendarDays = useMemo(() => {
     const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
@@ -939,10 +931,6 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                 <RiCalendarEventFill className="size-3.5" />
                 STEM 11-A · AY 2026–2027 (1st Sem)
               </span>
-              <span className="px-2.5 py-0.5 rounded-md bg-amber-bg text-amber border border-amber/25 text-xs font-semibold flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-green animate-pulse" aria-hidden="true" />
-                Live: {now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} · {now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-              </span>
             </div>
             <h2 className="text-2xl font-bold font-serif text-text tracking-tight">
               {userRole === 'teacher' ? 'Faculty Classes & Timetable' : 'Classes & Schedule'}
@@ -1057,8 +1045,8 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                 onClick={() => setIsScheduleModalOpen(true)}
                 className="px-3.5 py-1.5 rounded-xl bg-accent hover:bg-accent/90 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs hover:shadow-sm cursor-pointer transition-all shrink-0"
               >
-                <RiCalendarEventFill className="size-3.5" />
-                <span>+ Schedule Class / Meeting</span>
+                <RiAddLine className="size-3.5" />
+                <span> Schedule Class / Meeting</span>
               </button>
             )}
 
@@ -1132,40 +1120,7 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              {/* Month & Year Quick Selectors */}
-              <select
-                value={currentMonth}
-                onChange={(e) => handleMonthYearChange(currentYear, Number(e.target.value))}
-                aria-label="Select month"
-                className="px-2.5 py-1.5 rounded-xl bg-bg3 hover:bg-bg4 border border-border text-xs font-semibold text-text outline-none focus:border-accent cursor-pointer"
-              >
-                {MONTH_NAMES.map((name, idx) => (
-                  <option key={name} value={idx}>
-                    {name}
-                  </option>
-                ))}
-              </select>
 
-              <select
-                value={currentYear}
-                onChange={(e) => handleMonthYearChange(Number(e.target.value), currentMonth)}
-                aria-label="Select year"
-                className="px-2.5 py-1.5 rounded-xl bg-bg3 hover:bg-bg4 border border-border text-xs font-semibold text-text outline-none focus:border-accent cursor-pointer"
-              >
-                {yearOptions.map((yr) => (
-                  <option key={yr} value={yr}>
-                    {yr}
-                  </option>
-                ))}
-              </select>
-
-              <button
-                type="button"
-                onClick={handleJumpToToday}
-                className="px-3 py-1.5 rounded-xl bg-bg3 hover:bg-bg4 border border-border text-xs font-semibold text-text cursor-pointer transition-colors"
-              >
-                Today
-              </button>
               <div className="inline-flex rounded-xl bg-bg3 p-0.5 border border-border">
                 <button
                   type="button"
@@ -1198,10 +1153,6 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                   day: 'numeric',
                   year: 'numeric',
                 })}
-              </span>
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-bg2 border border-border text-text2">
-                {classesOnSelectedDate.length}{' '}
-                {classesOnSelectedDate.length === 1 ? 'class' : 'classes'} matching time filter
               </span>
             </div>
 
@@ -1239,21 +1190,6 @@ export const StudentClassesView: React.FC<StudentClassesViewProps> = ({
                     </button>
                   );
                 })
-              )}
-
-              {userRole === 'teacher' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setScheduleDate(selectedDate);
-                    setIsScheduleModalOpen(true);
-                  }}
-                  className="px-2.5 py-1 rounded-lg bg-accent/15 hover:bg-accent/25 text-accent border border-accent/30 text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1"
-                  title="Schedule a session for this date"
-                >
-                  <RiAddLine className="size-3" />
-                  <span>Schedule on this Date</span>
-                </button>
               )}
 
               {!isSelectedToday && (

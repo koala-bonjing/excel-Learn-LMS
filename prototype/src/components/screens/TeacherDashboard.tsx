@@ -8,6 +8,8 @@ import { StudentClassesView } from '@/components/views/StudentClassesView';
 import { CourseSectionView } from '@/components/views/CourseSectionView';
 import { CurriculumStudio } from '@/components/views/CurriculumStudio';
 import { TeacherPerformanceTasksView } from '@/components/views/TeacherPerformanceTasksView';
+import { TeacherStudentsView } from '@/components/views/TeacherStudentsView';
+import { TeacherGradebookView } from '@/components/views/TeacherGradebookView';
 import { getCourseData, type CourseItemType, type CourseOutlineItem } from '@/data/courseOutlineData';
 import {
   RiVideoChatLine,
@@ -18,7 +20,6 @@ import {
   RiUpload2Line,
   RiCloseLine,
   RiTimeLine,
-  RiFileExcel2Line,
   RiBookOpenLine,
   RiUserStarLine,
   RiFileList3Line,
@@ -2727,90 +2728,12 @@ export function TeacherDashboard({ activeTab, onTabChange }: TeacherDashboardPro
       {/* ============================================================ */}
       {/* 5. GRADEBOOK (teachers/teacher_grades.php)                    */}
       {/* ============================================================ */}
-      {activeTab === 'grades' && (
-        <div className="p-5 rounded-xl bg-bg2 border border-border space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-lg font-bold text-text font-serif">Quarterly Gradebook Calculation</h4>
-              <p className="text-xs text-text2">STEM 11-A · Oral Communication in Context (DepEd 25-50-25 Weights)</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => alert('Exporting grade sheet via PhpSpreadsheet (.xlsx)...')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green text-[#0e0f14] text-xs font-semibold hover:brightness-105 cursor-pointer shadow-xs"
-            >
-              <RiFileExcel2Line className="size-4" />
-              <span>Export to Excel (.xlsx)</span>
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-bg3 text-text3 uppercase tracking-wider border-b border-border">
-                <tr>
-                  <th className="py-2.5 px-3 font-semibold">Student Name</th>
-                  <th className="py-2.5 px-3 font-semibold">Student ID</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Written (25%)</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Tasks (50%)</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Quarter Exam (25%)</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Quarter Grade</th>
-                  <th className="py-2.5 px-3 font-semibold text-right">Remarks</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {STUDENT_DIRECTORY.slice(0, 5).map((st) => (
-                  <tr key={st.id} className="hover:bg-bg3/50 transition-colors">
-                    <td className="py-3 px-3 font-semibold text-text">{st.name}</td>
-                    <td className="py-3 px-3 font-mono text-text3">{st.studentId}</td>
-                    <td className="py-3 px-3 text-center tabular-nums text-text">92.0</td>
-                    <td className="py-3 px-3 text-center tabular-nums text-text">94.5</td>
-                    <td className="py-3 px-3 text-center tabular-nums text-text">93.0</td>
-                    <td className="py-3 px-3 text-center font-bold text-green tabular-nums">93.5</td>
-                    <td className="py-3 px-3 text-right text-green font-semibold">Passed</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {activeTab === 'grades' && <TeacherGradebookView />}
 
       {/* ============================================================ */}
       {/* 6. STUDENTS ROSTER (teachers/teacher_students.php)           */}
       {/* ============================================================ */}
-      {activeTab === 'students' && (
-        <div className="p-5 rounded-xl bg-bg2 border border-border space-y-4">
-          <div>
-            <h4 className="text-lg font-bold text-text font-serif">Enrolled Students Roster</h4>
-            <p className="text-xs text-text2">Official masterlist of learners in assigned teaching sections.</p>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-bg3 text-text3 uppercase tracking-wider border-b border-border">
-                <tr>
-                  <th className="py-2.5 px-3 font-semibold">Student Name</th>
-                  <th className="py-2.5 px-3 font-semibold">LRN</th>
-                  <th className="py-2.5 px-3 font-semibold">Section & Strand</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Current Standing</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {STUDENT_DIRECTORY.map((st) => (
-                  <tr key={st.id} className="hover:bg-bg3/50 transition-colors">
-                    <td className="py-3 px-3 font-semibold text-text">{st.name}</td>
-                    <td className="py-3 px-3 font-mono text-accent">{st.lrn}</td>
-                    <td className="py-3 px-3 text-text2">{st.section}</td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="font-bold text-green tabular-nums">{st.gwa} GWA</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {activeTab === 'students' && <TeacherStudentsView />}
 
       {/* ============================================================ */}
       {/* 7. CLASSES & TEACHING TIMETABLE (teachers/teacher_classes.php) */}
